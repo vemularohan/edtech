@@ -71,9 +71,9 @@
   --color-peach-soft: var(--peach-soft);
   --color-mint: var(--mint);
   --color-mint-soft: var(--mint-soft);
-  --font-display: "Bricolage Grotesque", sans-serif;
-  --font-sans: "Inter", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  --font-display: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
 :root {
@@ -89,14 +89,14 @@
   --secondary: oklch(0.968 0.007 247.896);
   --secondary-foreground: oklch(0.208 0.042 265.755);
   --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
+  --muted-foreground: oklch(0.38 0.035 260);
   --accent: oklch(0.968 0.007 247.896);
   --accent-foreground: oklch(0.208 0.042 265.755);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  --border: oklch(0.86 0.018 255.508);
+  --input: oklch(0.78 0.025 255.508);
+  --ring: oklch(0.55 0.12 170);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -108,12 +108,12 @@
   --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
   --sidebar-accent: oklch(0.968 0.007 247.896);
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --sidebar-border: oklch(0.86 0.018 255.508);
+  --sidebar-ring: oklch(0.55 0.12 170);
   --surface: oklch(0.985 0.008 255);
-  --surface-elevated: oklch(1 0 0 / 0.68);
+  --surface-elevated: oklch(1 0 0);
   --ink: oklch(0.22 0.035 263);
-  --faint: oklch(0.62 0.035 260);
+  --faint: oklch(0.43 0.035 260);
   --brand: oklch(0.63 0.15 170);
   --brand-soft: oklch(0.92 0.055 170);
   --lilac: oklch(0.61 0.16 292);
@@ -133,6 +133,8 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
   }
 
   button,
@@ -141,6 +143,21 @@
   textarea,
   select {
     font: inherit;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-muted-foreground);
+    opacity: 0.8;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
   }
 }
 
