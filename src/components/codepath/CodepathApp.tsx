@@ -84,6 +84,8 @@ import {
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import {
   codingStarter,
+  assessmentQuestions,
+  allCurriculumChallenges,
   gaps,
   heatmap,
   nodes,
@@ -93,7 +95,10 @@ import {
   timeline,
   weekTrend,
 } from "@/lib/codepath-data";
+import type { CurriculumChallenge } from "@/lib/codepath-data";
 import { curriculumModules } from "@/lib/curriculum-data";
+
+type ModuleId = `3.${number}`;
 
 type View =
   | "dashboard"
@@ -410,6 +415,7 @@ function PageHeader({
 function Dashboard() {
   const navigate = useNavigate();
   const [mastered, setMastered] = useState(false);
+  const [diagnosticOpen, setDiagnosticOpen] = useState(false);
   return (
     <>
       <PageHeader
@@ -449,7 +455,7 @@ function Dashboard() {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <Eyebrow>Next milestone</Eyebrow>
-            <h2 className="mt-1 text-xl font-semibold tracking-tight">Decision Trees</h2>
+            <h2 className="mt-1 text-xl font-semibold tracking-tight">Model evaluation</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Complete this module to unlock your Machine Learning project.
             </p>
@@ -523,22 +529,24 @@ function Dashboard() {
           />
           <div className="mb-4 rounded-xl bg-background/60 p-3">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium">Binary Search</span>
+              <span className="font-medium">Make your first prediction</span>
               <span className="font-mono text-brand">68%</span>
             </div>
             <ProgressBar value={68} />
-            <p className="mt-1.5 text-[11px] text-faint">12 min left · Data Structures</p>
+            <p className="mt-1.5 text-[11px] text-faint">
+              12 min left · Introduction to Machine Learning
+            </p>
           </div>
           <div className="space-y-2.5">
             <PlanRow
               done
-              title="Binary Search Trees — build & insert"
-              meta="Data Structures · 25 min"
+              title="Train a first prediction model"
+              meta="Introduction to Machine Learning · 25 min"
             />
             <PlanRow
               active
-              title="BST Traversal — in-order & recursion"
-              meta="Data Structures · 30 min"
+              title="Evaluate whether your model is actually good"
+              meta="Machine Learning: Going Deeper · 30 min"
               action={
                 <Button size="sm" onClick={() => navigate({ to: "/learning-mode" })}>
                   Continue
@@ -546,14 +554,10 @@ function Dashboard() {
               }
             />
             <PlanRow
-              title="DBMS Normalization quiz"
-              meta="Database Systems · 10 min"
+              title="Clean a messy dataset"
+              meta="Data Basics & Cleaning · 20 min"
               action={
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => toast("Quiz queued for your evening study block")}
-                >
+                <Button size="sm" variant="outline" onClick={() => setDiagnosticOpen(true)}>
                   Start
                 </Button>
               }
@@ -570,10 +574,10 @@ function Dashboard() {
               </span>
             }
           />
-          <p className="font-medium">Balanced BSTs (AVL)</p>
+          <p className="font-medium">Evaluate your first model</p>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            AI recommends this because you hit 92% on BST insert/delete and AVL is the next
-            prerequisite for your DSA interview goal.
+            AI recommends this because you have the data foundations needed to compare a model
+            against real outcomes.
           </p>
           <div className="mt-4 flex items-center gap-2">
             <Button
@@ -638,13 +642,13 @@ function Dashboard() {
           <p className="mt-3 text-[11px] text-faint">Last 6 weeks · 87 study sessions</p>
         </Panel>
         <Panel className="lg:col-span-5">
-          <SectionTitle eyebrow="Career bridge" title="Software Engineer · 58% ready" />
+          <SectionTitle eyebrow="Career bridge" title="AI Engineer · 58% ready" />
           <StageTracker current={2} />
         </Panel>
         <Panel className="bg-ink text-background lg:col-span-3">
           <SectionTitle
             eyebrow="In the lab"
-            title="BST search"
+            title="Model evaluation"
             action={
               <span className="rounded-full bg-background/10 px-2 py-1 text-[10px] text-background/70">
                 Medium
@@ -654,7 +658,7 @@ function Dashboard() {
           <pre className="overflow-x-auto rounded-xl bg-background/10 p-3 font-mono text-[10px] leading-5 text-background/80">
             {codingStarter.split("\n").slice(0, 7).join("\n")}
           </pre>
-          <p className="mt-3 text-[11px] text-background/60">4/5 tests passing · AI review ready</p>
+          <p className="mt-3 text-[11px] text-background/60">3/3 tests passing · AI review ready</p>
         </Panel>
         <Panel className="lg:col-span-4">
           <SectionTitle
@@ -685,13 +689,13 @@ function Dashboard() {
               <Eyebrow>Next checkpoint</Eyebrow>
               <h2 className="mt-1 font-display text-lg font-semibold">
                 {mastered
-                  ? "Nice work — AVL Trees is now mastered."
+                  ? "Nice work — model evaluation is now mastered."
                   : "You're one focused session away from your next unlock."}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 {mastered
-                  ? "AI recommends Queues next because it shares the same traversal mental model."
-                  : "Complete BST traversal to unlock Graph Algorithms and your Mini Search Engine project brief."}
+                  ? "AI recommends RAG next because it turns model outputs into grounded product experiences."
+                  : "Complete model evaluation to unlock your first production-shaped AI project."}
               </p>
             </div>
             <Button
@@ -708,14 +712,97 @@ function Dashboard() {
                 </>
               ) : (
                 <>
-                  Mark BST mastered <Check />
+                  Mark model evaluation mastered <Check />
                 </>
               )}
             </Button>
           </div>
         </Panel>
       </div>
+      {diagnosticOpen && <AssessmentPanel onClose={() => setDiagnosticOpen(false)} />}
     </>
+  );
+}
+
+function AssessmentPanel({ onClose }: { onClose: () => void }) {
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [hintShown, setHintShown] = useState(false);
+  const question = assessmentQuestions[questionIndex];
+  const answered = selected !== null;
+  const correct = selected === question.correctIndex;
+  const next = () => {
+    setQuestionIndex((value) => (value + 1) % assessmentQuestions.length);
+    setSelected(null);
+    setHintShown(false);
+  };
+  return (
+    <Panel className="mt-5 border-brand/30 bg-surface-elevated/95">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <Eyebrow>
+            {question.type} · Module {question.moduleId} · {question.topic}
+          </Eyebrow>
+          <h2 className="mt-1 font-display text-lg font-semibold">
+            Diagnostic {questionIndex + 1} of {assessmentQuestions.length}
+          </h2>
+        </div>
+        <Button size="sm" variant="ghost" onClick={onClose}>
+          Close
+        </Button>
+      </div>
+      <p className="mt-4 max-w-3xl text-sm leading-6">{question.prompt}</p>
+      <div className="mt-4 grid gap-2 md:grid-cols-2">
+        {question.options.map((option, index) => (
+          <button
+            key={option}
+            className={`rounded-xl border p-3 text-left text-sm transition ${
+              selected === index
+                ? answered && index === question.correctIndex
+                  ? "border-mint bg-mint-soft text-mint"
+                  : "border-peach bg-peach-soft text-peach"
+                : "border-border/70 hover:border-brand/50"
+            }`}
+            onClick={() => setSelected(index)}
+          >
+            <span className="mr-2 font-mono text-[10px] text-faint">
+              {String.fromCharCode(65 + index)}
+            </span>
+            {option}
+          </button>
+        ))}
+      </div>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {!hintShown && !answered && (
+          <Button size="sm" variant="outline" onClick={() => setHintShown(true)}>
+            Show a hint
+          </Button>
+        )}
+        {answered && (
+          <div
+            className={`w-full rounded-xl p-3 text-xs leading-5 ${correct ? "bg-mint-soft/60" : "bg-peach-soft/60"}`}
+          >
+            <strong>{correct ? "Correct." : "Not quite."}</strong>{" "}
+            {correct
+              ? question.explanation
+              : `${question.misconception} Try the question again or use the hint.`}
+            {correct && <p className="mt-1 text-faint">Concept: {question.topic}</p>}
+          </div>
+        )}
+        {hintShown && !answered && (
+          <p className="w-full rounded-xl bg-lilac-soft/50 p-3 text-xs text-muted-foreground">
+            <Lightbulb className="mr-2 inline size-4 text-lilac" />
+            {question.hint}
+          </p>
+        )}
+        {answered && (
+          <Button size="sm" onClick={correct ? next : () => setSelected(null)}>
+            {correct ? "Continue" : "Try again"}
+            <ArrowRight />
+          </Button>
+        )}
+      </div>
+    </Panel>
   );
 }
 
@@ -948,8 +1035,8 @@ function CurriculumMap() {
             <div>
               <Eyebrow>Prerequisites</Eyebrow>
               <p className="mt-1 text-sm">
-                {selected.id === "trees"
-                  ? "Arrays, Linked Lists, Recursion"
+                {selected.id === "3.13"
+                  ? "Python, data cleaning, model evaluation"
                   : "Programming Fundamentals"}
               </p>
             </div>
@@ -971,10 +1058,15 @@ function CurriculumMap() {
               <p className="text-xs font-medium">AI recommends this because</p>
               <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
                 You’ve mastered the prerequisite chain and this node is the shortest path to your
-                DSA interview goal.
+                applied AI project goal.
               </p>
             </div>
-            <Button className="w-full" onClick={() => navigate({ to: "/learning-mode" })}>
+            <Button
+              className="w-full"
+              onClick={() =>
+                navigate({ to: "/learning-mode", search: { module: selected.id as ModuleId } })
+              }
+            >
               Start learning <ArrowRight />
             </Button>
           </div>
@@ -1025,10 +1117,17 @@ function CurriculumMap() {
   );
 }
 
-function LearningMode() {
+function LearningMode({ moduleId = "3.1" }: { moduleId?: ModuleId }) {
+  const primaryChallenge =
+    allCurriculumChallenges.find((challenge) => challenge.moduleId === moduleId) ??
+    allCurriculumChallenges[0];
+  const currentModule = curriculumModules.find((module) => module.code === moduleId);
+  const moduleTitle = currentModule?.title ?? `Module ${moduleId}`;
+  const moduleFocus = primaryChallenge.topic;
+  const moduleQuestions = assessmentQuestions.filter((question) => question.moduleId === moduleId);
   const [stage, setStage] = useState(0);
   const [hookAnswer, setHookAnswer] = useState("");
-  const [array, setArray] = useState("3, 8, 12, 19, 24, 31, 42");
+  const [array, setArray] = useState("");
   const [ran, setRan] = useState(false);
   const [breakChoice, setBreakChoice] = useState("");
   const [yourTurn, setYourTurn] = useState("");
@@ -1036,8 +1135,8 @@ function LearningMode() {
   const stages = ["Hook", "Why", "Build", "Break", "Your Turn", "Master", "Next Challenge"];
   const values = array
     .split(",")
-    .map((x) => Number(x.trim()))
-    .filter(Number.isFinite);
+    .map((x) => x.trim())
+    .filter(Boolean);
   const canAdvance =
     stage === 0
       ? hookAnswer.length > 0
@@ -1064,8 +1163,8 @@ function LearningMode() {
   return (
     <>
       <PageHeader
-        eyebrow="Learning studio · Data Structures · Sem 3"
-        title="Binary search, from instinct to implementation"
+        eyebrow={`Learning studio · Module ${moduleId} · Sem 3`}
+        title={moduleTitle}
         description="A guided loop: make a prediction, understand why it works, build it, break it, then prove you can do it alone."
         action={
           <div className="flex items-center gap-2">
@@ -1075,6 +1174,21 @@ function LearningMode() {
         }
       />
       <div className="grid gap-4 xl:grid-cols-[1fr_320px]">
+        <Panel className="xl:col-span-2 border-brand/20 bg-brand-soft/20">
+          <SectionTitle
+            eyebrow={`Module ${moduleId} · ${moduleQuestions[0]?.type ?? "SCENARIO"}`}
+            title="Check your thinking before you build"
+          />
+          {moduleQuestions[0] && (
+            <>
+              <p className="mt-3 text-sm leading-6">{moduleQuestions[0].prompt}</p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                This module has {moduleQuestions.length} module-specific checks. Open the diagnostic
+                from Discover to answer with feedback and retry support.
+              </p>
+            </>
+          )}
+        </Panel>
         <div className="space-y-4">
           <Panel className="border-brand/20 bg-surface-elevated/90">
             <div className="flex items-center justify-between gap-4">
@@ -1104,15 +1218,18 @@ function LearningMode() {
               <>
                 <SectionTitle
                   eyebrow="Hook · make a prediction"
-                  title="Can you find 31 in three checks?"
+                  title={`How will you approach ${moduleFocus}?`}
                 />
                 <p className="max-w-2xl text-[15px] leading-7 text-muted-foreground">
-                  You have a sorted shelf:{" "}
-                  <span className="font-mono text-foreground">[3, 8, 12, 19, 24, 31, 42]</span>.
-                  Pick the first place you would look, then commit to what you would discard.
+                  {primaryChallenge.description} Predict the first reliable step before you
+                  implement the challenge.
                 </p>
                 <div className="mt-6 grid gap-2 sm:grid-cols-3">
-                  {["Start at 3", "Start at 19", "Start at 42"].map((answer) => (
+                  {[
+                    `Inspect ${moduleFocus}`,
+                    `Test ${moduleTitle} with an edge case`,
+                    `Ship without validating ${moduleFocus}`,
+                  ].map((answer) => (
                     <button
                       key={answer}
                       onClick={() => setHookAnswer(answer)}
@@ -1120,9 +1237,9 @@ function LearningMode() {
                     >
                       <span className="block font-semibold">{answer}</span>
                       <span className="mt-1 block text-xs text-faint">
-                        {answer.includes("19")
-                          ? "Split the shelf in half"
-                          : "That checks an edge first"}
+                        {answer.startsWith("Ship")
+                          ? "Consider what evidence is needed first"
+                          : primaryChallenge.hints[0]}
                       </span>
                     </button>
                   ))}
@@ -1137,28 +1254,25 @@ function LearningMode() {
               <>
                 <SectionTitle
                   eyebrow="Why · name the invariant"
-                  title="Search less, discard more."
+                  title={`Make the ${moduleFocus} invariant explicit.`}
                 />
                 <p className="max-w-2xl text-[15px] leading-7 text-muted-foreground">
-                  Because the values are ordered, every comparison lets us discard half the search
-                  space. The invariant is simple:{" "}
-                  <strong className="text-foreground">
-                    if target exists, it stays between low and high.
-                  </strong>
+                  The goal is to turn the module concept into a repeatable engineering decision:{" "}
+                  <strong className="text-foreground">{primaryChallenge.explanation}</strong>
                 </p>
                 <div className="mt-5 grid gap-3 md:grid-cols-3">
-                  <FeedbackCard label="Decision" body="Check the midpoint first." tone="brand" />
+                  <FeedbackCard label="Decision" body={primaryChallenge.hints[0]} tone="brand" />
                   <FeedbackCard
                     label="Invariant"
-                    body="Target remains inside the interval."
+                    body="Only clean rows reach the aggregation."
                     tone="lilac"
                   />
-                  <FeedbackCard label="Payoff" body="O(log n), not O(n)." tone="mint" />
+                  <FeedbackCard label="Payoff" body="A summary you can defend." tone="mint" />
                 </div>
                 <div className="mt-5 rounded-xl bg-brand-soft/45 p-4 text-sm text-muted-foreground">
                   <Bot className="mr-2 inline size-4 text-brand" />
-                  AI mentor: You already know linear scans. Binary search is the same
-                  compare-and-move habit with a much more powerful discard step.
+                  AI mentor: Cleaning is not busywork. It makes every downstream chart or model
+                  easier to trust.
                 </div>
               </>
             )}
@@ -1166,7 +1280,7 @@ function LearningMode() {
               <>
                 <SectionTitle
                   eyebrow="Build · see the loop"
-                  title="Move the pointers"
+                  title={`Run the ${moduleFocus} workflow`}
                   action={
                     <Button size="sm" variant="outline" onClick={() => setRan(false)}>
                       <RotateCcw />
@@ -1175,13 +1289,13 @@ function LearningMode() {
                   }
                 />
                 <div className="flex flex-wrap gap-2">
-                  {values.map((value, index) => (
+                  {currentModule?.topics.slice(0, 3).map((value, index) => (
                     <div
                       key={`${value}-${index}`}
-                      className={`relative flex size-12 items-center justify-center rounded-xl border text-sm font-semibold ${ran && index === Math.floor(values.length / 2) ? "border-brand bg-brand-soft text-brand" : "border-border bg-background/60"}`}
+                      className={`relative flex size-20 items-center justify-center rounded-xl border text-xs font-semibold ${ran && index === 1 ? "border-brand bg-brand-soft text-brand" : "border-border bg-background/60"}`}
                     >
                       {value}
-                      {ran && index === Math.floor(values.length / 2) && (
+                      {ran && index === 1 && (
                         <span className="absolute -top-5 font-mono text-[9px] text-brand">mid</span>
                       )}
                     </div>
@@ -1192,22 +1306,22 @@ function LearningMode() {
                     value={array}
                     onChange={(e) => setArray(e.target.value)}
                     className="max-w-md"
-                    aria-label="Sorted array values"
+                    aria-label={`${moduleFocus} input`}
                   />
                   <Button
                     onClick={() => {
                       setRan(true);
-                      toast("mid = 19 · right half remains");
+                      toast(`${moduleTitle} workflow ready for review`);
                     }}
                   >
                     <Play />
-                    Run search
+                    Run cleaning
                   </Button>
                 </div>
                 <div className="mt-4 rounded-xl bg-background/55 p-3 font-mono text-[11px] text-muted-foreground">
                   {ran
-                    ? "low=0 → mid=3 (19) → target is larger → low=4"
-                    : "Edit the sorted values, then run to inspect the first decision."}
+                    ? primaryChallenge.explanation
+                    : `Edit the input, then run to inspect the ${moduleFocus} workflow.`}
                 </div>
               </>
             )}
@@ -1215,58 +1329,52 @@ function LearningMode() {
               <>
                 <SectionTitle
                   eyebrow="Break · debug deliberately"
-                  title="The bug is hiding at the boundary."
+                  title="The bug is hiding in the implementation."
                 />
                 <p className="text-sm leading-6 text-muted-foreground">
-                  This version can loop forever when{" "}
-                  <span className="font-mono text-foreground">target &gt; nums[mid]</span>. Which
-                  line keeps the interval moving?
+                  {primaryChallenge.problem} Which correction would make this implementation
+                  reliable?
                 </p>
                 <pre className="mt-5 overflow-x-auto rounded-xl bg-ink p-4 font-mono text-xs leading-6 text-background/80">
-                  {"if nums[mid] < target:\n    low = mid       # bug\nelse:\n    high = mid - 1"}
+                  {primaryChallenge.starterCode}
                 </pre>
                 <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                  {["Change low = mid to low = mid + 1", "Change high = mid - 1 to high = mid"].map(
-                    (choice) => (
-                      <button
-                        key={choice}
-                        onClick={() => setBreakChoice(choice)}
-                        className={`rounded-xl border p-3 text-left text-sm ${breakChoice === choice ? "border-brand bg-brand-soft text-brand" : "border-border/70 hover:border-brand/50"}`}
-                      >
-                        {choice}
-                      </button>
-                    ),
-                  )}
+                  {[
+                    primaryChallenge.hints[0],
+                    primaryChallenge.hints[1] ?? "Test the edge case before shipping.",
+                  ].map((choice) => (
+                    <button
+                      key={choice}
+                      onClick={() => setBreakChoice(choice)}
+                      className={`rounded-xl border p-3 text-left text-sm ${breakChoice === choice ? "border-brand bg-brand-soft text-brand" : "border-border/70 hover:border-brand/50"}`}
+                    >
+                      {choice}
+                    </button>
+                  ))}
                 </div>
                 {breakChoice && (
                   <p className="mt-4 rounded-xl bg-mint-soft/60 p-3 text-xs text-foreground/75">
                     <Check className="mr-2 inline size-4 text-mint" />
-                    Exactly. Every iteration must shrink the interval, or the loop has no path to
-                    finish.
+                    Exactly. Follow the module's stated invariant before trusting the result.
                   </p>
                 )}
               </>
             )}
             {stage === 4 && (
               <>
-                <SectionTitle
-                  eyebrow="Your turn · no scaffolding"
-                  title="Find the first occurrence"
-                />
+                <SectionTitle eyebrow="Your turn · no scaffolding" title={primaryChallenge.title} />
                 <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-                  Given <span className="font-mono text-foreground">[1, 2, 2, 2, 6]</span>, target{" "}
-                  <span className="font-mono text-foreground">2</span>, what should your algorithm
-                  return—and what boundary move makes that true?
+                  {primaryChallenge.problem}
                 </p>
                 <Textarea
                   className="mt-5 min-h-28"
                   value={yourTurn}
                   onChange={(e) => setYourTurn(e.target.value)}
-                  placeholder="Explain your invariant in one or two sentences…"
+                  placeholder="Explain your approach in one or two sentences…"
                 />
                 <div className="mt-4 rounded-xl bg-peach-soft/45 p-3 text-xs text-muted-foreground">
                   <Sparkle className="mr-2 inline size-4 text-peach" />
-                  Mentor hint: after a match, keep the answer and continue searching left.
+                  Mentor hint: {primaryChallenge.hints[0]}
                 </div>
               </>
             )}
@@ -1284,17 +1392,13 @@ function LearningMode() {
                 <div className="grid gap-3 md:grid-cols-3">
                   <FeedbackCard
                     label="You built"
-                    body="A shrinking search interval with O(log n) time."
+                    body={`A repeatable ${moduleFocus} workflow.`}
                     tone="mint"
                   />
-                  <FeedbackCard
-                    label="You broke"
-                    body="A boundary bug before it became a habit."
-                    tone="peach"
-                  />
+                  <FeedbackCard label="You broke" body={primaryChallenge.problem} tone="peach" />
                   <FeedbackCard
                     label="You can now"
-                    body="Explain first-occurrence search to someone else."
+                    body={primaryChallenge.explanation}
                     tone="lilac"
                   />
                 </div>
@@ -1321,14 +1425,14 @@ function LearningMode() {
               <>
                 <SectionTitle
                   eyebrow="Next challenge · transfer"
-                  title="Binary search on a rotated array"
+                  title={`Transfer ${moduleFocus} to a new task`}
                 />
                 <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-                  The array is no longer fully sorted, but one half is always ordered. Use the
-                  invariant you just mastered to decide which half to keep.
+                  {primaryChallenge.description} Apply the same reasoning to a new input and explain
+                  what evidence you would inspect next.
                 </p>
                 <div className="mt-5 rounded-xl border border-border/60 bg-background/45 p-4 font-mono text-xs">
-                  nums = [4, 5, 6, 7, 0, 1, 2] · target = 0
+                  {primaryChallenge.solution}
                 </div>
                 <div className="mt-5 flex flex-wrap gap-2">
                   <Button onClick={() => toast("Challenge started in Coding Lab")}>
@@ -1367,23 +1471,23 @@ function LearningMode() {
           </div>
         </div>
         <Panel className="h-fit">
-          <SectionTitle eyebrow="Your context" title="Binary Search Trees" />
+          <SectionTitle eyebrow={`Module ${moduleId}`} title={primaryChallenge.title} />
           <div className="space-y-3 text-xs text-muted-foreground">
             <p>
-              <span className="font-medium text-foreground">Subject:</span> Data Structures
+              <span className="font-medium text-foreground">Module:</span> {moduleTitle}
             </p>
             <p>
-              <span className="font-medium text-foreground">Prerequisites:</span> Arrays, recursion
+              <span className="font-medium text-foreground">Topic:</span> {moduleFocus}
             </p>
             <p>
-              <span className="font-medium text-foreground">Career link:</span> DSA interview
-              patterns
+              <span className="font-medium text-foreground">Challenge:</span>{" "}
+              {primaryChallenge.description}
             </p>
           </div>
           <div className="mt-5 rounded-xl bg-lilac-soft/50 p-3">
             <p className="text-xs font-medium">AI recommends this because…</p>
             <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
-              Your last five attempts show strong array mechanics and one recurring boundary error.
+              This recommendation is grounded in the PDF-aligned topic: {moduleFocus}.
             </p>
           </div>
           <Button
@@ -1401,10 +1505,12 @@ function LearningMode() {
 
 function CodeEditor({
   code,
+  challenge,
   onNext,
   compact = false,
 }: {
   code: string;
+  challenge: CurriculumChallenge;
   onNext?: () => void;
   compact?: boolean;
 }) {
@@ -1414,8 +1520,8 @@ function CodeEditor({
   return (
     <Panel className={compact ? "p-4" : "cp-rise"}>
       <SectionTitle
-        eyebrow="Code playground · Python"
-        title="Implement the search loop"
+        eyebrow={`Code playground · Module ${challenge.moduleId}`}
+        title={challenge.title}
         action={
           <div className="flex gap-2">
             <StatusPill status="available" />
@@ -1452,13 +1558,13 @@ function CodeEditor({
           <div className="rounded-xl border border-border/60 bg-background/45 p-3">
             <Eyebrow>Console</Eyebrow>
             <pre className="mt-2 min-h-16 whitespace-pre-wrap font-mono text-[11px] leading-5 text-muted-foreground">
-              {output || "Run your code to see test output."}
+              {output || "Run your code to inspect the challenge output."}
             </pre>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button
               size="sm"
-              onClick={() => setOutput("✓ case 1 passed\n✓ case 2 passed\n✕ case 3 · boundary")}
+              onClick={() => setOutput("✓ case 1 passed\n✓ case 2 passed\n✓ case 3 passed")}
             >
               <Play />
               Run
@@ -1466,25 +1572,23 @@ function CodeEditor({
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setOutput("Submitted · 4/5 tests passed")}
+              onClick={() => setOutput("Submitted · 3/3 tests passed")}
             >
               Submit
             </Button>
           </div>
           <div className="rounded-xl bg-peach-soft/45 p-3">
-            <p className="text-xs font-medium">Progressive hint {hint}/2</p>
+            <p className="text-xs font-medium">
+              Progressive hint {hint}/{challenge.hints.length}
+            </p>
             <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
-              {hint === 0
-                ? "Start by naming the interval you still need to search."
-                : hint === 1
-                  ? "The interval is bounded by low and high; update one after each comparison."
-                  : "Use mid = (low + high) // 2, then move exactly one boundary."}
+              {challenge.hints[Math.min(hint, challenge.hints.length - 1)]}
             </p>
             <Button
               variant="ghost"
               size="sm"
               className="mt-2 px-0"
-              onClick={() => setHint((value) => Math.min(2, value + 1))}
+              onClick={() => setHint((value) => Math.min(challenge.hints.length, value + 1))}
             >
               Get next hint <ChevronRight />
             </Button>
@@ -1500,49 +1604,56 @@ function CodeEditor({
   );
 }
 
-function Challenge({ onSubmit }: { onSubmit: () => void }) {
+function Challenge({ onSubmit, moduleId = "3.1" }: { onSubmit: () => void; moduleId?: ModuleId }) {
+  const primaryChallenge =
+    allCurriculumChallenges.find((item) => item.moduleId === moduleId) ??
+    allCurriculumChallenges[0];
   return (
     <Panel className="cp-rise">
       <SectionTitle
-        eyebrow="Challenge · binary search"
-        title="Find the first occurrence"
+        eyebrow={`Challenge · Module ${primaryChallenge.moduleId}`}
+        title={primaryChallenge.title}
         action={
           <span className="rounded-full bg-peach-soft px-2.5 py-1 text-[10px] font-semibold text-peach">
-            Medium
+            {primaryChallenge.difficulty}
           </span>
         }
       />
       <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-        Given a sorted array of integers that may contain duplicates, return the index of the first
-        occurrence of target. Return -1 when the target is absent.
+        {primaryChallenge.problem}
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
-        <span className="rounded-full bg-brand-soft px-2.5 py-1 text-[10px] text-brand">
-          Arrays
-        </span>
-        <span className="rounded-full bg-lilac-soft px-2.5 py-1 text-[10px] text-lilac">
-          Binary Search
-        </span>
-        <span className="rounded-full bg-peach-soft px-2.5 py-1 text-[10px] text-peach">
-          Edge cases
-        </span>
+        {primaryChallenge.topic.split(" and ").map((topic, index) => (
+          <span
+            key={topic}
+            className={`rounded-full px-2.5 py-1 text-[10px] ${
+              index % 3 === 0
+                ? "bg-brand-soft text-brand"
+                : index % 3 === 1
+                  ? "bg-lilac-soft text-lilac"
+                  : "bg-peach-soft text-peach"
+            }`}
+          >
+            {topic}
+          </span>
+        ))}
       </div>
       <div className="mt-5 rounded-xl border border-border/60 bg-background/45 p-4 font-mono text-[11px] leading-5 text-muted-foreground">
-        Input: nums = [1, 2, 2, 2, 6], target = 2<br />
-        Expected: 1<br />
-        <br />
-        Input: nums = [1, 4, 9], target = 7<br />
-        Expected: -1
+        {primaryChallenge.tests.map((test) => (
+          <span key={test.id} className="block">
+            Case {test.id}: rows = {test.input}
+            <br />
+            Expected: {test.expected}
+            <br />
+          </span>
+        ))}
       </div>
       <div className="mt-5 flex gap-2">
         <Button onClick={onSubmit}>
           <Play />
           Run tests
         </Button>
-        <Button
-          variant="outline"
-          onClick={() => toast("AI hint: keep searching left after a match")}
-        >
+        <Button variant="outline" onClick={() => toast(`AI hint: ${primaryChallenge.hints[0]}`)}>
           Get a hint
         </Button>
       </div>
@@ -1568,10 +1679,14 @@ function FeedbackCard({
 }
 
 function Tutor() {
+  const tutorModule = curriculumModules[0];
+  const tutorChallenge =
+    allCurriculumChallenges.find((challenge) => challenge.moduleId === tutorModule.code) ??
+    allCurriculumChallenges[0];
   const [messages, setMessages] = useState([
     {
       from: "assistant" as const,
-      text: "You’re in Binary Search Trees · Data Structures · Sem 3. AI recommends starting with the boundary invariant because your last two attempts found the target but overshot the first occurrence.",
+      text: `You’re in Module ${tutorModule.code} · ${tutorModule.title}. Start by applying ${tutorChallenge.topic} to the current challenge.`,
     },
   ]);
   const [thinking, setThinking] = useState(false);
@@ -1588,10 +1703,10 @@ function Tutor() {
     await new Promise((resolve) => window.setTimeout(resolve, 850));
     setThinking(false);
     const response = text.toLowerCase().includes("yesterday")
-      ? "Yesterday you practiced linked-list traversal: you kept moving a pointer until the stopping condition was true. Binary search uses the same discipline, but moves two boundaries around a midpoint. AI recommends this connection because it turns a new pattern into a familiar loop."
+      ? "Yesterday you practiced converting raw values into trustworthy data. Today we will use that discipline before aggregation."
       : text.toLowerCase().includes("hint")
-        ? "Hint 1: after a match, ask whether an earlier match could still exist. If yes, keep the answer but move high left. AI recommends this smaller step because your code is already correct for unique values."
-        : "Think of the search interval as a contract: if target exists, it must be between low and high. Each comparison must preserve that contract. AI recommends this framing because it will help you debug boundary errors without memorizing a template.";
+        ? `Hint 1: ${tutorChallenge.hints[0]}`
+        : tutorChallenge.explanation;
     setMessages((items) => [...items, { from: "assistant" as const, text: response }]);
   };
   return (
@@ -1611,7 +1726,7 @@ function Tutor() {
               <div>
                 <p className="text-sm font-semibold">AI Skills Tutor</p>
                 <p className="text-[11px] text-faint">
-                  Context: Binary Search Trees · Data Structures · Sem 3
+                  Context: Module {tutorModule.code} · {tutorModule.title}
                 </p>
               </div>
               <span className="ml-auto size-2 rounded-full bg-mint" />
@@ -1668,8 +1783,8 @@ function Tutor() {
           <div className="mt-5 rounded-xl bg-lilac-soft/50 p-3">
             <p className="text-xs font-medium">Tutor memory</p>
             <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
-              Yesterday: linked-list traversal · 92% mastery. Your tutor uses that to explain
-              today’s boundary moves.
+              Yesterday: Python data cleaning · 92% mastery. Your tutor uses that to explain today’s
+              aggregation choices.
             </p>
           </div>
         </Panel>
@@ -1678,13 +1793,22 @@ function Tutor() {
   );
 }
 
-function CodingLab({ challenge = false }: { challenge?: boolean }) {
+function CodingLab({
+  challenge = false,
+  moduleId = "3.1",
+}: {
+  challenge?: boolean;
+  moduleId?: ModuleId;
+}) {
+  const primaryChallenge =
+    allCurriculumChallenges.find((item) => item.moduleId === moduleId) ??
+    allCurriculumChallenges[0];
   const [review, setReview] = useState(false);
   return (
     <>
       <PageHeader
         eyebrow={challenge ? "Challenge · attempt history" : "Coding Lab · build & prove"}
-        title={challenge ? "Find the first occurrence" : "Turn concepts into runnable code."}
+        title={challenge ? primaryChallenge.title : "Turn concepts into runnable code."}
         description={
           challenge
             ? "A focused challenge with examples, attempt history, progressive hints, and AI review."
@@ -1692,7 +1816,7 @@ function CodingLab({ challenge = false }: { challenge?: boolean }) {
         }
         action={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => toast("Hint 1: keep a valid search interval")}>
+            <Button variant="outline" onClick={() => toast(`Hint 1: ${primaryChallenge.hints[0]}`)}>
               Get a hint
             </Button>
             <Button onClick={() => setReview(true)}>
@@ -1704,14 +1828,14 @@ function CodingLab({ challenge = false }: { challenge?: boolean }) {
       />
       <div className="grid gap-4 xl:grid-cols-[1fr_300px]">
         <div>
-          <CodeEditor code={codingStarter} compact />
+          <CodeEditor code={primaryChallenge.starterCode} challenge={primaryChallenge} compact />
           <Panel className="mt-4">
             <SectionTitle
               eyebrow="Test cases"
               title="Submission output"
               action={
                 <span className="rounded-full bg-mint-soft px-2 py-1 text-[10px] font-semibold text-mint">
-                  4 / 5 passing
+                  3 / 3 passing
                 </span>
               }
             />
@@ -1727,20 +1851,14 @@ function CodingLab({ challenge = false }: { challenge?: boolean }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    ["01", "[1, 4, 9], 4", "1", "1", "Pass"],
-                    ["02", "[2, 7, 11], 5", "-1", "-1", "Pass"],
-                    ["03", "[1, 2, 2, 6], 2", "1", "2", "Review"],
-                  ].map((row) => (
-                    <tr key={row[0]} className="border-t border-border/60">
-                      <td className="py-3 font-mono text-faint">{row[0]}</td>
-                      <td className="py-3 font-mono">{row[1]}</td>
-                      <td className="py-3 font-mono">{row[2]}</td>
-                      <td className="py-3 font-mono">{row[3]}</td>
+                  {primaryChallenge.tests.map((test) => (
+                    <tr key={test.id} className="border-t border-border/60">
+                      <td className="py-3 font-mono text-faint">{test.id}</td>
+                      <td className="py-3 font-mono">{test.input}</td>
+                      <td className="py-3 font-mono">{test.expected}</td>
+                      <td className="py-3 font-mono">{test.expected}</td>
                       <td className="py-3">
-                        <span className={row[4] === "Pass" ? "text-mint" : "text-peach"}>
-                          {row[4] === "Pass" ? "✓" : "!"} {row[4]}
-                        </span>
+                        <span className="text-mint">✓ Pass</span>
                       </td>
                     </tr>
                   ))}
@@ -1757,19 +1875,15 @@ function CodingLab({ challenge = false }: { challenge?: boolean }) {
           <div className="space-y-3">
             {review ? (
               <>
-                <FeedbackCard
-                  label="Correctness"
-                  body="The core loop is sound; duplicates need a leftward continuation after a match."
-                  tone="mint"
-                />
+                <FeedbackCard label="Correctness" body={primaryChallenge.explanation} tone="mint" />
                 <FeedbackCard
                   label="Complexity"
-                  body="O(log n) time and O(1) space. Keep the iterative approach for interview clarity."
+                  body="The pipeline handles invalid values explicitly and aggregates only after cleaning."
                   tone="lilac"
                 />
                 <FeedbackCard
                   label="Next improvement"
-                  body="Store a candidate answer, then continue searching left until the interval closes."
+                  body="Next, compare median imputation with a domain-specific fallback and explain the trade-off."
                   tone="peach"
                 />
               </>
@@ -1789,6 +1903,31 @@ function CodingLab({ challenge = false }: { challenge?: boolean }) {
           </Button>
         </Panel>
       </div>
+      {challenge && (
+        <Panel className="mt-4">
+          <SectionTitle
+            eyebrow="Curriculum challenge library"
+            title="One distinct build for every module"
+          />
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {allCurriculumChallenges.map((item) => (
+              <div key={item.moduleId} className="rounded-xl border border-border/60 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <Eyebrow>Module {item.moduleId}</Eyebrow>
+                  <span className="rounded-full bg-brand-soft px-2 py-1 text-[10px] text-brand">
+                    {item.type}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm font-semibold">{item.title}</p>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.description}</p>
+                <p className="mt-2 text-[10px] text-faint">
+                  {item.topic} · {item.difficulty}
+                </p>
+              </div>
+            ))}
+          </div>
+        </Panel>
+      )}
     </>
   );
 }
@@ -1802,8 +1941,8 @@ function Projects() {
     <>
       <PageHeader
         eyebrow="Build & prove · project workspace"
-        title="Build a Mini Search Engine"
-        description="Apply arrays, linked lists, stacks, queues, and trees in one portfolio-shaped project that makes your learning visible."
+        title="Build a Document Intelligence App"
+        description="Apply ingestion, embeddings, retrieval, and grounded generation in one portfolio-shaped AI system."
         action={
           <div className="flex items-center gap-3">
             <div className="relative grid size-14 place-items-center rounded-full border-4 border-brand/20">
@@ -1821,21 +1960,21 @@ function Projects() {
           <Panel>
             <div className="flex flex-wrap gap-2">
               <span className="rounded-full bg-brand-soft px-2.5 py-1 text-[10px] text-brand">
-                Arrays
+                Python
               </span>
               <span className="rounded-full bg-lilac-soft px-2.5 py-1 text-[10px] text-lilac">
-                Linked Lists
+                Data cleaning
               </span>
               <span className="rounded-full bg-peach-soft px-2.5 py-1 text-[10px] text-peach">
-                Trees
+                Model evaluation
               </span>
               <span className="rounded-full bg-mint-soft px-2.5 py-1 text-[10px] text-mint">
                 Python
               </span>
             </div>
             <p className="mt-4 max-w-3xl text-sm leading-6 text-muted-foreground">
-              Create a tiny search engine that ingests a corpus, builds an inverted index, ranks
-              results, and explains its decisions. You will practice data structures while shipping
+              Create a document intelligence app that ingests a knowledge base, retrieves relevant
+              evidence, and explains its answers. You will practice RAG engineering while shipping
               something you can discuss in an interview.
             </p>
           </Panel>
@@ -1898,7 +2037,7 @@ function Projects() {
                           <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
                             {index === 2
                               ? "Keep the query engine small: get exact matches working before you add ranking."
-                              : "Write one failing test before the implementation so the data structure has a job to do."}
+                              : "Write one failing retrieval test before the implementation so the pipeline has a clear contract."}
                           </p>
                         </div>
                         <Button
@@ -1949,7 +2088,7 @@ function Projects() {
                 <div>
                   <Eyebrow>AI evaluation complete</Eyebrow>
                   <h2 className="mt-1 font-display text-lg font-semibold">
-                    Search Builder badge earned
+                    Document Intelligence badge earned
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Code quality: strong · Completeness: 82% · Next suggestion: add typo tolerance
@@ -1965,8 +2104,8 @@ function Projects() {
           <div className="rounded-xl bg-brand-soft/45 p-3">
             <p className="text-xs font-medium">AI recommends this project because…</p>
             <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
-              You’ve mastered the prerequisite chain for a search engine. The project turns your DSA
-              knowledge into an interview story.
+              You’ve mastered the prerequisite chain for a prediction system. The project turns your
+              ML knowledge into an interview story.
             </p>
           </div>
           <div className="mt-5 space-y-3 text-xs text-muted-foreground">
@@ -1975,7 +2114,7 @@ function Projects() {
               Estimated 4–6 weeks
             </p>
             <p className="flex items-center gap-2">
-              <Code2 className="size-4 text-lilac" />5 core data structures
+              <Code2 className="size-4 text-lilac" />5 RAG engineering milestones
             </p>
             <p className="flex items-center gap-2">
               <ShieldCheck className="size-4 text-mint" />
@@ -2301,9 +2440,9 @@ function Career() {
           />
           <div className="space-y-3">
             {[
-              "Explain why binary search is O(log n)",
-              "Design a URL shortener for 10M links",
-              "When would you choose a queue over a stack?",
+              "Explain why retrieval quality affects grounded answers",
+              "Design an evaluation plan for a production AI feature",
+              "When should a workflow use an agent instead of a fixed pipeline?",
             ].map((question, index) => (
               <div
                 key={question}
@@ -2454,7 +2593,7 @@ function Profile() {
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
               ["12", "Day streak", Flame, "peach"],
-              ["DSA", "Foundations", GitBranch, "brand"],
+              ["Machine learning", "Foundations", GitBranch, "brand"],
               ["4/5", "Test runner", Code2, "lilac"],
               ["?", "Next badge", Lock, "muted"],
             ].map(([value, label, Icon, tone]) => (
@@ -2492,7 +2631,7 @@ function Recovery() {
   return (
     <>
       <PageHeader
-        eyebrow="Adaptive remediation · Recursion"
+        eyebrow="Adaptive remediation · Python"
         title="A 3-day recovery plan, not a guilt spiral."
         description="AI built this plan from your last six attempts: fundamentals first, guided coding next, then a small assessment to prove the gap is closing."
         action={
@@ -2536,27 +2675,27 @@ function Recovery() {
           <div className="rounded-xl bg-lilac-soft/45 p-4">
             <p className="text-xs font-medium">AI recommends this sequence because…</p>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">
-              Your attempts show the recursion idea is familiar, but the stopping condition is not
-              yet automatic. Each day isolates one part of the mental model before adding pressure.
+              Your attempts show that data-quality decisions are not yet automatic. Each day
+              isolates one part of the cleaning and aggregation workflow before adding pressure.
             </p>
           </div>
           <div className="mt-5 space-y-3">
             {(day === 1
               ? [
-                  "Watch a 7-minute visual on base cases",
-                  "Trace factorial(4) on paper",
-                  "Answer 5 quick checks",
+                  "Inspect a 7-minute data-quality walkthrough",
+                  "Trace nulls and invalid types on paper",
+                  "Answer four prediction checks",
                 ]
               : day === 2
                 ? [
-                    "Implement factorial iteratively first",
-                    "Convert it to recursion",
+                    "Clean a small Pandas DataFrame first",
+                    "Compare median and domain-specific filling",
                     "Ask the tutor for a hint, not the answer",
                   ]
                 : [
-                    "Solve Fibonacci with memoization",
-                    "Run 5 hidden tests",
-                    "Reflect on the stopping condition",
+                    "Aggregate a cleaned cohort",
+                    "Run the three challenge tests",
+                    "Reflect on which rows were trustworthy",
                   ]
             ).map((item) => (
               <button
@@ -2578,7 +2717,7 @@ function Recovery() {
   );
 }
 
-export function CodepathApp({ view }: { view: View }) {
+export function CodepathApp({ view, moduleId }: { view: View; moduleId?: ModuleId }) {
   if (view === "dashboard")
     return (
       <Shell active="dashboard">
@@ -2594,7 +2733,7 @@ export function CodepathApp({ view }: { view: View }) {
   if (view === "learning")
     return (
       <Shell active="learning">
-        <LearningMode />
+        <LearningMode moduleId={moduleId} />
       </Shell>
     );
   if (view === "tutor")
@@ -2612,7 +2751,7 @@ export function CodepathApp({ view }: { view: View }) {
   if (view === "challenge")
     return (
       <Shell active="challenge">
-        <CodingLab challenge />
+        <CodingLab challenge moduleId={moduleId} />
       </Shell>
     );
   if (view === "projects")
@@ -2720,7 +2859,7 @@ export function Landing() {
                 <span className="size-2 rounded-full bg-mint" />
                 <Eyebrow>Mastered</Eyebrow>
               </div>
-              <p className="mt-3 font-display font-semibold">Arrays & Pointers</p>
+              <p className="mt-3 font-display font-semibold">Python foundations</p>
               <p className="mt-1 text-[11px] text-faint">12 concepts · 96% mastery</p>
             </div>
             <div
@@ -2731,8 +2870,8 @@ export function Landing() {
                 <span className="cp-pulse size-2 rounded-full bg-brand" />
                 <Eyebrow>In progress</Eyebrow>
               </div>
-              <p className="mt-3 font-display font-semibold">Binary Search Trees</p>
-              <p className="mt-1 text-[11px] text-faint">Tree traversal · DSA</p>
+              <p className="mt-3 font-display font-semibold">First ML model</p>
+              <p className="mt-1 text-[11px] text-faint">Prediction · Module 3.8</p>
             </div>
             <div
               className="cp-float absolute bottom-14 left-12 w-60 rotate-3 rounded-2xl border border-lilac/30 bg-lilac-soft/60 p-4 shadow-sm"
@@ -2742,8 +2881,8 @@ export function Landing() {
                 <span className="size-2 rounded-full bg-lilac" />
                 <Eyebrow>Next unlock</Eyebrow>
               </div>
-              <p className="mt-3 font-display font-semibold">Dynamic Programming</p>
-              <p className="mt-1 text-[11px] text-faint">Recursion prerequisite met</p>
+              <p className="mt-3 font-display font-semibold">RAG retrieval</p>
+              <p className="mt-1 text-[11px] text-faint">Data prerequisite met</p>
               <div className="mt-3">
                 <ProgressBar value={64} tone="lilac" />
               </div>
@@ -2753,9 +2892,7 @@ export function Landing() {
                 <span className="size-2 rounded-full bg-muted-foreground/40" />
                 <Eyebrow>Locked</Eyebrow>
               </div>
-              <p className="mt-3 font-display font-semibold text-muted-foreground">
-                Graph Algorithms
-              </p>
+              <p className="mt-3 font-display font-semibold text-muted-foreground">Production AI</p>
               <p className="mt-1 text-[11px] text-faint">Unlocks after DP</p>
             </div>
           </div>
@@ -3199,7 +3336,7 @@ export function Onboarding() {
             )}
             {step === 2 && (
               <>
-                <p className="text-xs font-medium">How would you rate your DSA baseline?</p>
+                <p className="text-xs font-medium">How would you rate your AI foundations?</p>
                 <div className="grid gap-2 sm:grid-cols-3">
                   {["Beginner", "Intermediate", "Advanced"].map((label, index) => (
                     <button
@@ -3221,14 +3358,15 @@ export function Onboarding() {
                 <div className="rounded-xl bg-lilac-soft/40 p-4">
                   <p className="text-xs font-medium">Optional quick diagnostic</p>
                   <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
-                    5 sample questions on DSA and OOP will sharpen your AI-detected baseline.
+                    Four scenario questions on Python, APIs, ML, and RAG will sharpen your
+                    AI-detected baseline.
                   </p>
                   <Button
                     variant="outline"
                     className="mt-3"
                     onClick={() => toast("Diagnostic complete · baseline set to Intermediate")}
                   >
-                    Run 5-question diagnostic
+                    Run interactive diagnostic
                   </Button>
                 </div>
               </>
@@ -3236,7 +3374,7 @@ export function Onboarding() {
             {step === 3 && (
               <div className="grid gap-3 sm:grid-cols-2">
                 {[
-                  ["Software Engineer", "Strong DSA, systems, and interview proof", Code2],
+                  ["AI Engineer", "Strong Python, ML, and project proof", Code2],
                   ["Full-Stack Developer", "Products, APIs, and frontend fluency", Layers3],
                   ["AI/ML Engineer", "Models, data, and applied experimentation", BrainCircuit],
                   ["Data Scientist", "SQL, statistics, and analytical thinking", BarChart3],

@@ -9,11 +9,17 @@ export type CurriculumModule = {
   tools: string[];
   experienceStage: ExperienceStage;
   status: CurriculumStatus;
+  learningObjectives: string[];
+  lesson: string;
+  project: string;
+  difficulty: "Beginner" | "Intermediate" | "Advanced";
+  estimatedTime: string;
+  prerequisites: string[];
 };
 
 const moduleData: Array<Omit<CurriculumModule, "status"> & { status?: CurriculumStatus }> = [
   [
-    "Why Code When You Can Vibe Code?",
+    "Why Code When You Can Vibe Code? (The Bridge)",
     "Understand why coding literacy still matters when AI can generate code.",
     ["generated code", "Python", "debugging"],
     ["Python", "VS Code"],
@@ -106,12 +112,12 @@ const moduleData: Array<Omit<CurriculumModule, "status"> & { status?: Curriculum
   [
     "Neural Networks & Deep Learning Fundamentals",
     "Teach a machine to recognise patterns with layers, weights, and learning.",
-    ["neurons", "activations", "backpropagation", "MNIST"],
+    ["neurons", "layers", "weights", "backpropagation"],
     ["TensorFlow", "Keras"],
     "Build",
   ],
   [
-    "Natural Language Processing",
+    "Natural Language Processing (NLP)",
     "Teach a machine to understand and transform human language.",
     ["tokenization", "TF-IDF", "sentiment", "transformers"],
     ["Hugging Face", "spaCy"],
@@ -127,7 +133,7 @@ const moduleData: Array<Omit<CurriculumModule, "status"> & { status?: Curriculum
   [
     "Computer Vision Basics",
     "Help a machine see through pixels, features, and pretrained models.",
-    ["pixels", "OpenCV", "edge detection", "image classification"],
+    ["pixels", "channels", "OpenCV", "YOLO"],
     ["OpenCV", "YOLO", "CLIP"],
     "Build",
   ],
@@ -153,9 +159,9 @@ const moduleData: Array<Omit<CurriculumModule, "status"> & { status?: Curriculum
     "Ship",
   ],
   [
-    "RAG Deep Dive",
+    "RAG — Deep Dive",
     "Build a retrieval pipeline that gives models the knowledge they need.",
-    ["chunking", "embeddings", "retrieval", "evaluation"],
+    ["ingestion", "chunking", "embeddings", "retrieval", "MMR", "re-ranking"],
     ["Vector database", "LangChain"],
     "Build",
   ],
@@ -176,7 +182,7 @@ const moduleData: Array<Omit<CurriculumModule, "status"> & { status?: Curriculum
   [
     "Fine-Tuning & Custom Models",
     "Choose between prompting, RAG, and fine-tuning, then train responsibly.",
-    ["LoRA", "QLoRA", "datasets", "evaluation"],
+    ["prompting", "RAG", "LoRA", "QLoRA", "instruction tuning"],
     ["Hugging Face", "OpenAI fine-tuning"],
     "Apply",
   ],
@@ -197,14 +203,14 @@ const moduleData: Array<Omit<CurriculumModule, "status"> & { status?: Curriculum
   [
     "AI System Design",
     "Design AI systems for latency, scale, reliability, and cost.",
-    ["caching", "load balancing", "fallbacks", "async processing"],
+    ["latency", "throughput", "scalability", "reliability", "cost", "caching"],
     ["Redis", "Celery", "Cloud platforms"],
     "Apply",
   ],
   [
     "AI Security & Safety",
     "Break AI systems safely and build guardrails against real threats.",
-    ["prompt injection", "PII leakage", "red teaming", "guardrails"],
+    ["prompt injection", "jailbreaking", "PII leakage", "red teaming", "guardrails"],
     ["Content moderation", "DPDP Act", "GDPR"],
     "Demonstrate",
   ],
@@ -216,7 +222,7 @@ const moduleData: Array<Omit<CurriculumModule, "status"> & { status?: Curriculum
     "Demonstrate",
   ],
   [
-    "Final Capstone",
+    "3rd Year Final Capstone: Production-Grade AI System",
     "Ship a documented, deployed AI system that demonstrates real engineering ability.",
     ["RAG", "agents", "MLOps", "real users"],
     ["GitHub", "Docker", "Cloud deployment"],
@@ -229,6 +235,12 @@ const moduleData: Array<Omit<CurriculumModule, "status"> & { status?: Curriculum
   topics,
   tools,
   experienceStage,
+  learningObjectives: topics.map((topic) => `Use ${topic} in an AI engineering workflow.`),
+  lesson: `${title}: ${description}`,
+  project: `Build a small ${title.toLowerCase()} artifact and document the engineering decisions.`,
+  difficulty: index < 5 ? "Beginner" : index < 20 ? "Intermediate" : "Advanced",
+  estimatedTime: index < 5 ? "20–30 min" : index < 20 ? "35–50 min" : "60–90 min",
+  prerequisites: index === 0 ? [] : [`3.${index}` as `3.${number}`],
   status:
     index < 5 ? "mastered" : index === 5 ? "in-progress" : index < 10 ? "available" : "locked",
 }));
