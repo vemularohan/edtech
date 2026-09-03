@@ -208,24 +208,26 @@ function StatCard({
   value,
   note,
   tone = "brand",
+  className,
 }: {
   icon: typeof Activity;
   label: string;
   value: string;
   note: string;
   tone?: keyof typeof softToneMap;
+  className?: string;
 }) {
   return (
-    <Panel className="p-4">
+    <Panel className={`p-4 ${className ?? ""}`}>
       <div className="flex items-start justify-between">
         <span className={`grid size-9 place-items-center rounded-xl ${softToneMap[tone]}`}>
           <Icon className="size-4" />
         </span>
-        <span className="font-mono text-[10px] text-faint">+12%</span>
+        <span className="font-mono text-[10px] text-brand">+12%</span>
       </div>
-      <p className="mt-4 text-xs text-faint">{label}</p>
+      <p className="mt-4 text-xs font-medium text-muted-foreground">{label}</p>
       <p className="mt-1 font-display text-2xl font-semibold text-foreground">{value}</p>
-      <p className="mt-1 text-[11px] text-muted-foreground">{note}</p>
+      <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{note}</p>
     </Panel>
   );
 }
@@ -1704,14 +1706,23 @@ function Analytics() {
       />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         <StatCard
+          className="md:col-span-6 lg:col-span-3"
           icon={Activity}
           label="Study time"
           value="6h 48m"
           note="+1h 12m vs last week"
           tone="brand"
         />
-        <StatCard icon={Code2} label="Problems solved" value="24" note="8 this week" tone="lilac" />
         <StatCard
+          className="md:col-span-6 lg:col-span-3"
+          icon={Code2}
+          label="Problems solved"
+          value="24"
+          note="8 this week"
+          tone="lilac"
+        />
+        <StatCard
+          className="md:col-span-6 lg:col-span-3"
           icon={Target}
           label="Career readiness"
           value="58%"
@@ -1719,6 +1730,7 @@ function Analytics() {
           tone="peach"
         />
         <StatCard
+          className="md:col-span-6 lg:col-span-3"
           icon={Flame}
           label="Current streak"
           value="12 days"
