@@ -93,6 +93,7 @@ import {
   timeline,
   weekTrend,
 } from "@/lib/codepath-data";
+import { curriculumModules } from "@/lib/curriculum-data";
 
 type View =
   | "dashboard"
@@ -108,11 +109,12 @@ type View =
   | "recovery";
 
 const navItems: { label: string; to: string; icon: typeof Activity }[] = [
-  { label: "Home", to: "/dashboard", icon: Compass },
+  { label: "Discover", to: "/dashboard", icon: Compass },
   { label: "Curriculum", to: "/curriculum-map", icon: GitBranch },
-  { label: "Learn", to: "/learning-mode", icon: BookOpen },
+  { label: "Challenges", to: "/learning-mode", icon: Zap },
   { label: "Build", to: "/projects", icon: FolderKanban },
-  { label: "Mastery", to: "/analytics", icon: BarChart3 },
+  { label: "Skills", to: "/analytics", icon: BarChart3 },
+  { label: "Portfolio", to: "/profile", icon: UserRound },
   { label: "Career", to: "/career-roadmap", icon: Target },
 ];
 
@@ -411,9 +413,9 @@ function Dashboard() {
   return (
     <>
       <PageHeader
-        eyebrow="Your journey · Wed 12 Jun"
-        title="Good morning, Aarav 👋"
-        description="3rd year AI track · Your degree, turned into a living learning system"
+        eyebrow="Discover · Wed 12 Jun"
+        title="What do you want to build?"
+        description="Choose one interesting challenge. Your curriculum will quietly connect the skills underneath."
         action={
           <Button onClick={() => navigate({ to: "/learning-mode" })}>
             <BookOpen />
@@ -421,6 +423,28 @@ function Dashboard() {
           </Button>
         }
       />
+      <section className="mb-5 border-y border-border/70 py-5">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <Eyebrow>Your next challenge</Eyebrow>
+            <h2 className="mt-1 text-xl font-semibold tracking-tight">
+              Build a chatbot that can actually help students
+            </h2>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+              You know Python and APIs. Now connect them to an AI model and build something useful.
+            </p>
+          </div>
+          <Button onClick={() => navigate({ to: "/learning-mode" })}>
+            Start challenge <ArrowRight />
+          </Button>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2 text-xs text-muted-foreground">
+          <span className="rounded-full bg-brand-soft px-2.5 py-1 text-brand">Build</span>
+          <span>25 min</span>
+          <span>·</span>
+          <span>Python · APIs · Prompting</span>
+        </div>
+      </section>
       <section className="mb-5 border-y border-border/70 py-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -956,43 +980,116 @@ function CurriculumMap() {
           </div>
         </Panel>
       </div>
+      <Panel className="mt-5">
+        <SectionTitle
+          eyebrow="Applied AI curriculum"
+          title="All 30 modules"
+          action={
+            <span className="text-xs text-faint">
+              {curriculumModules.filter((module) => module.status === "mastered").length} mastered
+            </span>
+          }
+        />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {curriculumModules.map((module) => (
+            <article
+              key={module.code}
+              className="rounded-xl border border-border/60 bg-background/35 p-3 transition hover:border-brand/40"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <span className="font-mono text-[10px] font-semibold text-brand">
+                  {module.code}
+                </span>
+                <StatusPill status={module.status} />
+              </div>
+              <h3 className="mt-2 text-sm font-semibold">{module.title}</h3>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">{module.description}</p>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {module.topics.map((topic) => (
+                  <span
+                    key={topic}
+                    className="rounded-full bg-lilac-soft px-2 py-0.5 text-[10px] text-lilac"
+                  >
+                    {topic}
+                  </span>
+                ))}
+              </div>
+              <p className="mt-3 text-[10px] text-faint">
+                {module.experienceStage} · {module.tools.join(" · ")}
+              </p>
+            </article>
+          ))}
+        </div>
+      </Panel>
     </>
   );
 }
 
 function LearningMode() {
   const [stage, setStage] = useState(0);
+  const [hookAnswer, setHookAnswer] = useState("");
   const [array, setArray] = useState("3, 8, 12, 19, 24, 31, 42");
   const [ran, setRan] = useState(false);
-  const [feedback, setFeedback] = useState(false);
-  const [solution, setSolution] = useState(false);
-  const stages = ["Concept", "Explanation", "Interactive", "Code", "Challenge", "Feedback"];
+  const [breakChoice, setBreakChoice] = useState("");
+  const [yourTurn, setYourTurn] = useState("");
+  const [mastered, setMastered] = useState(false);
+  const stages = ["Hook", "Why", "Build", "Break", "Your Turn", "Master", "Next Challenge"];
   const values = array
     .split(",")
     .map((x) => Number(x.trim()))
-    .filter((x) => Number.isFinite(x));
+    .filter(Number.isFinite);
+  const canAdvance =
+    stage === 0
+      ? hookAnswer.length > 0
+      : stage === 2
+        ? ran
+        : stage === 3
+          ? breakChoice.length > 0
+          : stage === 4
+            ? yourTurn.trim().length > 0
+            : stage >= 5
+              ? mastered
+              : true;
+  const goNext = () => {
+    if (!canAdvance) {
+      toast(
+        stage === 0
+          ? "Choose an outcome first"
+          : "Complete this step to keep your learning loop intact",
+      );
+      return;
+    }
+    setStage((value) => Math.min(6, value + 1));
+  };
   return (
     <>
       <PageHeader
-        eyebrow="Learning Mode · Data Structures · Sem 3"
-        title="Binary Search Trees → Binary Search"
-        description="A six-stage session that moves from mental model to runnable code, then gives you feedback without taking the learning away."
+        eyebrow="Learning studio · Data Structures · Sem 3"
+        title="Binary search, from instinct to implementation"
+        description="A guided loop: make a prediction, understand why it works, build it, break it, then prove you can do it alone."
         action={
           <div className="flex items-center gap-2">
             <StatusPill status="in-progress" />
-            <span className="text-xs text-faint">42 min left</span>
+            <span className="text-xs text-faint">18 min left</span>
           </div>
         }
       />
       <div className="grid gap-4 xl:grid-cols-[1fr_320px]">
         <div className="space-y-4">
-          <Panel>
-            <div className="flex flex-wrap gap-2">
+          <Panel className="border-brand/20 bg-surface-elevated/90">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <Eyebrow>One concept · seven moves</Eyebrow>
+                <p className="mt-1 text-sm font-semibold">The learning loop</p>
+              </div>
+              <span className="font-mono text-xs text-brand">{stage + 1}/7</span>
+            </div>
+            <div className="mt-4 flex gap-1.5 overflow-x-auto pb-1">
               {stages.map((item, index) => (
                 <button
                   key={item}
-                  className={`flex items-center gap-2 rounded-full px-3 py-2 text-xs ${stage === index ? "bg-ink text-background" : index < stage ? "bg-mint-soft text-mint" : "bg-muted text-faint"}`}
-                  onClick={() => setStage(index)}
+                  className={`flex shrink-0 items-center gap-2 rounded-full px-3 py-2 text-xs transition ${stage === index ? "bg-ink text-background shadow-sm" : index < stage ? "bg-mint-soft text-mint" : "bg-muted text-faint hover:bg-foreground/10"}`}
+                  onClick={() => index <= stage && setStage(index)}
                 >
                   <span className="grid size-5 place-items-center rounded-full bg-background/50 text-[10px]">
                     {index < stage ? <Check className="size-3" /> : index + 1}
@@ -1002,169 +1099,249 @@ function LearningMode() {
               ))}
             </div>
           </Panel>
-          {stage <= 1 && (
-            <Panel className="cp-rise">
-              <SectionTitle
-                eyebrow="AI explanation · tailored to your baseline"
-                title="Search less, discard more."
-              />
-              <div className="grid gap-5 md:grid-cols-[1fr_220px]">
-                <div>
-                  <p className="text-[15px] leading-7 text-muted-foreground">
-                    Binary search works on an ordered collection. Instead of checking every value,
-                    it checks the middle and discards the half that cannot contain the target. Each
-                    step cuts the search space in half.
-                  </p>
-                  <div className="mt-4 rounded-xl bg-brand-soft/50 p-4">
-                    <p className="text-xs font-medium">AI is tailoring this to your level</p>
-                    <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
-                      You already handled linear scans confidently, so this explanation focuses on
-                      the decision boundary and loop invariants.
-                    </p>
-                  </div>
+          <Panel className="cp-rise min-h-[390px]">
+            {stage === 0 && (
+              <>
+                <SectionTitle
+                  eyebrow="Hook · make a prediction"
+                  title="Can you find 31 in three checks?"
+                />
+                <p className="max-w-2xl text-[15px] leading-7 text-muted-foreground">
+                  You have a sorted shelf:{" "}
+                  <span className="font-mono text-foreground">[3, 8, 12, 19, 24, 31, 42]</span>.
+                  Pick the first place you would look, then commit to what you would discard.
+                </p>
+                <div className="mt-6 grid gap-2 sm:grid-cols-3">
+                  {["Start at 3", "Start at 19", "Start at 42"].map((answer) => (
+                    <button
+                      key={answer}
+                      onClick={() => setHookAnswer(answer)}
+                      className={`rounded-xl border p-4 text-left text-sm transition ${hookAnswer === answer ? "border-brand bg-brand-soft text-brand" : "border-border/70 hover:border-brand/50"}`}
+                    >
+                      <span className="block font-semibold">{answer}</span>
+                      <span className="mt-1 block text-xs text-faint">
+                        {answer.includes("19")
+                          ? "Split the shelf in half"
+                          : "That checks an edge first"}
+                      </span>
+                    </button>
+                  ))}
                 </div>
-                <div className="rounded-xl border border-border/60 bg-background/45 p-4">
-                  <Eyebrow>Complexity</Eyebrow>
-                  <p className="mt-2 font-mono text-2xl font-semibold text-brand">O(log n)</p>
-                  <p className="mt-1 text-[11px] text-faint">Space: O(1) iterative</p>
+                <div className="mt-5 rounded-xl bg-lilac-soft/45 p-3 text-xs text-muted-foreground">
+                  <Lightbulb className="mr-2 inline size-4 text-lilac" />
+                  Your mentor will explain the choice after you commit.
                 </div>
-              </div>
-              <div className="mt-5 flex gap-2">
-                <Button size="sm" onClick={() => setStage(2)}>
-                  Try the interactive example <ArrowRight />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    toast("Deeper explanation queued: invariants, proofs, and edge cases")
+              </>
+            )}
+            {stage === 1 && (
+              <>
+                <SectionTitle
+                  eyebrow="Why · name the invariant"
+                  title="Search less, discard more."
+                />
+                <p className="max-w-2xl text-[15px] leading-7 text-muted-foreground">
+                  Because the values are ordered, every comparison lets us discard half the search
+                  space. The invariant is simple:{" "}
+                  <strong className="text-foreground">
+                    if target exists, it stays between low and high.
+                  </strong>
+                </p>
+                <div className="mt-5 grid gap-3 md:grid-cols-3">
+                  <FeedbackCard label="Decision" body="Check the midpoint first." tone="brand" />
+                  <FeedbackCard
+                    label="Invariant"
+                    body="Target remains inside the interval."
+                    tone="lilac"
+                  />
+                  <FeedbackCard label="Payoff" body="O(log n), not O(n)." tone="mint" />
+                </div>
+                <div className="mt-5 rounded-xl bg-brand-soft/45 p-4 text-sm text-muted-foreground">
+                  <Bot className="mr-2 inline size-4 text-brand" />
+                  AI mentor: You already know linear scans. Binary search is the same
+                  compare-and-move habit with a much more powerful discard step.
+                </div>
+              </>
+            )}
+            {stage === 2 && (
+              <>
+                <SectionTitle
+                  eyebrow="Build · see the loop"
+                  title="Move the pointers"
+                  action={
+                    <Button size="sm" variant="outline" onClick={() => setRan(false)}>
+                      <RotateCcw />
+                      Reset
+                    </Button>
                   }
-                >
-                  Explain deeper
-                </Button>
-              </div>
-            </Panel>
-          )}
-          {stage === 2 && (
-            <Panel className="cp-rise">
-              <SectionTitle
-                eyebrow="Interactive example"
-                title="Move the pointers"
-                action={
-                  <Button size="sm" variant="outline" onClick={() => setRan(false)}>
-                    <RotateCcw />
-                    Reset
-                  </Button>
-                }
-              />
-              <div className="flex flex-wrap gap-2">
-                {values.map((value, index) => (
-                  <div
-                    key={`${value}-${index}`}
-                    className={`relative flex size-12 items-center justify-center rounded-xl border text-sm font-semibold ${ran && index === Math.floor(values.length / 2) ? "border-brand bg-brand-soft text-brand" : "border-border bg-background/60"}`}
+                />
+                <div className="flex flex-wrap gap-2">
+                  {values.map((value, index) => (
+                    <div
+                      key={`${value}-${index}`}
+                      className={`relative flex size-12 items-center justify-center rounded-xl border text-sm font-semibold ${ran && index === Math.floor(values.length / 2) ? "border-brand bg-brand-soft text-brand" : "border-border bg-background/60"}`}
+                    >
+                      {value}
+                      {ran && index === Math.floor(values.length / 2) && (
+                        <span className="absolute -top-5 font-mono text-[9px] text-brand">mid</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <Input
+                    value={array}
+                    onChange={(e) => setArray(e.target.value)}
+                    className="max-w-md"
+                    aria-label="Sorted array values"
+                  />
+                  <Button
+                    onClick={() => {
+                      setRan(true);
+                      toast("mid = 19 · right half remains");
+                    }}
                   >
-                    <span>{value}</span>
-                    {ran && index === Math.floor(values.length / 2) && (
-                      <span className="absolute -top-5 font-mono text-[9px] text-brand">mid</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <div className="mt-5 flex flex-wrap items-center gap-2">
-                <Input
-                  value={array}
-                  onChange={(e) => setArray(e.target.value)}
-                  className="max-w-md"
-                  aria-label="Sorted array values"
+                    <Play />
+                    Run search
+                  </Button>
+                </div>
+                <div className="mt-4 rounded-xl bg-background/55 p-3 font-mono text-[11px] text-muted-foreground">
+                  {ran
+                    ? "low=0 → mid=3 (19) → target is larger → low=4"
+                    : "Edit the sorted values, then run to inspect the first decision."}
+                </div>
+              </>
+            )}
+            {stage === 3 && (
+              <>
+                <SectionTitle
+                  eyebrow="Break · debug deliberately"
+                  title="The bug is hiding at the boundary."
                 />
-                <Button
-                  onClick={() => {
-                    setRan(true);
-                    toast("Pointers moved · mid = 19");
-                  }}
-                >
-                  <Play />
-                  Run search
-                </Button>
-              </div>
-              <div className="mt-4 rounded-xl bg-background/55 p-3 font-mono text-[11px] text-muted-foreground">
-                {ran
-                  ? "low=0 → mid=3 (19) → target is smaller → high=2"
-                  : "Edit the sorted values, then run to inspect the first decision."}
-              </div>
-              <Button className="mt-5" size="sm" onClick={() => setStage(3)}>
-                Continue to code <ArrowRight />
-              </Button>
-            </Panel>
-          )}
-          {stage === 3 && <CodeEditor code={codingStarter} onNext={() => setStage(4)} />}
-          {stage === 4 && (
-            <Challenge
-              onSubmit={() => {
-                setFeedback(true);
-                setStage(5);
-              }}
-            />
-          )}
-          {stage === 5 && (
-            <Panel className="cp-rise">
-              <SectionTitle
-                eyebrow="AI feedback"
-                title={
-                  feedback
-                    ? "Your reasoning is close. Tighten the edge cases."
-                    : "Submit your challenge to unlock feedback."
-                }
-                action={
-                  <span className="rounded-full bg-brand-soft px-2.5 py-1 text-[10px] font-semibold text-brand">
-                    +120 XP
-                  </span>
-                }
-              />
-              <div className="grid gap-3 md:grid-cols-3">
-                <FeedbackCard
-                  label="Strength"
-                  body="You kept the search interval sorted and avoided unnecessary recursion."
-                  tone="mint"
-                />
-                <FeedbackCard
-                  label="Specific issue"
-                  body="When low crosses high, the loop should stop before reading nums[mid]."
-                  tone="peach"
-                />
-                <FeedbackCard
-                  label="Hint"
-                  body="Name the invariant that must be true before each iteration."
-                  tone="lilac"
-                />
-              </div>
-              <div className="mt-4 rounded-xl border border-border/60">
-                <button
-                  className="flex w-full items-center justify-between p-3 text-left text-sm font-medium"
-                  onClick={() => setSolution((value) => !value)}
-                >
-                  Reveal solution{" "}
-                  <ChevronDown className={`size-4 transition ${solution ? "rotate-180" : ""}`} />
-                </button>
-                {solution && (
-                  <pre className="border-t border-border/60 p-3 font-mono text-[11px] leading-5 text-muted-foreground">
-                    return -1 # only after low &gt; high
-                  </pre>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  This version can loop forever when{" "}
+                  <span className="font-mono text-foreground">target &gt; nums[mid]</span>. Which
+                  line keeps the interval moving?
+                </p>
+                <pre className="mt-5 overflow-x-auto rounded-xl bg-ink p-4 font-mono text-xs leading-6 text-background/80">
+                  {"if nums[mid] < target:\n    low = mid       # bug\nelse:\n    high = mid - 1"}
+                </pre>
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  {["Change low = mid to low = mid + 1", "Change high = mid - 1 to high = mid"].map(
+                    (choice) => (
+                      <button
+                        key={choice}
+                        onClick={() => setBreakChoice(choice)}
+                        className={`rounded-xl border p-3 text-left text-sm ${breakChoice === choice ? "border-brand bg-brand-soft text-brand" : "border-border/70 hover:border-brand/50"}`}
+                      >
+                        {choice}
+                      </button>
+                    ),
+                  )}
+                </div>
+                {breakChoice && (
+                  <p className="mt-4 rounded-xl bg-mint-soft/60 p-3 text-xs text-foreground/75">
+                    <Check className="mr-2 inline size-4 text-mint" />
+                    Exactly. Every iteration must shrink the interval, or the loop has no path to
+                    finish.
+                  </p>
                 )}
-              </div>
-              <div className="mt-5 flex flex-wrap justify-between gap-2">
-                <Button
-                  onClick={() => toast("Mastery updated · Dashboard and map are now in sync")}
-                >
-                  <Check />
-                  Mark as mastered
-                </Button>
-                <Button variant="outline" onClick={() => setStage(2)}>
-                  Review interactive example
-                </Button>
-              </div>
-            </Panel>
-          )}
+              </>
+            )}
+            {stage === 4 && (
+              <>
+                <SectionTitle
+                  eyebrow="Your turn · no scaffolding"
+                  title="Find the first occurrence"
+                />
+                <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                  Given <span className="font-mono text-foreground">[1, 2, 2, 2, 6]</span>, target{" "}
+                  <span className="font-mono text-foreground">2</span>, what should your algorithm
+                  return—and what boundary move makes that true?
+                </p>
+                <Textarea
+                  className="mt-5 min-h-28"
+                  value={yourTurn}
+                  onChange={(e) => setYourTurn(e.target.value)}
+                  placeholder="Explain your invariant in one or two sentences…"
+                />
+                <div className="mt-4 rounded-xl bg-peach-soft/45 p-3 text-xs text-muted-foreground">
+                  <Sparkle className="mr-2 inline size-4 text-peach" />
+                  Mentor hint: after a match, keep the answer and continue searching left.
+                </div>
+              </>
+            )}
+            {stage === 5 && (
+              <>
+                <SectionTitle
+                  eyebrow="Master · prove the skill"
+                  title={mastered ? "Mastery unlocked." : "Reflect, then claim mastery."}
+                  action={
+                    <span className="rounded-full bg-brand-soft px-2.5 py-1 text-[10px] font-semibold text-brand">
+                      +120 XP
+                    </span>
+                  }
+                />
+                <div className="grid gap-3 md:grid-cols-3">
+                  <FeedbackCard
+                    label="You built"
+                    body="A shrinking search interval with O(log n) time."
+                    tone="mint"
+                  />
+                  <FeedbackCard
+                    label="You broke"
+                    body="A boundary bug before it became a habit."
+                    tone="peach"
+                  />
+                  <FeedbackCard
+                    label="You can now"
+                    body="Explain first-occurrence search to someone else."
+                    tone="lilac"
+                  />
+                </div>
+                {!mastered ? (
+                  <Button
+                    className="mt-6"
+                    onClick={() => {
+                      setMastered(true);
+                      toast("Mastery updated · next challenge unlocked");
+                    }}
+                  >
+                    <Check />
+                    Mark as mastered
+                  </Button>
+                ) : (
+                  <div className="mt-6 rounded-xl bg-mint-soft/60 p-4 text-sm text-foreground/80">
+                    <Trophy className="mr-2 inline size-4 text-mint" />
+                    Nice work. Your curriculum map and dashboard are now in sync.
+                  </div>
+                )}
+              </>
+            )}
+            {stage === 6 && (
+              <>
+                <SectionTitle
+                  eyebrow="Next challenge · transfer"
+                  title="Binary search on a rotated array"
+                />
+                <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                  The array is no longer fully sorted, but one half is always ordered. Use the
+                  invariant you just mastered to decide which half to keep.
+                </p>
+                <div className="mt-5 rounded-xl border border-border/60 bg-background/45 p-4 font-mono text-xs">
+                  nums = [4, 5, 6, 7, 0, 1, 2] · target = 0
+                </div>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <Button onClick={() => toast("Challenge started in Coding Lab")}>
+                    <Code2 />
+                    Open challenge
+                  </Button>
+                  <Button variant="outline" onClick={() => setStage(0)}>
+                    Replay this studio
+                  </Button>
+                </div>
+              </>
+            )}
+          </Panel>
           <div className="flex items-center justify-between rounded-2xl border border-border/70 bg-surface-elevated/70 p-4">
             <Button
               size="sm"
@@ -1183,12 +1360,7 @@ function LearningMode() {
                 />
               ))}
             </div>
-            <Button
-              size="sm"
-              variant="ghost"
-              disabled={stage === 5}
-              onClick={() => setStage((value) => Math.min(5, value + 1))}
-            >
+            <Button size="sm" variant="ghost" disabled={stage === 6} onClick={goNext}>
               Next
               <ArrowRight />
             </Button>
