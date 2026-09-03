@@ -146,7 +146,7 @@ function Mark({ compact = false }: { compact?: boolean }) {
 function Panel({ className = "", children }: { className?: string; children: React.ReactNode }) {
   return (
     <section
-      className={`rounded-2xl border border-border/70 bg-surface-elevated/75 p-5 shadow-sm backdrop-blur-md ${className}`}
+      className={`min-w-0 rounded-2xl border border-border/70 bg-surface-elevated/75 p-4 shadow-sm backdrop-blur-md sm:p-5 ${className}`}
     >
       {children}
     </section>
@@ -235,8 +235,10 @@ function StatCard({
 function Shell({ active, children }: { active: View; children: React.ReactNode }) {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pageTitle =
+    navItems.find(({ to }) => activePath(active, to))?.label ?? "Codepath";
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen overflow-x-clip bg-background text-foreground">
       <div aria-hidden className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="cp-float absolute -left-40 -top-48 size-[520px] rounded-full bg-brand-soft/20 blur-3xl" />
         <div className="absolute -right-40 top-1/3 size-[560px] rounded-full bg-lilac-soft/20 blur-3xl" />
@@ -281,7 +283,7 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
             onClick={() => setMobileOpen(false)}
           >
             <aside
-              className="h-full w-72 bg-background p-5"
+              className="h-full w-[min(19rem,calc(100vw-2rem))] overflow-y-auto bg-background p-5 shadow-xl"
               onClick={(event) => event.stopPropagation()}
             >
               <div className="mb-7 flex items-center justify-between">
@@ -296,7 +298,7 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
                     key={to}
                     to={to}
                     onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-muted-foreground hover:bg-surface"
+                    className={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-3 text-sm ${activePath(active, to) ? "bg-brand-soft font-semibold text-brand" : "text-muted-foreground hover:bg-surface"}`}
                   >
                     <Icon className="size-4 text-brand" />
                     {label}
@@ -308,16 +310,20 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
         )}
         <div className="min-w-0 flex-1">
           <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-            <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
+            <div className="flex min-h-16 items-center gap-2 px-3 sm:gap-3 sm:px-6">
               <Button
                 size="icon"
                 variant="ghost"
                 className="md:hidden"
+                aria-label="Open navigation menu"
                 onClick={() => setMobileOpen(true)}
               >
                 <Menu />
               </Button>
-              <div className="flex flex-1 items-center gap-2 rounded-xl border border-border/70 bg-surface-elevated/70 px-3 py-2 sm:max-w-md">
+              <p className="min-w-0 flex-1 truncate font-display text-sm font-semibold sm:hidden">
+                {pageTitle}
+              </p>
+              <div className="hidden flex-1 items-center gap-2 rounded-xl border border-border/70 bg-surface-elevated/70 px-3 py-2 sm:flex sm:max-w-md">
                 <Search className="size-4 text-faint" />
                 <input
                   className="w-full bg-transparent text-sm outline-none placeholder:text-faint"
@@ -342,7 +348,7 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
                   <Bell />
                 </Button>
                 <button
-                  className="flex items-center gap-2 rounded-xl bg-surface-elevated px-2 py-1.5 text-left"
+                  className="flex min-h-11 items-center gap-2 rounded-xl bg-surface-elevated px-2 py-1.5 text-left"
                   onClick={() => navigate({ to: "/profile" })}
                 >
                   <span className="hidden text-xs font-medium sm:inline">Aarav K.</span>
@@ -353,7 +359,7 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
               </div>
             </div>
           </header>
-          <main className="px-4 pb-16 pt-6 sm:px-6 lg:px-8">{children}</main>
+          <main className="min-w-0 px-4 pb-16 pt-5 sm:px-6 sm:pt-6 lg:px-8">{children}</main>
         </div>
       </div>
     </div>
@@ -383,13 +389,13 @@ function PageHeader({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="cp-rise mb-6 flex flex-wrap items-end justify-between gap-4">
-      <div>
+    <div className="cp-rise mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:flex-wrap sm:items-end">
+      <div className="min-w-0">
         <Eyebrow>{eyebrow}</Eyebrow>
-        <h1 className="mt-2 max-w-3xl font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+        <h1 className="mt-2 max-w-3xl break-words font-display text-[clamp(1.75rem,7vw,2.25rem)] font-semibold leading-tight tracking-tight text-foreground">
           {title}
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
+        <p className="mt-2 max-w-2xl text-[15px] leading-6 text-muted-foreground">{description}</p>
       </div>
       {action}
     </div>
@@ -704,9 +710,9 @@ function CurriculumMap() {
         }
       />
       <div className="grid gap-4 xl:grid-cols-[1fr_320px]">
-        <Panel className="min-h-[620px] overflow-hidden p-4">
+        <Panel className="min-h-[620px] overflow-hidden sm:p-4">
           <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-3 text-[10px] text-faint">
+            <div className="flex flex-wrap items-center gap-2 text-[10px] text-faint">
               <span className="flex items-center gap-1">
                 <i className="size-2 rounded-full bg-mint" />
                 Mastered
@@ -733,7 +739,7 @@ function CurriculumMap() {
               </Button>
             </div>
           </div>
-          <div className="relative min-h-[540px] overflow-auto rounded-xl border border-border/60 bg-background/35">
+          <div className="hidden relative min-h-[540px] overflow-auto rounded-xl border border-border/60 bg-background/35 md:block">
             <svg
               className="absolute inset-0 h-full min-h-[540px] w-full"
               viewBox="0 0 100 100"
@@ -773,6 +779,29 @@ function CurriculumMap() {
                   <p className="mt-1 text-[11px] font-semibold leading-4">{node.label}</p>
                   <StatusPill status={node.status} />
                 </div>
+              </button>
+            ))}
+          </div>
+          <div className="space-y-2 md:hidden">
+            {nodes.map((node, index) => (
+              <button
+                key={node.id}
+                onClick={() => setSelected(node)}
+                className={`flex min-h-14 w-full items-center gap-3 rounded-xl border p-3 text-left ${
+                  selected.id === node.id
+                    ? "border-brand bg-brand-soft/50"
+                    : "border-border/60 bg-background/45"
+                }`}
+              >
+                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-background font-mono text-xs text-brand">
+                  {index + 1}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold">{node.label}</span>
+                  <span className="mt-0.5 block truncate text-[11px] text-faint">{node.meta}</span>
+                </span>
+                <StatusPill status={node.status} />
+                <ChevronRight className="size-4 shrink-0 text-faint" />
               </button>
             ))}
           </div>
@@ -1127,7 +1156,8 @@ function CodeEditor({
             <span>solution.py</span>
             <span>Python 3.12</span>
           </div>
-          <div className="flex">
+          <div className="min-w-0 overflow-x-auto">
+            <div className="flex min-w-max">
             <div className="select-none px-3 py-4 text-right font-mono text-[10px] leading-5 text-background/35">
               {value.split("\n").map((_, index) => (
                 <div key={index}>{String(index + 1).padStart(2, "0")}</div>
@@ -1136,9 +1166,10 @@ function CodeEditor({
             <textarea
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              className="min-h-[280px] flex-1 resize-none bg-transparent p-4 pl-0 font-mono text-[11px] leading-5 text-background outline-none"
+              className="min-h-[280px] min-w-[34rem] flex-1 resize-none overflow-x-auto bg-transparent p-4 pl-0 font-mono text-[11px] leading-5 text-background outline-none"
               spellCheck={false}
             />
+            </div>
           </div>
         </div>
         <div className="space-y-3">
@@ -1148,7 +1179,7 @@ function CodeEditor({
               {output || "Run your code to see test output."}
             </pre>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
             <Button
               size="sm"
               onClick={() => setOutput("✓ case 1 passed\n✓ case 2 passed\n✕ case 3 · boundary")}
@@ -1619,9 +1650,10 @@ function Projects() {
           {!submitted ? (
             <Panel>
               <SectionTitle eyebrow="Submit for review" title="Show your work" />
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <Input placeholder="https://github.com/aarav/mini-search-engine" />
                 <Button
+                  className="shrink-0"
                   onClick={() => {
                     setSubmitted(true);
                     toast("Project submitted · badge earned");

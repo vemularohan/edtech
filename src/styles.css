@@ -159,6 +159,39 @@
     outline: 2px solid var(--color-ring);
     outline-offset: 2px;
   }
+
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
+  input[type="range"] {
+    min-height: 2.75rem;
+    cursor: pointer;
+  }
+
+  table {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 639px) {
+  .recharts-responsive-container {
+    min-width: 0 !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @keyframes cpPulse {
