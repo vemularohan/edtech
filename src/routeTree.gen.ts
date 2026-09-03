@@ -22,7 +22,9 @@ import { Route as ChallengeRouteImport } from './routes/challenge'
 import { Route as CareerRoadmapRouteImport } from './routes/career-roadmap'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VerifyCertificateIdRouteImport } from './routes/verify.$certificateId'
 
 const TutorRoute = TutorRouteImport.update({
   id: '/tutor',
@@ -89,14 +91,25 @@ const AnalyticsRoute = AnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerifyCertificateIdRoute = VerifyCertificateIdRouteImport.update({
+  id: '/verify/$certificateId',
+  path: '/verify/$certificateId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/career-roadmap': typeof CareerRoadmapRoute
@@ -110,9 +123,11 @@ export interface FileRoutesByFullPath {
   '/projects': typeof ProjectsRoute
   '/recovery': typeof RecoveryRoute
   '/tutor': typeof TutorRoute
+  '/verify/$certificateId': typeof VerifyCertificateIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/career-roadmap': typeof CareerRoadmapRoute
@@ -126,10 +141,12 @@ export interface FileRoutesByTo {
   '/projects': typeof ProjectsRoute
   '/recovery': typeof RecoveryRoute
   '/tutor': typeof TutorRoute
+  '/verify/$certificateId': typeof VerifyCertificateIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/career-roadmap': typeof CareerRoadmapRoute
@@ -143,11 +160,13 @@ export interface FileRoutesById {
   '/projects': typeof ProjectsRoute
   '/recovery': typeof RecoveryRoute
   '/tutor': typeof TutorRoute
+  '/verify/$certificateId': typeof VerifyCertificateIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/analytics'
     | '/auth'
     | '/career-roadmap'
@@ -161,9 +180,11 @@ export interface FileRouteTypes {
     | '/projects'
     | '/recovery'
     | '/tutor'
+    | '/verify/$certificateId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/analytics'
     | '/auth'
     | '/career-roadmap'
@@ -177,9 +198,11 @@ export interface FileRouteTypes {
     | '/projects'
     | '/recovery'
     | '/tutor'
+    | '/verify/$certificateId'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/analytics'
     | '/auth'
     | '/career-roadmap'
@@ -193,10 +216,12 @@ export interface FileRouteTypes {
     | '/projects'
     | '/recovery'
     | '/tutor'
+    | '/verify/$certificateId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   AnalyticsRoute: typeof AnalyticsRoute
   AuthRoute: typeof AuthRoute
   CareerRoadmapRoute: typeof CareerRoadmapRoute
@@ -210,6 +235,7 @@ export interface RootRouteChildren {
   ProjectsRoute: typeof ProjectsRoute
   RecoveryRoute: typeof RecoveryRoute
   TutorRoute: typeof TutorRoute
+  VerifyCertificateIdRoute: typeof VerifyCertificateIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -305,6 +331,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -312,11 +345,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/verify/$certificateId': {
+      id: '/verify/$certificateId'
+      path: '/verify/$certificateId'
+      fullPath: '/verify/$certificateId'
+      preLoaderRoute: typeof VerifyCertificateIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   AnalyticsRoute: AnalyticsRoute,
   AuthRoute: AuthRoute,
   CareerRoadmapRoute: CareerRoadmapRoute,
@@ -330,6 +371,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectsRoute: ProjectsRoute,
   RecoveryRoute: RecoveryRoute,
   TutorRoute: TutorRoute,
+  VerifyCertificateIdRoute: VerifyCertificateIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

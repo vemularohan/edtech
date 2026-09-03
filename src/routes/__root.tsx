@@ -77,16 +77,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Codepath · Learning OS" },
+      { title: "AI Skills Track · Verified AI learning" },
       {
         name: "description",
         content: "An adaptive, project-driven learning operating system for engineering students.",
       },
-      { name: "author", content: "Codepath" },
-      { property: "og:title", content: "Codepath · Learning OS" },
+      { name: "author", content: "AI Skills Track" },
+      { property: "og:title", content: "AI Skills Track · Verified AI learning" },
       {
         property: "og:description",
-        content: "Turn your B.Tech curriculum into an adaptive path from understanding to mastery.",
+        content:
+          "Learn practical AI skills, build verified projects, and demonstrate your capabilities to recruiters.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

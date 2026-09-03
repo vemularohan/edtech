@@ -108,15 +108,12 @@ type View =
   | "recovery";
 
 const navItems: { label: string; to: string; icon: typeof Activity }[] = [
-  { label: "Dashboard", to: "/dashboard", icon: Compass },
-  { label: "Curriculum Map", to: "/curriculum-map", icon: GitBranch },
-  { label: "Learning Mode", to: "/learning-mode", icon: BookOpen },
-  { label: "AI Tutor", to: "/tutor", icon: Bot },
-  { label: "Coding Lab", to: "/coding-lab", icon: Code2 },
-  { label: "Projects", to: "/projects", icon: FolderKanban },
-  { label: "Career Roadmap", to: "/career-roadmap", icon: Target },
-  { label: "Analytics", to: "/analytics", icon: BarChart3 },
-  { label: "Profile", to: "/profile", icon: UserRound },
+  { label: "Home", to: "/dashboard", icon: Compass },
+  { label: "Curriculum", to: "/curriculum-map", icon: GitBranch },
+  { label: "Learn", to: "/learning-mode", icon: BookOpen },
+  { label: "Build", to: "/projects", icon: FolderKanban },
+  { label: "Mastery", to: "/analytics", icon: BarChart3 },
+  { label: "Career", to: "/career-roadmap", icon: Target },
 ];
 
 const toneMap = { brand: "bg-brand", lilac: "bg-lilac", peach: "bg-peach", mint: "bg-mint" };
@@ -135,8 +132,10 @@ function Mark({ compact = false }: { compact?: boolean }) {
       </div>
       {!compact && (
         <div className="leading-tight">
-          <p className="font-display text-[15px] font-semibold text-foreground">Codepath</p>
-          <p className="text-[10px] uppercase tracking-[.18em] text-faint">Learning OS</p>
+          <p className="font-display text-[15px] font-semibold text-foreground">AI Skills Track</p>
+          <p className="text-[10px] uppercase tracking-[.18em] text-faint">
+            Curriculum intelligence
+          </p>
         </div>
       )}
     </div>
@@ -235,17 +234,16 @@ function StatCard({
 function Shell({ active, children }: { active: View; children: React.ReactNode }) {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const pageTitle =
-    navItems.find(({ to }) => activePath(active, to))?.label ?? "Codepath";
+  const pageTitle = navItems.find(({ to }) => activePath(active, to))?.label ?? "AI Skills Track";
   return (
-    <div className="min-h-screen overflow-x-clip bg-background text-foreground">
+    <div className="app-shell min-h-screen overflow-x-clip bg-background text-foreground">
       <div aria-hidden className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="cp-float absolute -left-40 -top-48 size-[520px] rounded-full bg-brand-soft/20 blur-3xl" />
         <div className="absolute -right-40 top-1/3 size-[560px] rounded-full bg-lilac-soft/20 blur-3xl" />
         <div className="absolute bottom-0 left-1/3 size-[440px] rounded-full bg-peach-soft/15 blur-3xl" />
       </div>
       <div className="relative mx-auto flex min-h-screen max-w-[1500px]">
-        <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border/60 bg-surface/45 px-4 py-5 md:flex">
+        <aside className="app-sidebar sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-border/60 bg-surface/45 px-4 py-5 md:flex">
           <div className="mb-7 px-2">
             <Mark />
           </div>
@@ -276,6 +274,13 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
             <ProgressBar value={68} />
             <p className="mt-2 text-[11px] text-faint">68% to Level 8 · 12-day streak</p>
           </div>
+          <button
+            className="mt-3 flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground transition hover:bg-surface-elevated hover:text-foreground"
+            onClick={() => navigate({ to: "/profile" })}
+          >
+            <Settings2 className="size-4 text-faint" />
+            Settings
+          </button>
         </aside>
         {mobileOpen && (
           <div
@@ -334,10 +339,6 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
                 </span>
               </div>
               <div className="ml-auto flex items-center gap-2">
-                <span className="hidden items-center gap-1 rounded-full bg-peach-soft px-3 py-1.5 text-xs font-semibold text-peach sm:inline-flex">
-                  <Flame className="cp-pulse size-3.5" />
-                  12
-                </span>
                 <Button
                   size="icon"
                   variant="ghost"
@@ -359,7 +360,9 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
               </div>
             </div>
           </header>
-          <main className="min-w-0 px-4 pb-16 pt-5 sm:px-6 sm:pt-6 lg:px-8">{children}</main>
+          <main className="app-main min-w-0 px-4 pb-16 pt-5 sm:px-8 sm:pt-8 lg:px-12">
+            {children}
+          </main>
         </div>
       </div>
     </div>
@@ -408,9 +411,9 @@ function Dashboard() {
   return (
     <>
       <PageHeader
-        eyebrow="Command center · Wed 12 Jun"
-        title="Good morning, Aarav. Here's your plan for today."
-        description="Understand → Interact → Code → Build → Prove. Your next move is shaped by your semester, recent attempts, and Software Engineer goal."
+        eyebrow="Your journey · Wed 12 Jun"
+        title="Good morning, Aarav 👋"
+        description="3rd year AI track · Your degree, turned into a living learning system"
         action={
           <Button onClick={() => navigate({ to: "/learning-mode" })}>
             <BookOpen />
@@ -418,17 +421,90 @@ function Dashboard() {
           </Button>
         }
       />
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        <Panel className="lg:col-span-7">
+      <section className="mb-5 border-y border-border/70 py-5">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <Eyebrow>Next milestone</Eyebrow>
+            <h2 className="mt-1 text-xl font-semibold tracking-tight">Decision Trees</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Complete this module to unlock your Machine Learning project.
+            </p>
+          </div>
+          <span className="text-sm text-brand">8 of 30 modules mastered</span>
+        </div>
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+          {[
+            ["Foundations", "mastered"],
+            ["Data", "mastered"],
+            ["Machine Learning", "in-progress"],
+            ["Deep Learning", "locked"],
+            ["LLMs", "locked"],
+            ["Production AI", "locked"],
+            ["Capstone", "locked"],
+          ].map(([label, status], index) => (
+            <div key={label} className="relative">
+              {index > 0 && (
+                <span className="absolute -left-3 top-5 hidden text-border lg:block">→</span>
+              )}
+              <div className="flex items-center gap-2">
+                <span
+                  className={`grid size-8 place-items-center rounded-full border ${
+                    status === "mastered"
+                      ? "border-mint/40 bg-mint-soft text-mint"
+                      : status === "in-progress"
+                        ? "border-brand bg-brand-soft text-brand"
+                        : "border-border bg-muted text-faint"
+                  }`}
+                >
+                  {status === "mastered" ? (
+                    <Check className="size-4" />
+                  ) : status === "locked" ? (
+                    <Lock className="size-3" />
+                  ) : (
+                    <span className="size-2 rounded-full bg-brand" />
+                  )}
+                </span>
+                <span className="text-xs font-medium leading-4">{label}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+      <section className="mb-5 border-b border-border/70 pb-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <Eyebrow>Today's mission · 20 minutes</Eyebrow>
+            <h2 className="mt-1 text-lg font-semibold tracking-tight">
+              Understand how models make predictions
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              One focused experience to move you closer to building your first ML system.
+            </p>
+          </div>
+          <Button size="sm" onClick={() => navigate({ to: "/learning-mode" })}>
+            Start mission <ArrowRight />
+          </Button>
+        </div>
+      </section>
+      <div className="dashboard-grid grid grid-cols-1 gap-5 lg:grid-cols-12">
+        <Panel className="dashboard-focus lg:col-span-7">
           <SectionTitle
-            eyebrow="Today's path"
-            title="Learning plan"
+            eyebrow="Pick up where you left off"
+            title="Continue learning"
             action={
               <span className="rounded-full bg-brand-soft px-2.5 py-1 text-[10px] font-semibold text-brand">
                 2 of 3 done
               </span>
             }
           />
+          <div className="mb-4 rounded-xl bg-background/60 p-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-medium">Binary Search</span>
+              <span className="font-mono text-brand">68%</span>
+            </div>
+            <ProgressBar value={68} />
+            <p className="mt-1.5 text-[11px] text-faint">12 min left · Data Structures</p>
+          </div>
           <div className="space-y-2.5">
             <PlanRow
               done
@@ -460,7 +536,7 @@ function Dashboard() {
             />
           </div>
         </Panel>
-        <Panel className="border-lilac/25 bg-lilac-soft/30 lg:col-span-5">
+        <Panel className="dashboard-coach border-lilac/25 bg-lilac-soft/30 lg:col-span-5">
           <SectionTitle
             eyebrow="AI planner"
             title="Recommended next"
@@ -689,9 +765,9 @@ function CurriculumMap() {
   return (
     <>
       <PageHeader
-        eyebrow="CSE · Semester 3"
-        title="Curriculum knowledge map"
-        description="A prerequisite-aware graph of the concepts, skills, and projects that move you from semester confidence to interview readiness."
+        eyebrow="Your curriculum · 8 of 30 modules mastered"
+        title="Curriculum journey"
+        description="Follow the capabilities that turn your degree into practical AI skills. Academic concepts stay connected underneath."
         action={
           <div className="flex rounded-xl border border-border bg-surface-elevated p-1">
             <button
@@ -709,6 +785,34 @@ function CurriculumMap() {
           </div>
         }
       />
+      <section className="mb-5 border-y border-border/70 py-5">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            ["Think like a builder", "Foundations", "mastered"],
+            ["Find signals in data", "Data", "mastered"],
+            ["Make predictions", "Machine Learning", "in-progress"],
+            ["Build intelligent systems", "Deep Learning", "locked"],
+          ].map(([title, subtitle, status]) => (
+            <div key={title} className="flex items-start gap-3">
+              <span
+                className={`mt-0.5 grid size-8 shrink-0 place-items-center rounded-full border ${status === "mastered" ? "border-mint/40 bg-mint-soft text-mint" : status === "in-progress" ? "border-brand bg-brand-soft text-brand" : "border-border bg-muted text-faint"}`}
+              >
+                {status === "mastered" ? (
+                  <Check className="size-4" />
+                ) : status === "locked" ? (
+                  <Lock className="size-3" />
+                ) : (
+                  <span className="size-2 rounded-full bg-brand" />
+                )}
+              </span>
+              <div>
+                <p className="text-sm font-medium">{title}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
       <div className="grid gap-4 xl:grid-cols-[1fr_320px]">
         <Panel className="min-h-[620px] overflow-hidden sm:p-4">
           <div className="mb-3 flex items-center justify-between">
@@ -1158,17 +1262,17 @@ function CodeEditor({
           </div>
           <div className="min-w-0 overflow-x-auto">
             <div className="flex min-w-max">
-            <div className="select-none px-3 py-4 text-right font-mono text-[10px] leading-5 text-background/35">
-              {value.split("\n").map((_, index) => (
-                <div key={index}>{String(index + 1).padStart(2, "0")}</div>
-              ))}
-            </div>
-            <textarea
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              className="min-h-[280px] min-w-[34rem] flex-1 resize-none overflow-x-auto bg-transparent p-4 pl-0 font-mono text-[11px] leading-5 text-background outline-none"
-              spellCheck={false}
-            />
+              <div className="select-none px-3 py-4 text-right font-mono text-[10px] leading-5 text-background/35">
+                {value.split("\n").map((_, index) => (
+                  <div key={index}>{String(index + 1).padStart(2, "0")}</div>
+                ))}
+              </div>
+              <textarea
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                className="min-h-[280px] min-w-[34rem] flex-1 resize-none overflow-x-auto bg-transparent p-4 pl-0 font-mono text-[11px] leading-5 text-background outline-none"
+                spellCheck={false}
+              />
             </div>
           </div>
         </div>
@@ -1333,7 +1437,7 @@ function Tutor() {
                 <Bot className="size-5" />
               </span>
               <div>
-                <p className="text-sm font-semibold">Codepath Tutor</p>
+                <p className="text-sm font-semibold">AI Skills Tutor</p>
                 <p className="text-[11px] text-faint">
                   Context: Binary Search Trees · Data Structures · Sem 3
                 </p>
@@ -1972,7 +2076,7 @@ function Career() {
       <PageHeader
         eyebrow="Career bridge · adaptive track"
         title="Make your semester legible to employers."
-        description="Codepath connects your syllabus to the skill signals and proof points your chosen career track expects."
+        description="AI Skills Track connects your curriculum to practical skills, verified projects, certification, and employability."
         action={
           <select
             value={track}
@@ -2084,7 +2188,7 @@ function Profile() {
     <>
       <PageHeader
         eyebrow="Profile & settings"
-        title="Make Codepath fit your semester."
+        title="Make AI Skills Track fit your semester."
         description="Your preferences shape the learning plan, pace, and AI explanations you receive."
       />
       <div className="grid gap-4 lg:grid-cols-2">
@@ -2407,8 +2511,8 @@ export function Landing() {
               Start <span className="text-brand">understanding & mastering</span>.
             </h1>
             <p className="mt-6 max-w-xl text-base leading-7 text-muted-foreground">
-              Codepath turns your actual B.Tech syllabus into a living, adaptive, project-driven
-              path — then connects it directly to employability.
+              AI Skills Track turns your university curriculum into structured learning, practical
+              projects, verified skills, and a clear path to employability.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button size="lg" asChild>
@@ -2552,7 +2656,7 @@ export function Landing() {
         </section>
       </main>
       <footer className="relative mx-auto flex max-w-7xl flex-col justify-between gap-3 border-t border-border px-5 py-7 text-[11px] text-faint sm:flex-row lg:px-8">
-        <span>© 2026 Codepath · a learning operating system</span>
+        <span>© 2026 AI Skills Track · practical AI skills for engineering students</span>
         <div className="flex gap-5">
           <span>Product</span>
           <span>Curriculum</span>
@@ -2560,6 +2664,143 @@ export function Landing() {
           <span>Privacy</span>
         </div>
       </footer>
+    </div>
+  );
+}
+
+export function CertificateVerification({ certificateId }: { certificateId: string }) {
+  return (
+    <div className="min-h-screen bg-[#f7f8fa] px-4 py-8 text-foreground sm:px-8 sm:py-12">
+      <main className="mx-auto max-w-3xl">
+        <header className="border-b border-border pb-6">
+          <Mark />
+          <p className="mt-6 text-sm text-muted-foreground">Digital academic credential</p>
+        </header>
+        <section className="mt-10 rounded-xl border border-border bg-white p-6 sm:p-10">
+          <div className="flex items-start justify-between gap-6 border-b border-border pb-8">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Certificate verification</p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight">Certificate verified</h1>
+              <p className="mt-3 text-sm text-muted-foreground">
+                This credential is authentic and was issued by AI Skills Track.
+              </p>
+            </div>
+            <span className="grid size-12 shrink-0 place-items-center rounded-full bg-mint-soft text-mint">
+              <ShieldCheck className="size-6" />
+            </span>
+          </div>
+          <dl className="grid gap-6 border-b border-border py-8 sm:grid-cols-2">
+            <div>
+              <dt className="text-xs text-muted-foreground">Student</dt>
+              <dd className="mt-1 font-medium">Aarav Sharma</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Cohort</dt>
+              <dd className="mt-1 font-medium">3rd year CSE 2026</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Certificate ID</dt>
+              <dd className="mt-1 font-mono text-sm">{certificateId}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Issued</dt>
+              <dd className="mt-1 font-medium">12 June 2026</dd>
+            </div>
+          </dl>
+          <div className="py-8">
+            <p className="text-sm text-muted-foreground">Completion summary</p>
+            <p className="mt-1 text-2xl font-semibold">30 of 30 modules completed</p>
+          </div>
+          <div className="divide-y divide-border border-y border-border">
+            {[
+              "Python Fundamentals for AI",
+              "Build an ML Project",
+              "Working with LLMs Professionally",
+              "AI System Design",
+            ].map((module) => (
+              <div key={module} className="flex items-center justify-between gap-4 py-4">
+                <span className="text-sm font-medium">{module}</span>
+                <span className="flex items-center gap-2 text-xs text-mint">
+                  <Check className="size-4" /> Verified
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          Read-only verification record · AI Skills Track
+        </p>
+      </main>
+    </div>
+  );
+}
+
+export function PlacementAdmin() {
+  const cohorts = [
+    ["Overall readiness", "74%", "186 students"],
+    ["Modules mastered", "68%", "1,240 completions"],
+    ["Projects verified", "82%", "312 submissions"],
+  ];
+  return (
+    <div className="min-h-screen bg-[#f7f8fa] text-foreground">
+      <header className="border-b border-border bg-white">
+        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-5 sm:px-8">
+          <Mark />
+          <div className="flex items-center gap-3 text-sm">
+            <span className="hidden text-muted-foreground sm:inline">Placement admin</span>
+            <span className="grid size-8 place-items-center rounded-lg bg-brand-soft text-xs font-semibold text-brand">
+              PS
+            </span>
+          </div>
+        </div>
+      </header>
+      <main className="mx-auto max-w-[1440px] px-5 py-8 sm:px-8">
+        <PageHeader
+          eyebrow="Placement office · Cohort overview"
+          title="3rd year CSE 2026"
+          description="Understand cohort readiness, identify support needs, and export verified skill signals for recruiters."
+          action={
+            <Button variant="outline" onClick={() => toast("Cohort report exported")}>
+              Export report
+            </Button>
+          }
+        />
+        <div className="grid gap-4 md:grid-cols-3">
+          {cohorts.map(([label, value, note]) => (
+            <section key={label} className="rounded-xl border border-border bg-white p-5">
+              <p className="text-sm text-muted-foreground">{label}</p>
+              <p className="mt-3 text-3xl font-semibold tracking-tight">{value}</p>
+              <p className="mt-2 text-xs text-muted-foreground">{note}</p>
+            </section>
+          ))}
+        </div>
+        <section className="mt-6 rounded-xl border border-border bg-white p-5">
+          <SectionTitle
+            eyebrow="Action required"
+            title="Students needing support"
+            action={
+              <Button size="sm" variant="ghost">
+                View all <ArrowRight />
+              </Button>
+            }
+          />
+          <div className="divide-y divide-border">
+            {[
+              ["Meera Nair", "12 of 30 modules mastered", "Needs a guided learning plan"],
+              ["Rohan Das", "1 project awaiting review", "Verification pending"],
+              ["Ishita Shah", "58% assessment average", "Revision recommended"],
+            ].map(([name, status, note]) => (
+              <div key={name} className="flex flex-wrap items-center justify-between gap-3 py-4">
+                <div>
+                  <p className="text-sm font-medium">{name}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{status}</p>
+                </div>
+                <span className="text-xs text-amber-700">{note}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
@@ -2578,8 +2819,8 @@ export function Auth() {
                 Your syllabus is the starting point.
               </h1>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                Create your Codepath account. We’ll use your curriculum, goals, and available time
-                to shape your first two weeks.
+                Create your AI Skills Track account. We’ll use your curriculum, goals, and available
+                time to shape your first two weeks.
               </p>
               <div className="mt-8 space-y-4">
                 <Input placeholder="Email address" type="email" />
@@ -2597,7 +2838,7 @@ export function Auth() {
                 </Button>
               </div>
               <p className="mt-6 text-center text-[11px] text-faint">
-                By continuing, you agree to Codepath’s demo terms.
+                By continuing, you agree to AI Skills Track’s demo terms.
               </p>
             </div>
           </div>
@@ -2724,7 +2965,7 @@ export function Onboarding() {
               : step === 1
                 ? "We found a strong match for your semester. You can edit it before continuing."
                 : step === 2
-                  ? "A quick baseline helps Codepath choose the right amount of scaffolding."
+                  ? "A quick baseline helps AI Skills Track choose the right amount of scaffolding."
                   : step === 3
                     ? "Your goal changes which skills and projects appear next."
                     : "How much time can you realistically protect each week?"}
