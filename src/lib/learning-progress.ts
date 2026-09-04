@@ -50,10 +50,11 @@ export function recordLearningEvidence(delta: Partial<LearningEvidence>) {
 }
 
 export function useLearningEvidence() {
-  const [evidence, setEvidence] = React.useState<LearningEvidence>(readLearningEvidence);
+  const [evidence, setEvidence] = React.useState<LearningEvidence>(emptyEvidence);
 
   React.useEffect(() => {
     const refresh = () => setEvidence(readLearningEvidence());
+    refresh();
     window.addEventListener(CHANGE_EVENT, refresh);
     return () => window.removeEventListener(CHANGE_EVENT, refresh);
   }, []);

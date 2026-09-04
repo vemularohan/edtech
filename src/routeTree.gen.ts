@@ -10,16 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TutorRouteImport } from './routes/tutor'
+import { Route as SkillsRouteImport } from './routes/skills'
 import { Route as RecoveryRouteImport } from './routes/recovery'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LearningModeRouteImport } from './routes/learning-mode'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CurriculumMapRouteImport } from './routes/curriculum-map'
+import { Route as CurriculumRouteImport } from './routes/curriculum'
 import { Route as CodingLabRouteImport } from './routes/coding-lab'
+import { Route as ChallengesRouteImport } from './routes/challenges'
 import { Route as ChallengeRouteImport } from './routes/challenge'
 import { Route as CareerRoadmapRouteImport } from './routes/career-roadmap'
+import { Route as CareerRouteImport } from './routes/career'
+import { Route as BuildRouteImport } from './routes/build'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -29,6 +35,11 @@ import { Route as VerifyCertificateIdRouteImport } from './routes/verify.$certif
 const TutorRoute = TutorRouteImport.update({
   id: '/tutor',
   path: '/tutor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SkillsRoute = SkillsRouteImport.update({
+  id: '/skills',
+  path: '/skills',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RecoveryRoute = RecoveryRouteImport.update({
@@ -44,6 +55,11 @@ const ProjectsRoute = ProjectsRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortfolioRoute = PortfolioRouteImport.update({
+  id: '/portfolio',
+  path: '/portfolio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -66,9 +82,19 @@ const CurriculumMapRoute = CurriculumMapRouteImport.update({
   path: '/curriculum-map',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CurriculumRoute = CurriculumRouteImport.update({
+  id: '/curriculum',
+  path: '/curriculum',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CodingLabRoute = CodingLabRouteImport.update({
   id: '/coding-lab',
   path: '/coding-lab',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChallengesRoute = ChallengesRouteImport.update({
+  id: '/challenges',
+  path: '/challenges',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChallengeRoute = ChallengeRouteImport.update({
@@ -79,6 +105,16 @@ const ChallengeRoute = ChallengeRouteImport.update({
 const CareerRoadmapRoute = CareerRoadmapRouteImport.update({
   id: '/career-roadmap',
   path: '/career-roadmap',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CareerRoute = CareerRouteImport.update({
+  id: '/career',
+  path: '/career',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BuildRoute = BuildRouteImport.update({
+  id: '/build',
+  path: '/build',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -112,16 +148,22 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/build': typeof BuildRoute
+  '/career': typeof CareerRoute
   '/career-roadmap': typeof CareerRoadmapRoute
   '/challenge': typeof ChallengeRoute
+  '/challenges': typeof ChallengesRoute
   '/coding-lab': typeof CodingLabRoute
+  '/curriculum': typeof CurriculumRoute
   '/curriculum-map': typeof CurriculumMapRoute
   '/dashboard': typeof DashboardRoute
   '/learning-mode': typeof LearningModeRoute
   '/onboarding': typeof OnboardingRoute
+  '/portfolio': typeof PortfolioRoute
   '/profile': typeof ProfileRoute
   '/projects': typeof ProjectsRoute
   '/recovery': typeof RecoveryRoute
+  '/skills': typeof SkillsRoute
   '/tutor': typeof TutorRoute
   '/verify/$certificateId': typeof VerifyCertificateIdRoute
 }
@@ -130,16 +172,22 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/build': typeof BuildRoute
+  '/career': typeof CareerRoute
   '/career-roadmap': typeof CareerRoadmapRoute
   '/challenge': typeof ChallengeRoute
+  '/challenges': typeof ChallengesRoute
   '/coding-lab': typeof CodingLabRoute
+  '/curriculum': typeof CurriculumRoute
   '/curriculum-map': typeof CurriculumMapRoute
   '/dashboard': typeof DashboardRoute
   '/learning-mode': typeof LearningModeRoute
   '/onboarding': typeof OnboardingRoute
+  '/portfolio': typeof PortfolioRoute
   '/profile': typeof ProfileRoute
   '/projects': typeof ProjectsRoute
   '/recovery': typeof RecoveryRoute
+  '/skills': typeof SkillsRoute
   '/tutor': typeof TutorRoute
   '/verify/$certificateId': typeof VerifyCertificateIdRoute
 }
@@ -149,16 +197,22 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/build': typeof BuildRoute
+  '/career': typeof CareerRoute
   '/career-roadmap': typeof CareerRoadmapRoute
   '/challenge': typeof ChallengeRoute
+  '/challenges': typeof ChallengesRoute
   '/coding-lab': typeof CodingLabRoute
+  '/curriculum': typeof CurriculumRoute
   '/curriculum-map': typeof CurriculumMapRoute
   '/dashboard': typeof DashboardRoute
   '/learning-mode': typeof LearningModeRoute
   '/onboarding': typeof OnboardingRoute
+  '/portfolio': typeof PortfolioRoute
   '/profile': typeof ProfileRoute
   '/projects': typeof ProjectsRoute
   '/recovery': typeof RecoveryRoute
+  '/skills': typeof SkillsRoute
   '/tutor': typeof TutorRoute
   '/verify/$certificateId': typeof VerifyCertificateIdRoute
 }
@@ -169,16 +223,22 @@ export interface FileRouteTypes {
     | '/admin'
     | '/analytics'
     | '/auth'
+    | '/build'
+    | '/career'
     | '/career-roadmap'
     | '/challenge'
+    | '/challenges'
     | '/coding-lab'
+    | '/curriculum'
     | '/curriculum-map'
     | '/dashboard'
     | '/learning-mode'
     | '/onboarding'
+    | '/portfolio'
     | '/profile'
     | '/projects'
     | '/recovery'
+    | '/skills'
     | '/tutor'
     | '/verify/$certificateId'
   fileRoutesByTo: FileRoutesByTo
@@ -187,16 +247,22 @@ export interface FileRouteTypes {
     | '/admin'
     | '/analytics'
     | '/auth'
+    | '/build'
+    | '/career'
     | '/career-roadmap'
     | '/challenge'
+    | '/challenges'
     | '/coding-lab'
+    | '/curriculum'
     | '/curriculum-map'
     | '/dashboard'
     | '/learning-mode'
     | '/onboarding'
+    | '/portfolio'
     | '/profile'
     | '/projects'
     | '/recovery'
+    | '/skills'
     | '/tutor'
     | '/verify/$certificateId'
   id:
@@ -205,16 +271,22 @@ export interface FileRouteTypes {
     | '/admin'
     | '/analytics'
     | '/auth'
+    | '/build'
+    | '/career'
     | '/career-roadmap'
     | '/challenge'
+    | '/challenges'
     | '/coding-lab'
+    | '/curriculum'
     | '/curriculum-map'
     | '/dashboard'
     | '/learning-mode'
     | '/onboarding'
+    | '/portfolio'
     | '/profile'
     | '/projects'
     | '/recovery'
+    | '/skills'
     | '/tutor'
     | '/verify/$certificateId'
   fileRoutesById: FileRoutesById
@@ -224,16 +296,22 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AnalyticsRoute: typeof AnalyticsRoute
   AuthRoute: typeof AuthRoute
+  BuildRoute: typeof BuildRoute
+  CareerRoute: typeof CareerRoute
   CareerRoadmapRoute: typeof CareerRoadmapRoute
   ChallengeRoute: typeof ChallengeRoute
+  ChallengesRoute: typeof ChallengesRoute
   CodingLabRoute: typeof CodingLabRoute
+  CurriculumRoute: typeof CurriculumRoute
   CurriculumMapRoute: typeof CurriculumMapRoute
   DashboardRoute: typeof DashboardRoute
   LearningModeRoute: typeof LearningModeRoute
   OnboardingRoute: typeof OnboardingRoute
+  PortfolioRoute: typeof PortfolioRoute
   ProfileRoute: typeof ProfileRoute
   ProjectsRoute: typeof ProjectsRoute
   RecoveryRoute: typeof RecoveryRoute
+  SkillsRoute: typeof SkillsRoute
   TutorRoute: typeof TutorRoute
   VerifyCertificateIdRoute: typeof VerifyCertificateIdRoute
 }
@@ -245,6 +323,13 @@ declare module '@tanstack/react-router' {
       path: '/tutor'
       fullPath: '/tutor'
       preLoaderRoute: typeof TutorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/skills': {
+      id: '/skills'
+      path: '/skills'
+      fullPath: '/skills'
+      preLoaderRoute: typeof SkillsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/recovery': {
@@ -266,6 +351,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portfolio': {
+      id: '/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof PortfolioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -296,11 +388,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CurriculumMapRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/curriculum': {
+      id: '/curriculum'
+      path: '/curriculum'
+      fullPath: '/curriculum'
+      preLoaderRoute: typeof CurriculumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/coding-lab': {
       id: '/coding-lab'
       path: '/coding-lab'
       fullPath: '/coding-lab'
       preLoaderRoute: typeof CodingLabRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/challenges': {
+      id: '/challenges'
+      path: '/challenges'
+      fullPath: '/challenges'
+      preLoaderRoute: typeof ChallengesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/challenge': {
@@ -315,6 +421,20 @@ declare module '@tanstack/react-router' {
       path: '/career-roadmap'
       fullPath: '/career-roadmap'
       preLoaderRoute: typeof CareerRoadmapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/career': {
+      id: '/career'
+      path: '/career'
+      fullPath: '/career'
+      preLoaderRoute: typeof CareerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/build': {
+      id: '/build'
+      path: '/build'
+      fullPath: '/build'
+      preLoaderRoute: typeof BuildRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -360,16 +480,22 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AnalyticsRoute: AnalyticsRoute,
   AuthRoute: AuthRoute,
+  BuildRoute: BuildRoute,
+  CareerRoute: CareerRoute,
   CareerRoadmapRoute: CareerRoadmapRoute,
   ChallengeRoute: ChallengeRoute,
+  ChallengesRoute: ChallengesRoute,
   CodingLabRoute: CodingLabRoute,
+  CurriculumRoute: CurriculumRoute,
   CurriculumMapRoute: CurriculumMapRoute,
   DashboardRoute: DashboardRoute,
   LearningModeRoute: LearningModeRoute,
   OnboardingRoute: OnboardingRoute,
+  PortfolioRoute: PortfolioRoute,
   ProfileRoute: ProfileRoute,
   ProjectsRoute: ProjectsRoute,
   RecoveryRoute: RecoveryRoute,
+  SkillsRoute: SkillsRoute,
   TutorRoute: TutorRoute,
   VerifyCertificateIdRoute: VerifyCertificateIdRoute,
 }
