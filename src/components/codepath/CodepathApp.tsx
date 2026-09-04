@@ -1138,6 +1138,324 @@ function LegacyCurriculumMap() {
   );
 }
 
+function InteractiveCurriculumMap() {
+  const navigate = useNavigate();
+  const evidence = useLearningEvidence();
+  const [phase, setPhase] = useState(0);
+  const [lens, setLens] = useState<"journey" | "skills" | "projects" | "list">("journey");
+  const [filter, setFilter] = useState("All");
+  const [query, setQuery] = useState("");
+  const [selectedCode, setSelectedCode] = useState<ModuleId>("3.1");
+  const [concept, setConcept] = useState<string | null>(null);
+  const phases = [
+    ["FOUNDATION", 0, 6],
+    ["MACHINE LEARNING", 7, 12],
+    ["DEEP LEARNING & APPLIED AI", 13, 19],
+    ["ADVANCED AI ENGINEERING", 20, 27],
+    ["CAREER & CAPSTONE", 28, 29],
+  ] as const;
+  const mastered = Math.min(curriculumModules.length, Math.floor(evidence.sectionsCompleted / 4));
+  const statusFor = (index: number) =>
+    index < mastered
+      ? "mastered"
+      : index === mastered
+        ? "in-progress"
+        : index === mastered + 1
+          ? "available"
+          : "locked";
+  const selectedIndex = curriculumModules.findIndex((module) => module.code === selectedCode);
+  const selectedModule = curriculumModules[selectedIndex] ?? curriculumModules[0]!;
+  const selectedStatus = statusFor(selectedIndex);
+  const relatedBefore = curriculumModules.slice(Math.max(0, selectedIndex - 2), selectedIndex);
+  const relatedAfter = curriculumModules.slice(selectedIndex + 1, selectedIndex + 3);
+  const allTopics = Array.from(new Set(curriculumModules.flatMap((module) => module.topics)));
+  const modules = curriculumModules
+    .map((module, index) => ({ module, index, status: statusFor(index) }))
+    .filter(({ module, index, status }) => {
+      const text =
+        `${module.code} ${module.title} ${module.description} ${module.topics.join(" ")}`.toLowerCase();
+      const phaseMatch = index >= phases[phase]![1] && index <= phases[phase]![2];
+      const filterMatch =
+        filter === "All" ||
+        filter.toLowerCase() === status ||
+        (filter === "Projects" && module.experienceStage === "Ship") ||
+        (filter === "Challenges" && module.experienceStage !== "Understand");
+      const lensMatch =
+        lens === "projects"
+          ? module.experienceStage === "Ship"
+          : lens === "skills"
+            ? module.topics.some((topic) => topic.toLowerCase() === query.toLowerCase())
+            : true;
+      return (
+        text.includes(query.toLowerCase()) &&
+        filterMatch &&
+        lensMatch &&
+        (query.trim() ? true : phaseMatch)
+      );
+    });
+  const selectModule = (code: ModuleId) => {
+    setSelectedCode(code);
+    setConcept(null);
+  };
+
+  return (
+    <>
+      <PageHeader
+        eyebrow={`AI engineering journey · ${mastered} of ${curriculumModules.length} modules explored`}
+        title="Your AI Engineering Journey"
+        description="Explore the path from Python foundations to production-grade AI systems."
+        action={
+          <Button
+            onClick={() =>
+              navigate({
+                to: "/learning-mode",
+                search: { module: selectedModule.code, concept: concept ?? undefined },
+              })
+            }
+          >
+            <Play /> Continue learning
+          </Button>
+        }
+      />
+      <Panel className="mb-5 border-brand/20 bg-brand-soft/20">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <Eyebrow>Progress through the spine</Eyebrow>
+            <p className="mt-1 text-sm font-semibold">
+              {mastered} / {curriculumModules.length} modules explored
+            </p>
+          </div>
+          <span className="font-mono text-xs text-brand">
+            {Math.round((mastered / curriculumModules.length) * 100)}%
+          </span>
+        </div>
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-background/70">
+          <div
+            className="h-full rounded-full bg-brand transition-all"
+            style={{ width: `${(mastered / curriculumModules.length) * 100}%` }}
+          />
+        </div>
+        <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
+          {phases.map(([label], index) => (
+            <button
+              key={label}
+              onClick={() => {
+                setPhase(index);
+                document
+                  .getElementById(`phase-${index}`)
+                  ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+              }}
+              className={`shrink-0 rounded-full px-3 py-2 text-[11px] font-semibold tracking-wide ${phase === index ? "bg-ink text-background" : "bg-background text-faint hover:text-foreground"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+          <label className="flex items-center gap-2 rounded-xl border border-border/70 px-3">
+            <Search className="size-4 text-faint" />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              className="min-h-11 w-full bg-transparent text-sm outline-none"
+              placeholder="Search modules, topics, skills…"
+            />
+          </label>
+          <select
+            value={filter}
+            onChange={(event) => setFilter(event.target.value)}
+            className="rounded-xl border border-border/70 bg-surface-elevated px-3 text-sm"
+            aria-label="Filter curriculum"
+          >
+            {[
+              "All",
+              "In-progress",
+              "Available",
+              "Mastered",
+              "Locked",
+              "Challenges",
+              "Projects",
+            ].map((item) => (
+              <option key={item}>{item}</option>
+            ))}
+          </select>
+          <div className="flex overflow-x-auto rounded-xl border border-border/70 p-1">
+            {(["journey", "skills", "projects", "list"] as const).map((item) => (
+              <button
+                key={item}
+                onClick={() => setLens(item)}
+                className={`rounded-lg px-3 py-2 text-xs capitalize ${lens === item ? "bg-background shadow-sm" : "text-faint"}`}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
+      </Panel>
+      <div className="grid gap-4 xl:grid-cols-[1fr_360px]">
+        <Panel className="overflow-hidden">
+          <SectionTitle
+            eyebrow={`${phases[phase]![0]} · ${modules.length} modules`}
+            title={
+              lens === "journey"
+                ? "Follow the path"
+                : lens === "skills"
+                  ? "Skills connected to the journey"
+                  : lens === "projects"
+                    ? "Build your way forward"
+                    : "Find a module"
+            }
+          />
+          {lens === "skills" && (
+            <div className="mb-4 flex flex-wrap gap-2 border-b border-border/60 pb-4">
+              {allTopics.map((topic) => (
+                <button
+                  key={topic}
+                  onClick={() => setQuery(topic)}
+                  className={`rounded-full px-2.5 py-1.5 text-[11px] ${query === topic ? "bg-brand text-background" : "bg-lilac-soft text-lilac"}`}
+                >
+                  {topic}
+                </button>
+              ))}
+            </div>
+          )}
+          <div
+            className={
+              lens === "journey"
+                ? "relative space-y-3 pl-5 before:absolute before:bottom-4 before:left-2 before:top-4 before:w-px before:bg-border"
+                : lens === "list"
+                  ? "grid gap-3 md:grid-cols-2"
+                  : "grid gap-3"
+            }
+          >
+            {modules.map(({ module, index, status }) => (
+              <button
+                key={module.code}
+                id={index === phases[phase]![1] ? `phase-${phase}` : undefined}
+                onClick={() => selectModule(module.code)}
+                className={`group relative w-full rounded-xl border p-4 text-left transition hover:-translate-y-0.5 hover:border-brand/50 ${selectedCode === module.code ? "border-brand bg-brand-soft/40 shadow-sm" : "border-border/70 bg-background/35"}`}
+              >
+                {lens === "journey" && (
+                  <span
+                    className={`absolute -left-[25px] top-5 size-3 rounded-full border-2 border-background ${status === "mastered" ? "bg-mint" : status === "in-progress" ? "bg-brand" : "bg-border"}`}
+                  />
+                )}
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-mono text-[10px] text-brand">{module.code}</p>
+                    <h3 className="mt-1 text-sm font-semibold">{module.title}</h3>
+                  </div>
+                  <StatusPill status={status} />
+                </div>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">{module.description}</p>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {module.topics.slice(0, 4).map((topic) => (
+                    <span
+                      key={topic}
+                      className="rounded-full bg-lilac-soft px-2 py-1 text-[10px] text-lilac"
+                    >
+                      {topic}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-2 text-[10px] text-faint">
+                  <span>
+                    {module.estimatedTime} · {module.experienceStage}
+                  </span>
+                  <span className="text-brand opacity-0 transition group-hover:opacity-100">
+                    View connections →
+                  </span>
+                </div>
+              </button>
+            ))}
+            {!modules.length && (
+              <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-faint">
+                No modules match this view. Try another phase or search.
+              </div>
+            )}
+          </div>
+        </Panel>
+        <Panel className="h-fit">
+          <SectionTitle
+            eyebrow={`${selectedModule.code} · ${selectedStatus}`}
+            title={selectedModule.title}
+          />
+          <p className="text-sm leading-6 text-muted-foreground">{selectedModule.description}</p>
+          <div className="mt-4 rounded-xl bg-brand-soft/40 p-3 text-xs">
+            <Eyebrow>Why this is here</Eyebrow>
+            <p className="mt-1 text-muted-foreground">
+              {relatedBefore.length
+                ? `Builds on ${relatedBefore.map((module) => module.code).join(" and ")}.`
+                : "This is the bridge into your AI engineering journey."}{" "}
+              {relatedAfter.length
+                ? `Next, it connects to ${relatedAfter.map((module) => module.code).join(" and ")}.`
+                : "This is the final demonstration of the journey."}
+            </p>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+            <div className="rounded-lg bg-background/60 p-3">
+              <Eyebrow>Stage</Eyebrow>
+              <p className="mt-1 font-medium">{selectedModule.experienceStage}</p>
+            </div>
+            <div className="rounded-lg bg-background/60 p-3">
+              <Eyebrow>Time</Eyebrow>
+              <p className="mt-1 font-medium">{selectedModule.estimatedTime}</p>
+            </div>
+          </div>
+          <Eyebrow>Topics to explore</Eyebrow>
+          <div className="mt-2 space-y-2">
+            {selectedModule.topics.map((topic) => (
+              <button
+                key={topic}
+                onClick={() => setConcept(topic)}
+                className={`flex w-full items-center justify-between rounded-lg p-2 text-left text-xs ${concept === topic ? "bg-lilac-soft text-lilac" : "bg-background/50 hover:bg-lilac-soft/50"}`}
+              >
+                <span>{topic}</span>
+                <ChevronRight className="size-3" />
+              </button>
+            ))}
+          </div>
+          {concept && (
+            <div className="mt-3 rounded-xl border border-brand/30 p-3 text-xs">
+              <strong>{concept}</strong>
+              <p className="mt-1 text-muted-foreground">
+                Explore {concept} in the guided lesson, then apply it in the practice and challenge
+                for {selectedModule.code}.
+              </p>
+            </div>
+          )}
+          <div className="mt-4 rounded-xl border border-border/60 p-3">
+            <Eyebrow>Connected skills & project</Eyebrow>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">{selectedModule.project}</p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {selectedModule.tools.slice(0, 3).map((tool) => (
+                <span
+                  key={tool}
+                  className="rounded-full bg-peach-soft px-2 py-1 text-[10px] text-peach"
+                >
+                  {tool}
+                </span>
+              ))}
+            </div>
+          </div>
+          <Button
+            className="mt-5 w-full"
+            onClick={() =>
+              navigate({
+                to: "/learning-mode",
+                search: { module: selectedModule.code, concept: concept ?? undefined },
+              })
+            }
+          >
+            {selectedStatus === "in-progress" ? "Continue learning" : "Explore learning"}{" "}
+            <ArrowRight />
+          </Button>
+        </Panel>
+      </div>
+    </>
+  );
+}
+
 function CurriculumMap() {
   const navigate = useNavigate();
   const evidence = useLearningEvidence();
@@ -1347,13 +1665,63 @@ function CurriculumMap() {
   );
 }
 
-function LearningMode({ moduleId = "3.1" }: { moduleId?: ModuleId }) {
+function NotFoundState({
+  title,
+  detail,
+  backTo,
+}: {
+  title: string;
+  detail: string;
+  backTo: "/curriculum-map" | "/learning-mode";
+}) {
+  const navigate = useNavigate();
+  return (
+    <Panel className="mx-auto max-w-xl text-center">
+      <Eyebrow>404 · unavailable</Eyebrow>
+      <h1 className="mt-2 text-xl font-semibold">{title}</h1>
+      <p className="mt-2 text-sm text-muted-foreground">{detail}</p>
+      <Button className="mt-5" onClick={() => navigate({ to: backTo })}>
+        Return to curriculum <ArrowLeft />
+      </Button>
+    </Panel>
+  );
+}
+
+function LearningMode({ moduleId = "3.1", concept }: { moduleId?: ModuleId; concept?: string }) {
+  const moduleExists = curriculumModules.some((module) => module.code === moduleId);
+  if (!moduleExists) {
+    return (
+      <NotFoundState
+        title="Lesson not found"
+        detail={`No lesson exists for module ${moduleId}.`}
+        backTo="/curriculum-map"
+      />
+    );
+  }
+  return <LearningModeContent moduleId={moduleId} concept={concept} />;
+}
+
+function LearningModeContent({
+  moduleId = "3.1",
+  concept,
+}: {
+  moduleId?: ModuleId;
+  concept?: string;
+}) {
   const navigate = useNavigate();
   const experience = getLearningExperience(moduleId);
-  const [stepIndex, setStepIndex] = useState(0);
+  const conceptIndex = concept
+    ? experience.module.topics.findIndex((topic) => topic.toLowerCase() === concept.toLowerCase())
+    : -1;
+  const initialStep =
+    conceptIndex >= 0 ? Math.min(2 + conceptIndex, experience.steps.length - 1) : 0;
+  const [stepIndex, setStepIndex] = useState(initialStep);
   const [selected, setSelected] = useState("");
   const [note, setNote] = useState("");
   const [ran, setRan] = useState(false);
+  const [experimentState, setExperimentState] = useState<"idle" | "running" | "unavailable">(
+    "idle",
+  );
   const [recordedSteps, setRecordedSteps] = useState<Set<string>>(() => new Set());
   const step = experience.steps[stepIndex];
   const canContinue =
@@ -1403,7 +1771,9 @@ function LearningMode({ moduleId = "3.1" }: { moduleId?: ModuleId }) {
       <Panel className="border-brand/20 bg-brand-soft/20">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <Eyebrow>{step.stage} · active learning</Eyebrow>
+            <Eyebrow>
+              {step.stage} · {concept ? `focus: ${concept}` : "active learning"}
+            </Eyebrow>
             <h2 className="mt-1 font-display text-xl font-semibold">{step.title}</h2>
           </div>
           <span className="font-mono text-xs text-brand">
@@ -1472,13 +1842,31 @@ function LearningMode({ moduleId = "3.1" }: { moduleId?: ModuleId }) {
                   className="min-h-24"
                 />
                 <Button
+                  disabled={experimentState === "running"}
                   onClick={() => {
-                    setRan(true);
-                    toast("Experiment recorded — compare the output with your prediction.");
+                    if (!note.trim()) {
+                      toast("Describe one controlled change before running the experiment.");
+                      return;
+                    }
+                    setExperimentState("running");
+                    window.setTimeout(() => {
+                      setExperimentState("unavailable");
+                      setRan(true);
+                    }, 350);
                   }}
                 >
-                  <Play /> Run experiment
+                  <Play /> {experimentState === "running" ? "Running…" : "Run experiment"}
                 </Button>
+                {experimentState === "unavailable" && (
+                  <div className="rounded-xl border border-peach/30 bg-peach-soft/40 p-3 text-xs text-muted-foreground">
+                    <p className="font-semibold text-peach">Experiment unavailable</p>
+                    <p className="mt-1">
+                      This lesson is a guided browser exercise and the app has no code execution
+                      service configured. Your observation was saved locally; connect a sandbox
+                      runtime to execute arbitrary code.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
             {step.interaction === "inspect" && (
@@ -1531,6 +1919,7 @@ function LearningMode({ moduleId = "3.1" }: { moduleId?: ModuleId }) {
 }
 
 function LegacyLearningMode({ moduleId = "3.1" }: { moduleId?: ModuleId }) {
+  const navigate = useNavigate();
   const primaryChallenge = getChallengeForModule(moduleId);
   const currentModule = curriculumModules.find((module) => module.code === moduleId);
   const moduleTitle = currentModule?.title ?? `Module ${moduleId}`;
@@ -1846,7 +2235,14 @@ function LegacyLearningMode({ moduleId = "3.1" }: { moduleId?: ModuleId }) {
                   {primaryChallenge.solution}
                 </div>
                 <div className="mt-5 flex flex-wrap gap-2">
-                  <Button onClick={() => toast("Challenge started in Coding Lab")}>
+                  <Button
+                    onClick={() =>
+                      navigate({
+                        to: "/coding-lab",
+                        search: { module: moduleId },
+                      })
+                    }
+                  >
                     <Code2 />
                     Open challenge
                   </Button>
@@ -1922,13 +2318,13 @@ function CodeEditor({
 }: {
   code: string;
   challenge: CurriculumChallenge;
-  onSubmit?: () => void;
   onNext?: () => void;
   compact?: boolean;
 }) {
   const [value, setValue] = useState(code);
   const [output, setOutput] = useState("");
   const [hint, setHint] = useState(0);
+  const [runState, setRunState] = useState<"idle" | "running" | "unavailable">("idle");
   return (
     <Panel className={compact ? "p-4" : "cp-rise"}>
       <SectionTitle
@@ -1976,26 +2372,34 @@ function CodeEditor({
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button
               size="sm"
-              onClick={() => setOutput("✓ case 1 passed\n✓ case 2 passed\n✓ case 3 passed")}
+              disabled={runState === "running"}
+              onClick={() => {
+                setRunState("running");
+                window.setTimeout(() => {
+                  setRunState("unavailable");
+                  setOutput(
+                    "Execution unavailable: this workspace has no sandbox runtime configured. Your code was preserved.",
+                  );
+                }, 350);
+              }}
             >
               <Play />
-              Run
+              {runState === "running"
+                ? "Running…"
+                : runState === "unavailable"
+                  ? "Run again"
+                  : "Run"}
             </Button>
             <Button
               size="sm"
               variant="outline"
               onClick={() => {
                 setOutput(
-                  `Submitted · ${challenge.tests.length}/${challenge.tests.length} tests passed`,
+                  "Submission unavailable: run this challenge in a configured sandbox before claiming test results.",
                 );
-                if (!submitted) {
-                  onSubmit?.();
-                  setSubmitted(true);
-                }
               }}
-              disabled={submitted}
             >
-              Submit
+              {submitted ? "Submitted" : "Submit"}
             </Button>
           </div>
           <div className="rounded-xl bg-peach-soft/45 p-3">
@@ -2213,13 +2617,52 @@ function Tutor() {
 function CodingLab({
   challenge = false,
   moduleId = "3.1",
+  challengeId,
 }: {
   challenge?: boolean;
   moduleId?: ModuleId;
+  challengeId?: string;
 }) {
-  const primaryChallenge = getChallengeForModule(moduleId);
+  const moduleExists = curriculumModules.some((module) => module.code === moduleId);
+  if (!moduleExists) {
+    return (
+      <NotFoundState
+        title="Module not found"
+        detail={`No coding workspace exists for module ${moduleId}.`}
+        backTo="/curriculum-map"
+      />
+    );
+  }
+  if (
+    challengeId &&
+    !allCurriculumChallenges.some((item) => item.id === challengeId && item.moduleId === moduleId)
+  ) {
+    return (
+      <NotFoundState
+        title="Challenge not found"
+        detail={`No challenge is configured for ${moduleId}.`}
+        backTo="/curriculum-map"
+      />
+    );
+  }
+  return <CodingLabContent challenge={challenge} moduleId={moduleId} challengeId={challengeId} />;
+}
+
+function CodingLabContent({
+  challenge = false,
+  moduleId = "3.1",
+  challengeId,
+}: {
+  challenge?: boolean;
+  moduleId?: ModuleId;
+  challengeId?: string;
+}) {
   const [review, setReview] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const primaryChallenge =
+    allCurriculumChallenges.find((item) => item.id === challengeId && item.moduleId === moduleId) ??
+    (challengeId ? undefined : getChallengeForModule(moduleId));
+  if (!primaryChallenge) throw new Error(`No challenge configured for module ${moduleId}`);
   return (
     <>
       <PageHeader
@@ -2244,12 +2687,7 @@ function CodingLab({
       />
       <div className="grid gap-4 xl:grid-cols-[1fr_300px]">
         <div>
-          <CodeEditor
-            code={primaryChallenge.starterCode}
-            challenge={primaryChallenge}
-            onSubmit={() => recordLearningEvidence({ challengesPassed: 1 })}
-            compact
-          />
+          <CodeEditor code={primaryChallenge.starterCode} challenge={primaryChallenge} compact />
           <Panel className="mt-4">
             <SectionTitle
               eyebrow="Test cases"
@@ -2356,6 +2794,8 @@ function CodingLab({
 function Projects() {
   const [done, setDone] = useState(projectMilestones.map((item) => item.done));
   const [submitted, setSubmitted] = useState(false);
+  const [repositoryUrl, setRepositoryUrl] = useState("");
+  const [submissionError, setSubmissionError] = useState("");
   const [open, setOpen] = useState(2);
   const completed = done.filter(Boolean).length;
   return (
@@ -2487,18 +2927,36 @@ function Projects() {
             <Panel>
               <SectionTitle eyebrow="Submit for review" title="Show your work" />
               <div className="flex flex-col gap-2 sm:flex-row">
-                <Input placeholder="https://github.com/aarav/mini-search-engine" />
+                <Input
+                  value={repositoryUrl}
+                  onChange={(event) => {
+                    setRepositoryUrl(event.target.value);
+                    setSubmissionError("");
+                  }}
+                  placeholder="https://github.com/aarav/mini-search-engine"
+                  aria-label="GitHub repository URL"
+                />
                 <Button
                   className="shrink-0"
                   onClick={() => {
+                    if (!/^https:\/\/github\.com\/[^/]+\/[^/]+\/?$/.test(repositoryUrl.trim())) {
+                      setSubmissionError("Enter a valid GitHub repository URL before submitting.");
+                      return;
+                    }
                     setSubmitted(true);
-                    toast("Project submitted · badge earned");
+                    toast("Project submitted for review");
                   }}
                 >
                   <Upload />
                   Submit
                 </Button>
               </div>
+              {submissionError && (
+                <p className="mt-2 text-xs text-destructive">{submissionError}</p>
+              )}
+              <p className="mt-2 text-[11px] text-faint">
+                URL validation only; repository contents are not verified by this frontend.
+              </p>
             </Panel>
           ) : (
             <Panel className="border-brand/40 bg-brand-soft/30">
@@ -3138,7 +3596,17 @@ function Recovery() {
   );
 }
 
-export function CodepathApp({ view, moduleId }: { view: View; moduleId?: ModuleId }) {
+export function CodepathApp({
+  view,
+  moduleId,
+  concept,
+  challengeId,
+}: {
+  view: View;
+  moduleId?: ModuleId;
+  concept?: string;
+  challengeId?: string;
+}) {
   if (view === "dashboard")
     return (
       <Shell active="dashboard">
@@ -3148,13 +3616,13 @@ export function CodepathApp({ view, moduleId }: { view: View; moduleId?: ModuleI
   if (view === "map")
     return (
       <Shell active="map">
-        <CurriculumMap />
+        <InteractiveCurriculumMap />
       </Shell>
     );
   if (view === "learning")
     return (
       <Shell active="learning">
-        <LearningMode moduleId={moduleId} />
+        <LearningMode moduleId={moduleId} concept={concept} />
       </Shell>
     );
   if (view === "tutor")
@@ -3166,13 +3634,13 @@ export function CodepathApp({ view, moduleId }: { view: View; moduleId?: ModuleI
   if (view === "lab")
     return (
       <Shell active="lab">
-        <CodingLab />
+        <CodingLab moduleId={moduleId} />
       </Shell>
     );
   if (view === "challenge")
     return (
       <Shell active="challenge">
-        <CodingLab challenge moduleId={moduleId} />
+        <CodingLab challenge moduleId={moduleId} challengeId={challengeId} />
       </Shell>
     );
   if (view === "projects")

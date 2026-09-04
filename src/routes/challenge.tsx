@@ -11,11 +11,18 @@ export const Route = createFileRoute("/challenge")({
         .regex(/^3\.\d+$/)
         .optional(),
     ),
+    challenge: z.string().trim().min(1).optional(),
   }),
   component: ChallengeRoute,
 });
 
 function ChallengeRoute() {
-  const { module } = Route.useSearch();
-  return <CodepathApp view="challenge" moduleId={module as `3.${number}` | undefined} />;
+  const { module, challenge } = Route.useSearch();
+  return (
+    <CodepathApp
+      view="challenge"
+      moduleId={module as `3.${number}` | undefined}
+      challengeId={challenge}
+    />
+  );
 }

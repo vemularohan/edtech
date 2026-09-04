@@ -11,11 +11,14 @@ export const Route = createFileRoute("/learning-mode")({
         .regex(/^3\.\d+$/)
         .optional(),
     ),
+    concept: z.string().trim().min(1).optional(),
   }),
   component: LearningModeRoute,
 });
 
 function LearningModeRoute() {
-  const { module } = Route.useSearch();
-  return <CodepathApp view="learning" moduleId={module as `3.${number}` | undefined} />;
+  const { module, concept } = Route.useSearch();
+  return (
+    <CodepathApp view="learning" moduleId={module as `3.${number}` | undefined} concept={concept} />
+  );
 }
