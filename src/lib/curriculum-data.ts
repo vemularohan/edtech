@@ -241,8 +241,7 @@ const moduleData: Array<Omit<CurriculumModule, "status"> & { status?: Curriculum
   difficulty: index < 5 ? "Beginner" : index < 20 ? "Intermediate" : "Advanced",
   estimatedTime: index < 5 ? "20–30 min" : index < 20 ? "35–50 min" : "60–90 min",
   prerequisites: index === 0 ? [] : [`3.${index}` as `3.${number}`],
-  status:
-    index < 5 ? "mastered" : index === 5 ? "in-progress" : index < 10 ? "available" : "locked",
+  status: index === 0 ? "in-progress" : index === 1 ? "available" : "locked",
 }));
 
 export const curriculumModules: CurriculumModule[] = moduleData;

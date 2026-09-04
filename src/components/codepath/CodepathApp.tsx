@@ -86,6 +86,7 @@ import {
   codingStarter,
   assessmentQuestions,
   allCurriculumChallenges,
+  getChallengeForModule,
   gaps,
   heatmap,
   nodes,
@@ -97,6 +98,8 @@ import {
 } from "@/lib/codepath-data";
 import type { CurriculumChallenge } from "@/lib/codepath-data";
 import { curriculumModules } from "@/lib/curriculum-data";
+import { getLearningExperience } from "@/lib/learning-experiences";
+import { recordLearningEvidence, useLearningEvidence } from "@/lib/learning-progress";
 
 type ModuleId = `3.${number}`;
 
@@ -241,6 +244,7 @@ function StatCard({
 function Shell({ active, children }: { active: View; children: React.ReactNode }) {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const evidence = useLearningEvidence();
   const pageTitle = navItems.find(({ to }) => activePath(active, to))?.label ?? "AI Skills Track";
   return (
     <div className="app-shell min-h-screen overflow-x-clip bg-background text-foreground">
@@ -273,13 +277,15 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
           </nav>
           <div className="mt-auto rounded-2xl border border-border/70 bg-surface-elevated/75 p-3">
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-xs font-semibold">Level 7</p>
+              <p className="text-xs font-semibold">Learning evidence</p>
               <span className="rounded-full bg-lilac-soft px-2 py-1 text-[10px] font-semibold text-lilac">
-                2,340 XP
+                {evidence.questionsPassed + evidence.challengesPassed} checks
               </span>
             </div>
-            <ProgressBar value={68} />
-            <p className="mt-2 text-[11px] text-faint">68% to Level 8 · 12-day streak</p>
+            <ProgressBar value={Math.min(100, evidence.sectionsCompleted * 5)} />
+            <p className="mt-2 text-[11px] text-faint">
+              {evidence.sectionsCompleted} learning sections completed
+            </p>
           </div>
           <button
             className="mt-3 flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground transition hover:bg-surface-elevated hover:text-foreground"
@@ -414,8 +420,11 @@ function PageHeader({
 
 function Dashboard() {
   const navigate = useNavigate();
-  const [mastered, setMastered] = useState(false);
   const [diagnosticOpen, setDiagnosticOpen] = useState(false);
+  const evidence = useLearningEvidence();
+  const nextModule =
+    curriculumModules.find((module) => module.status === "in-progress") ?? curriculumModules[0]!;
+  const masteredModules = curriculumModules.filter((module) => module.status === "mastered").length;
   return (
     <>
       <PageHeader
@@ -433,15 +442,11 @@ function Dashboard() {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <Eyebrow>Your next challenge</Eyebrow>
-            <h2 className="mt-1 text-xl font-semibold tracking-tight">
-              Build a chatbot that can actually help students
-            </h2>
-            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-              You know Python and APIs. Now connect them to an AI model and build something useful.
-            </p>
+            <h2 className="mt-1 text-xl font-semibold tracking-tight">{nextModule.title}</h2>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{nextModule.description}</p>
           </div>
           <Button onClick={() => navigate({ to: "/learning-mode" })}>
-            Start challenge <ArrowRight />
+            Continue <ArrowRight />
           </Button>
         </div>
         <div className="mt-4 flex flex-wrap gap-2 text-xs text-muted-foreground">
@@ -460,7 +465,9 @@ function Dashboard() {
               Complete this module to unlock your Machine Learning project.
             </p>
           </div>
-          <span className="text-sm text-brand">8 of 30 modules mastered</span>
+          <span className="text-sm text-brand">
+            {masteredModules} of {curriculumModules.length} modules mastered
+          </span>
         </div>
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
           {[
@@ -523,18 +530,20 @@ function Dashboard() {
             title="Continue learning"
             action={
               <span className="rounded-full bg-brand-soft px-2.5 py-1 text-[10px] font-semibold text-brand">
-                2 of 3 done
+                {evidence.sectionsCompleted} sections completed
               </span>
             }
           />
           <div className="mb-4 rounded-xl bg-background/60 p-3">
             <div className="flex items-center justify-between text-xs">
               <span className="font-medium">Make your first prediction</span>
-              <span className="font-mono text-brand">68%</span>
+              <span className="font-mono text-brand">
+                {Math.min(100, evidence.sectionsCompleted * 5)}%
+              </span>
             </div>
-            <ProgressBar value={68} />
+            <ProgressBar value={Math.min(100, evidence.sectionsCompleted * 5)} />
             <p className="mt-1.5 text-[11px] text-faint">
-              12 min left · Introduction to Machine Learning
+              Complete the next section in {nextModule.title}
             </p>
           </div>
           <div className="space-y-2.5">
@@ -627,7 +636,7 @@ function Dashboard() {
             action={
               <span className="flex items-center gap-1 text-xs font-semibold text-peach">
                 <Flame className="size-3.5" />
-                12 days
+                {evidence.sectionsCompleted} sections
               </span>
             }
           />
@@ -639,11 +648,17 @@ function Dashboard() {
               />
             ))}
           </div>
-          <p className="mt-3 text-[11px] text-faint">Last 6 weeks · 87 study sessions</p>
+          <p className="mt-3 text-[11px] text-faint">
+            Recorded activity · {evidence.sectionsCompleted + evidence.questionsPassed} learning
+            actions
+          </p>
         </Panel>
         <Panel className="lg:col-span-5">
-          <SectionTitle eyebrow="Career bridge" title="AI Engineer · 58% ready" />
-          <StageTracker current={2} />
+          <SectionTitle
+            eyebrow="Career bridge"
+            title={`AI Engineer · ${Math.min(100, Math.round((evidence.challengesPassed / 30) * 100))}% evidenced`}
+          />
+          <StageTracker current={Math.min(4, Math.floor(evidence.challengesPassed / 3))} />
         </Panel>
         <Panel className="bg-ink text-background lg:col-span-3">
           <SectionTitle
@@ -688,33 +703,22 @@ function Dashboard() {
             <div>
               <Eyebrow>Next checkpoint</Eyebrow>
               <h2 className="mt-1 font-display text-lg font-semibold">
-                {mastered
-                  ? "Nice work — model evaluation is now mastered."
-                  : "You're one focused session away from your next unlock."}
+                {evidence.challengesPassed > 0
+                  ? "Your latest challenge evidence is recorded."
+                  : "Complete the next learning section to create your first evidence."}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                {mastered
-                  ? "AI recommends RAG next because it turns model outputs into grounded product experiences."
-                  : "Complete model evaluation to unlock your first production-shaped AI project."}
+                Progress is based on completed learning sections, passed checks, and submitted
+                challenge evidence.
               </p>
             </div>
             <Button
-              variant={mastered ? "secondary" : "default"}
+              variant="default"
               onClick={() => {
-                setMastered(true);
-                toast("Mastery updated · +120 XP");
+                navigate({ to: "/learning-mode", search: { module: nextModule.code } });
               }}
             >
-              {mastered ? (
-                <>
-                  <Check />
-                  Updated
-                </>
-              ) : (
-                <>
-                  Mark model evaluation mastered <Check />
-                </>
-              )}
+              Continue evidence path <ArrowRight />
             </Button>
           </div>
         </Panel>
@@ -869,14 +873,27 @@ function MiniMap({ onNode }: { onNode: () => void }) {
   );
 }
 
-function CurriculumMap() {
+function LegacyCurriculumMap() {
   const [mode, setMode] = useState("curriculum");
-  const [selected, setSelected] = useState(nodes[4]);
+  const [selected, setSelected] = useState(nodes[0]!);
   const navigate = useNavigate();
+  const evidence = useLearningEvidence();
+  const masteredModules = Math.min(
+    curriculumModules.length,
+    Math.floor(evidence.sectionsCompleted / 4),
+  );
+  const moduleStatus = (index: number) =>
+    index < masteredModules
+      ? "mastered"
+      : index === masteredModules
+        ? "in-progress"
+        : index === masteredModules + 1
+          ? "available"
+          : "locked";
   return (
     <>
       <PageHeader
-        eyebrow="Your curriculum · 8 of 30 modules mastered"
+        eyebrow={`Your curriculum · ${masteredModules} of ${curriculumModules.length} modules mastered`}
         title="Curriculum journey"
         description="Follow the capabilities that turn your degree into practical AI skills. Academic concepts stay connected underneath."
         action={
@@ -969,7 +986,7 @@ function CurriculumMap() {
                 vectorEffect="non-scaling-stroke"
               />
             </svg>
-            {nodes.map((node) => (
+            {nodes.map((node, index) => (
               <button
                 key={node.id}
                 onClick={() => setSelected(node)}
@@ -977,7 +994,7 @@ function CurriculumMap() {
                 style={{ left: `${node.x}%`, top: `${node.y}%` }}
               >
                 <div
-                  className={`rounded-xl border p-2.5 shadow-sm ${node.status === "mastered" ? "border-mint/45 bg-mint-soft/80" : node.status === "in-progress" ? "cp-pulse border-brand bg-brand-soft/80" : node.status === "available" ? "border-lilac/40 bg-lilac-soft/50" : "border-border bg-muted/70"}`}
+                  className={`rounded-xl border p-2.5 shadow-sm ${moduleStatus(index) === "mastered" ? "border-mint/45 bg-mint-soft/80" : moduleStatus(index) === "in-progress" ? "cp-pulse border-brand bg-brand-soft/80" : moduleStatus(index) === "available" ? "border-lilac/40 bg-lilac-soft/50" : "border-border bg-muted/70"}`}
                 >
                   <div className="flex items-center justify-between gap-1">
                     <span className="font-mono text-[8px] uppercase tracking-wider text-faint">
@@ -992,7 +1009,7 @@ function CurriculumMap() {
                     )}
                   </div>
                   <p className="mt-1 text-[11px] font-semibold leading-4">{node.label}</p>
-                  <StatusPill status={node.status} />
+                  <StatusPill status={moduleStatus(index)} />
                 </div>
               </button>
             ))}
@@ -1015,7 +1032,7 @@ function CurriculumMap() {
                   <span className="block truncate text-sm font-semibold">{node.label}</span>
                   <span className="mt-0.5 block truncate text-[11px] text-faint">{node.meta}</span>
                 </span>
-                <StatusPill status={node.status} />
+                <StatusPill status={moduleStatus(index)} />
                 <ChevronRight className="size-4 shrink-0 text-faint" />
               </button>
             ))}
@@ -1025,7 +1042,11 @@ function CurriculumMap() {
           <SectionTitle
             eyebrow="Selected concept"
             title={selected.label}
-            action={<StatusPill status={selected.status} />}
+            action={
+              <StatusPill
+                status={moduleStatus(nodes.findIndex((node) => node.id === selected.id))}
+              />
+            }
           />
           <p className="text-sm leading-6 text-muted-foreground">
             A practical concept node connected to {selected.meta}. The graph keeps prerequisite
@@ -1117,10 +1138,400 @@ function CurriculumMap() {
   );
 }
 
+function CurriculumMap() {
+  const navigate = useNavigate();
+  const evidence = useLearningEvidence();
+  const [phase, setPhase] = useState(0);
+  const [view, setView] = useState<"journey" | "list">("journey");
+  const [filter, setFilter] = useState("All");
+  const [query, setQuery] = useState("");
+  const [selectedCode, setSelectedCode] = useState<ModuleId>("3.1");
+  const [concept, setConcept] = useState<string | null>(null);
+  const phases = [
+    ["Foundations", 0, 6],
+    ["Machine Learning", 7, 12],
+    ["Deep Learning & Applied AI", 13, 19],
+    ["Advanced AI Engineering", 20, 27],
+    ["Career & Capstone", 28, 29],
+  ] as const;
+  const mastered = Math.min(curriculumModules.length, Math.floor(evidence.sectionsCompleted / 4));
+  const statusFor = (index: number) =>
+    index < mastered
+      ? "mastered"
+      : index === mastered
+        ? "in-progress"
+        : index === mastered + 1
+          ? "available"
+          : "locked";
+  const selectedIndex = curriculumModules.findIndex((module) => module.code === selectedCode);
+  const selectedModule = curriculumModules[selectedIndex] ?? curriculumModules[0]!;
+  const experience = getLearningExperience(selectedModule.code);
+  const modules = curriculumModules
+    .map((module, index) => ({ module, index, status: statusFor(index) }))
+    .filter(({ module, index, status }) => {
+      const phaseMatch = index >= phases[phase]![1] && index <= phases[phase]![2];
+      const text =
+        `${module.code} ${module.title} ${module.description} ${module.topics.join(" ")}`.toLowerCase();
+      const filterMatch =
+        filter === "All" ||
+        filter.toLowerCase() === status ||
+        (filter === "Projects" && module.experienceStage === "Ship") ||
+        (filter === "Challenges" && module.experienceStage !== "Understand");
+      return (
+        text.includes(query.toLowerCase()) && filterMatch && (query.trim() ? true : phaseMatch)
+      );
+    });
+  return (
+    <>
+      <PageHeader
+        eyebrow={`Learning journey · ${mastered} of ${curriculumModules.length} modules evidenced`}
+        title="Your AI Engineering Journey"
+        description="Learn the foundations, build real AI systems, and progress toward production-level engineering."
+      />
+      <Panel className="mb-5">
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {phases.map(([label], index) => (
+            <button
+              key={label}
+              onClick={() => setPhase(index)}
+              className={`shrink-0 rounded-full px-3 py-2 text-xs ${phase === index ? "bg-ink text-background" : "bg-muted text-faint"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+          <label className="flex items-center gap-2 rounded-xl border border-border/70 px-3">
+            <Search className="size-4 text-faint" />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              className="min-h-11 w-full bg-transparent text-sm outline-none"
+              placeholder="Search modules, topics, or skills"
+            />
+          </label>
+          <select
+            value={filter}
+            onChange={(event) => setFilter(event.target.value)}
+            className="rounded-xl border border-border/70 bg-surface-elevated px-3 text-sm"
+            aria-label="Filter curriculum"
+          >
+            {[
+              "All",
+              "In-progress",
+              "Available",
+              "Mastered",
+              "Locked",
+              "Challenges",
+              "Projects",
+            ].map((item) => (
+              <option key={item}>{item}</option>
+            ))}
+          </select>
+          <div className="flex rounded-xl border border-border/70 p-1">
+            {(["journey", "list"] as const).map((item) => (
+              <button
+                key={item}
+                onClick={() => setView(item)}
+                className={`rounded-lg px-3 py-2 text-xs capitalize ${view === item ? "bg-background shadow-sm" : "text-faint"}`}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
+      </Panel>
+      <div className="grid gap-4 xl:grid-cols-[1fr_360px]">
+        <Panel>
+          <SectionTitle
+            eyebrow={`${phases[phase]![0]} · ${modules.length} modules`}
+            title={view === "journey" ? "Follow the path" : "Find a module"}
+          />
+          <div
+            className={
+              view === "journey"
+                ? "space-y-3 border-l-2 border-border pl-4"
+                : "grid gap-3 md:grid-cols-2"
+            }
+          >
+            {modules.map(({ module, index, status }) => (
+              <button
+                key={module.code}
+                onClick={() => {
+                  setSelectedCode(module.code);
+                  setConcept(null);
+                }}
+                className={`relative w-full rounded-xl border p-4 text-left ${selectedCode === module.code ? "border-brand bg-brand-soft/40" : "border-border/70 bg-background/35"}`}
+              >
+                {view === "journey" && (
+                  <span className="absolute -left-[25px] top-5 size-3 rounded-full border-2 border-background bg-brand" />
+                )}
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-mono text-[10px] text-brand">{module.code}</p>
+                    <h3 className="mt-1 text-sm font-semibold">{module.title}</h3>
+                  </div>
+                  <StatusPill status={status} />
+                </div>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">{module.description}</p>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {module.topics.slice(0, 4).map((topic) => (
+                    <span
+                      key={topic}
+                      className="rounded-full bg-lilac-soft px-2 py-1 text-[10px] text-lilac"
+                    >
+                      {topic}
+                    </span>
+                  ))}
+                </div>
+                <p className="mt-3 text-[10px] text-faint">
+                  {module.estimatedTime} · {module.experienceStage}
+                </p>
+              </button>
+            ))}
+          </div>
+        </Panel>
+        <Panel className="h-fit">
+          <SectionTitle
+            eyebrow={`${selectedModule.code} · ${statusFor(selectedIndex)}`}
+            title={selectedModule.title}
+          />
+          <p className="text-sm leading-6 text-muted-foreground">{selectedModule.description}</p>
+          <div className="mt-4 rounded-xl bg-brand-soft/40 p-3 text-xs">
+            <Eyebrow>Path</Eyebrow>
+            <p className="mt-1 text-muted-foreground">
+              {selectedIndex
+                ? `Prerequisite: ${selectedModule.prerequisites.join(", ")}`
+                : "Start here and build your first evidence."}{" "}
+              · Next: {curriculumModules[selectedIndex + 1]?.code ?? "Complete"}
+            </p>
+          </div>
+          <Eyebrow>Concepts and activities</Eyebrow>
+          <div className="mt-2 space-y-2">
+            {experience.learningSections.map((section) => (
+              <button
+                key={section.id}
+                onClick={() => setConcept(section.concept)}
+                className={`w-full rounded-lg p-2 text-left text-xs ${concept === section.concept ? "bg-lilac-soft text-lilac" : "bg-background/50"}`}
+              >
+                {section.concept}
+              </button>
+            ))}
+            <p className="rounded-lg bg-background/50 p-2 text-xs">
+              Practice → Break it → Challenge → Mastery evidence
+            </p>
+          </div>
+          {concept && (
+            <div className="mt-3 rounded-xl border border-brand/30 p-3 text-xs">
+              <strong>{concept}</strong>
+              <p className="mt-1 text-muted-foreground">
+                {
+                  experience.learningSections.find((section) => section.concept === concept)
+                    ?.explanation
+                }
+              </p>
+            </div>
+          )}
+          <Button
+            className="mt-5 w-full"
+            onClick={() =>
+              navigate({ to: "/learning-mode", search: { module: selectedModule.code } })
+            }
+          >
+            {statusFor(selectedIndex) === "in-progress" ? "Continue learning" : "Explore learning"}{" "}
+            <ArrowRight />
+          </Button>
+        </Panel>
+      </div>
+    </>
+  );
+}
+
 function LearningMode({ moduleId = "3.1" }: { moduleId?: ModuleId }) {
-  const primaryChallenge =
-    allCurriculumChallenges.find((challenge) => challenge.moduleId === moduleId) ??
-    allCurriculumChallenges[0];
+  const navigate = useNavigate();
+  const experience = getLearningExperience(moduleId);
+  const [stepIndex, setStepIndex] = useState(0);
+  const [selected, setSelected] = useState("");
+  const [note, setNote] = useState("");
+  const [ran, setRan] = useState(false);
+  const [recordedSteps, setRecordedSteps] = useState<Set<string>>(() => new Set());
+  const step = experience.steps[stepIndex];
+  const canContinue =
+    step.interaction === "choose"
+      ? selected.length > 0
+      : step.interaction === "edit"
+        ? ran || note.trim().length > 0
+        : true;
+  const choose = (value: string) => {
+    setSelected(value);
+    if (value === step.answer && !recordedSteps.has(step.id)) {
+      recordLearningEvidence({ questionsPassed: 1 });
+      setRecordedSteps((current) => new Set(current).add(step.id));
+    }
+    toast(
+      value === step.answer
+        ? "Correct — connect that decision to the example."
+        : "Good attempt — inspect the example and try again.",
+    );
+  };
+  const next = () => {
+    if (!canContinue) {
+      toast("Complete the experiment before moving on.");
+      return;
+    }
+    if (stepIndex === experience.steps.length - 1) {
+      if (!recordedSteps.has(experience.module.code)) {
+        recordLearningEvidence({ sectionsCompleted: experience.steps.length });
+        setRecordedSteps((current) => new Set(current).add(experience.module.code));
+      }
+      navigate({ to: "/challenge", search: { module: experience.module.code } });
+      return;
+    }
+    setStepIndex((value) => Math.min(experience.steps.length - 1, value + 1));
+    setSelected("");
+    setNote("");
+    setRan(false);
+  };
+  return (
+    <>
+      <PageHeader
+        eyebrow={`Learning studio · Module ${experience.module.code}`}
+        title={experience.module.title}
+        description="Learn a concept, see it in context, try a controlled change, then apply and debug it."
+        action={<StatusPill status={experience.module.status} />}
+      />
+      <Panel className="border-brand/20 bg-brand-soft/20">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <Eyebrow>{step.stage} · active learning</Eyebrow>
+            <h2 className="mt-1 font-display text-xl font-semibold">{step.title}</h2>
+          </div>
+          <span className="font-mono text-xs text-brand">
+            {stepIndex + 1}/{experience.steps.length}
+          </span>
+        </div>
+        <div className="mt-4 flex gap-1.5 overflow-x-auto pb-1">
+          {experience.steps.map((item, index) => (
+            <button
+              key={item.id}
+              className={`shrink-0 rounded-full px-3 py-2 text-[11px] ${
+                index === stepIndex
+                  ? "bg-ink text-background"
+                  : index < stepIndex
+                    ? "bg-mint-soft text-mint"
+                    : "bg-muted text-faint"
+              }`}
+              onClick={() => index <= stepIndex && setStepIndex(index)}
+            >
+              {index < stepIndex ? <Check className="mr-1 inline size-3" /> : null}
+              {item.stage}
+            </button>
+          ))}
+        </div>
+      </Panel>
+      <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_320px]">
+        <Panel className="cp-rise">
+          <p className="max-w-3xl text-[15px] leading-7 text-muted-foreground">
+            {step.explanation}
+          </p>
+          <div className="mt-4 rounded-xl bg-lilac-soft/45 p-4">
+            <Eyebrow>Why it matters</Eyebrow>
+            <p className="mt-2 text-sm leading-6">{step.whyItMatters}</p>
+          </div>
+          <div className="mt-4 rounded-xl border border-border/60 bg-ink p-4">
+            <Eyebrow>{step.stage === "BUILD" ? "Challenge brief" : "See it"}</Eyebrow>
+            <pre className="mt-3 max-h-64 overflow-auto whitespace-pre-wrap font-mono text-xs leading-6 text-background/85">
+              {step.example}
+            </pre>
+          </div>
+          <div className="mt-5">
+            <p className="text-sm font-semibold">{step.prompt}</p>
+            {step.options && (
+              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                {step.options.map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => choose(option)}
+                    className={`rounded-xl border p-3 text-left text-sm transition ${
+                      selected === option
+                        ? "border-brand bg-brand-soft text-brand"
+                        : "border-border/70 hover:border-brand/50"
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            )}
+            {step.interaction === "edit" && (
+              <div className="mt-3 space-y-3">
+                <Textarea
+                  value={note}
+                  onChange={(event) => setNote(event.target.value)}
+                  placeholder="Change one input or describe the implementation you would test…"
+                  className="min-h-24"
+                />
+                <Button
+                  onClick={() => {
+                    setRan(true);
+                    toast("Experiment recorded — compare the output with your prediction.");
+                  }}
+                >
+                  <Play /> Run experiment
+                </Button>
+              </div>
+            )}
+            {step.interaction === "inspect" && (
+              <div className="mt-3 rounded-xl bg-background/55 p-3 text-xs text-muted-foreground">
+                Trace the arrows in the example, then continue when you can explain the first
+                transformation.
+              </div>
+            )}
+          </div>
+          <div className="mt-6 flex justify-between gap-2">
+            <Button
+              variant="ghost"
+              disabled={stepIndex === 0}
+              onClick={() => setStepIndex((value) => Math.max(0, value - 1))}
+            >
+              <ArrowLeft /> Previous
+            </Button>
+            <Button onClick={next}>
+              {stepIndex === experience.steps.length - 1 ? "Open challenge" : "Continue"}{" "}
+              <ArrowRight />
+            </Button>
+          </div>
+        </Panel>
+        <Panel className="h-fit">
+          <SectionTitle
+            eyebrow={`Module ${experience.module.code}`}
+            title={experience.challenge.title}
+          />
+          <p className="text-xs leading-5 text-muted-foreground">
+            {experience.challenge.description}
+          </p>
+          <div className="mt-4 space-y-3 text-xs">
+            <FeedbackCard
+              label="Concept sequence"
+              body={`${experience.learningSections.length} concepts · ${experience.learningSections.map((section) => section.concept).join(" · ")}`}
+              tone="brand"
+            />
+            <FeedbackCard label="Topics" body={experience.module.topics.join(" · ")} tone="lilac" />
+            <FeedbackCard
+              label="Learning objective"
+              body={experience.module.learningObjectives[0]}
+              tone="mint"
+            />
+            <FeedbackCard label="Mentor hint" body={experience.challenge.hints[0]} tone="peach" />
+          </div>
+        </Panel>
+      </div>
+    </>
+  );
+}
+
+function LegacyLearningMode({ moduleId = "3.1" }: { moduleId?: ModuleId }) {
+  const primaryChallenge = getChallengeForModule(moduleId);
   const currentModule = curriculumModules.find((module) => module.code === moduleId);
   const moduleTitle = currentModule?.title ?? `Module ${moduleId}`;
   const moduleFocus = primaryChallenge.topic;
@@ -1511,6 +1922,7 @@ function CodeEditor({
 }: {
   code: string;
   challenge: CurriculumChallenge;
+  onSubmit?: () => void;
   onNext?: () => void;
   compact?: boolean;
 }) {
@@ -1572,7 +1984,16 @@ function CodeEditor({
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setOutput("Submitted · 3/3 tests passed")}
+              onClick={() => {
+                setOutput(
+                  `Submitted · ${challenge.tests.length}/${challenge.tests.length} tests passed`,
+                );
+                if (!submitted) {
+                  onSubmit?.();
+                  setSubmitted(true);
+                }
+              }}
+              disabled={submitted}
             >
               Submit
             </Button>
@@ -1605,9 +2026,7 @@ function CodeEditor({
 }
 
 function Challenge({ onSubmit, moduleId = "3.1" }: { onSubmit: () => void; moduleId?: ModuleId }) {
-  const primaryChallenge =
-    allCurriculumChallenges.find((item) => item.moduleId === moduleId) ??
-    allCurriculumChallenges[0];
+  const primaryChallenge = getChallengeForModule(moduleId);
   return (
     <Panel className="cp-rise">
       <SectionTitle
@@ -1680,9 +2099,7 @@ function FeedbackCard({
 
 function Tutor() {
   const tutorModule = curriculumModules[0];
-  const tutorChallenge =
-    allCurriculumChallenges.find((challenge) => challenge.moduleId === tutorModule.code) ??
-    allCurriculumChallenges[0];
+  const tutorChallenge = getChallengeForModule(tutorModule.code);
   const [messages, setMessages] = useState([
     {
       from: "assistant" as const,
@@ -1800,10 +2217,9 @@ function CodingLab({
   challenge?: boolean;
   moduleId?: ModuleId;
 }) {
-  const primaryChallenge =
-    allCurriculumChallenges.find((item) => item.moduleId === moduleId) ??
-    allCurriculumChallenges[0];
+  const primaryChallenge = getChallengeForModule(moduleId);
   const [review, setReview] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   return (
     <>
       <PageHeader
@@ -1828,7 +2244,12 @@ function CodingLab({
       />
       <div className="grid gap-4 xl:grid-cols-[1fr_300px]">
         <div>
-          <CodeEditor code={primaryChallenge.starterCode} challenge={primaryChallenge} compact />
+          <CodeEditor
+            code={primaryChallenge.starterCode}
+            challenge={primaryChallenge}
+            onSubmit={() => recordLearningEvidence({ challengesPassed: 1 })}
+            compact
+          />
           <Panel className="mt-4">
             <SectionTitle
               eyebrow="Test cases"
@@ -1911,7 +2332,7 @@ function CodingLab({
           />
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {allCurriculumChallenges.map((item) => (
-              <div key={item.moduleId} className="rounded-xl border border-border/60 p-3">
+              <div key={item.id} className="rounded-xl border border-border/60 p-3">
                 <div className="flex items-center justify-between gap-2">
                   <Eyebrow>Module {item.moduleId}</Eyebrow>
                   <span className="rounded-full bg-brand-soft px-2 py-1 text-[10px] text-brand">
@@ -3046,9 +3467,9 @@ export function CertificateVerification({ certificateId }: { certificateId: stri
 
 export function PlacementAdmin() {
   const cohorts = [
-    ["Overall readiness", "74%", "186 students"],
-    ["Modules mastered", "68%", "1,240 completions"],
-    ["Projects verified", "82%", "312 submissions"],
+    ["Overall readiness", "—", "Connect cohort data to calculate"],
+    ["Modules mastered", "—", "Connect cohort data to calculate"],
+    ["Projects verified", "—", "Connect cohort data to calculate"],
   ];
   return (
     <div className="min-h-screen bg-[#f7f8fa] text-foreground">

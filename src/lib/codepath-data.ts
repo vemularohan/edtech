@@ -3,52 +3,52 @@ import { curriculumModules } from "./curriculum-data";
 export type TopicStatus = "mastered" | "in-progress" | "available" | "locked";
 
 export const subjects = [
-  { name: "Foundations", progress: 100, tone: "brand" },
-  { name: "Data", progress: 78, tone: "lilac" },
-  { name: "Machine Learning", progress: 46, tone: "peach" },
-  { name: "LLM Engineering", progress: 18, tone: "mint" },
+  { name: "Foundations", progress: 0, tone: "brand" },
+  { name: "Data", progress: 0, tone: "lilac" },
+  { name: "Machine Learning", progress: 0, tone: "peach" },
+  { name: "LLM Engineering", progress: 0, tone: "mint" },
 ];
 
-export const nodes = curriculumModules.slice(0, 14).map((module, index) => ({
+export const nodes = curriculumModules.map((module, index) => ({
   id: module.code,
   label: module.title,
-  x: 8 + (index % 6) * 17,
-  y: index < 6 ? 22 : 58,
+  x: 10 + (index % 5) * 20,
+  y: 10 + Math.floor(index / 5) * 15,
   status: module.status,
   meta: `${module.code} · ${module.experienceStage}`,
 }));
 
 export const timeline = [
-  { date: "Mon", minutes: 42 },
-  { date: "Tue", minutes: 68 },
-  { date: "Wed", minutes: 35 },
-  { date: "Thu", minutes: 84 },
-  { date: "Fri", minutes: 54 },
-  { date: "Sat", minutes: 96 },
-  { date: "Sun", minutes: 26 },
+  { date: "Mon", minutes: 0 },
+  { date: "Tue", minutes: 0 },
+  { date: "Wed", minutes: 0 },
+  { date: "Thu", minutes: 0 },
+  { date: "Fri", minutes: 0 },
+  { date: "Sat", minutes: 0 },
+  { date: "Sun", minutes: 0 },
 ];
 
 export const weekTrend = [
-  { week: "W1", score: 48 },
-  { week: "W2", score: 53 },
-  { week: "W3", score: 61 },
-  { week: "W4", score: 58 },
-  { week: "W5", score: 72 },
-  { week: "W6", score: 78 },
+  { week: "W1", score: 0 },
+  { week: "W2", score: 0 },
+  { week: "W3", score: 0 },
+  { week: "W4", score: 0 },
+  { week: "W5", score: 0 },
+  { week: "W6", score: 0 },
 ];
 
 export const skillData = [
-  { skill: "Python", mastery: 92 },
-  { skill: "Data", mastery: 78 },
-  { skill: "ML", mastery: 54 },
-  { skill: "LLMs", mastery: 38 },
-  { skill: "RAG", mastery: 24 },
-  { skill: "Agents", mastery: 16 },
+  { skill: "Python", mastery: 0 },
+  { skill: "Data", mastery: 0 },
+  { skill: "ML", mastery: 0 },
+  { skill: "LLMs", mastery: 0 },
+  { skill: "RAG", mastery: 0 },
+  { skill: "Agents", mastery: 0 },
 ];
 
 export const heatmap = Array.from({ length: 70 }, (_, index) => ({
   id: index,
-  intensity: [0, 1, 2, 3, 4, 2, 1, 3, 0, 2, 4, 1][index % 12],
+  intensity: 0,
 }));
 
 export const codingStarter = `def classify_question(message):
@@ -64,6 +64,7 @@ export type ChallengeTest = {
 };
 
 export type CurriculumChallenge = {
+  id: string;
   moduleId: `3.${number}`;
   topic: string;
   title: string;
@@ -133,7 +134,7 @@ def clean_attendance(rows):
 
 export const primaryChallenge = curriculumChallenges[0];
 
-const moduleSpecificChallenges: CurriculumChallenge[] = [
+const moduleSpecificChallenges: Array<Omit<CurriculumChallenge, "id">> = [
   {
     moduleId: "3.1",
     topic: "AI-generated code review",
@@ -863,12 +864,26 @@ const moduleSpecificChallenges: CurriculumChallenge[] = [
   },
 ];
 
-export const allCurriculumChallenges = moduleSpecificChallenges;
+export const allCurriculumChallenges: CurriculumChallenge[] = moduleSpecificChallenges.map(
+  (challenge) => ({
+    ...challenge,
+    id: `challenge-${challenge.moduleId.replace(".", "-")}-${challenge.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "")}`,
+  }),
+);
+
+export function getChallengeForModule(moduleId: `3.${number}`): CurriculumChallenge {
+  const challenge = allCurriculumChallenges.find((item) => item.moduleId === moduleId);
+  if (!challenge) throw new Error(`No challenge configured for curriculum module: ${moduleId}`);
+  return challenge;
+}
 
 export function validateChallengeLibrary(
   challenges: CurriculumChallenge[] = allCurriculumChallenges,
 ) {
-  const ids = challenges.map((challenge) => `${challenge.moduleId}:${challenge.title}`);
+  const ids = challenges.map((challenge) => challenge.id);
   const problems = challenges.map((challenge) => challenge.problem);
   const validModules = new Set(curriculumModules.map((module) => module.code));
   return {
@@ -877,6 +892,7 @@ export function validateChallengeLibrary(
     validModuleIds: challenges.every((challenge) => validModules.has(challenge.moduleId)),
     completeUnits: challenges.every(
       (challenge) =>
+        challenge.id &&
         challenge.starterCode &&
         challenge.tests.length > 0 &&
         challenge.hints.length > 0 &&
