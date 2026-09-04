@@ -1752,7 +1752,13 @@ function LearningModeContent({
         recordLearningEvidence({ sectionsCompleted: experience.steps.length });
         setRecordedSteps((current) => new Set(current).add(experience.module.code));
       }
-      navigate({ to: "/challenge", search: { module: experience.module.code } });
+      navigate({
+        to: "/challenge",
+        search: {
+          module: experience.module.code,
+          challenge: experience.challenge.id,
+        },
+      });
       return;
     }
     setStepIndex((value) => Math.min(experience.steps.length - 1, value + 1));
@@ -2399,7 +2405,7 @@ function CodeEditor({
                 );
               }}
             >
-              {submitted ? "Submitted" : "Submit"}
+              Submit
             </Button>
           </div>
           <div className="rounded-xl bg-peach-soft/45 p-3">
