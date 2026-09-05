@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/challenge-Cx_2cZK1.js","assets/link-DPT17Rzw.js","assets/CodepathApp-flCvIbzF.js"])))=>i.map(i=>d[i]);
+import{n as e,r as t,t as n}from"./preload-helper-psnANCaL.js";import{i as r,n as i,r as a}from"./types-CdQ_w3Tu.js";var o=t(`/challenge`)({validateSearch:i({module:a(e=>e===void 0?void 0:String(e).replace(/^"|"$/g,``),r().regex(/^3\.\d+$/).optional()),challenge:r().trim().min(1).optional()}),component:e(()=>n(()=>import(`./challenge-Cx_2cZK1.js`),__vite__mapDeps([0,1,2])),`component`)});export{o as t};

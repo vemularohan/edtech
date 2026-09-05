@@ -651,6 +651,16 @@ var ShieldCheck = createLucideIcon("shield-check", [["path", {
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var Sparkle = createLucideIcon("sparkle", [["path", {
+	d: "M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z",
+	key: "1s2grr"
+}]]);
+/**
+* @license lucide-react v0.575.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var Square = createLucideIcon("square", [["rect", {
 	width: "18",
 	height: "18",
@@ -776,4 +786,4 @@ var Zap = createLucideIcon("zap", [["path", {
 	key: "1xq2db"
 }]]);
 //#endregion
-export { BrainCircuit as A, Compass as C, ChevronDown as D, ChevronRight as E, ArrowLeft as F, ArrowDown as I, Activity as L, BookOpen as M, Bell as N, Check as O, ArrowRight as P, CornerDownLeft as S, CodeXml as T, Layers as _, Trophy as a, FolderKanban as b, ShieldCheck as c, RotateCcw as d, Play as f, Lightbulb as g, LoaderCircle as h, Upload as i, Bot as j, ChartColumn as k, Settings2 as l, Lock as m, X as n, Target as o, Menu as p, UserRound as r, Square as s, Zap as t, Search as u, GraduationCap as v, Command as w, Flame as x, GitBranch as y };
+export { ChartColumn as A, CornerDownLeft as C, ChevronRight as D, CodeXml as E, ArrowRight as F, ArrowLeft as I, ArrowDown as L, Bot as M, BookOpen as N, ChevronDown as O, Bell as P, Activity as R, Flame as S, Command as T, Lightbulb as _, Trophy as a, GitBranch as b, Sparkle as c, Search as d, RotateCcw as f, LoaderCircle as g, Lock as h, Upload as i, BrainCircuit as j, Check as k, ShieldCheck as l, Menu as m, X as n, Target as o, Play as p, UserRound as r, Square as s, Zap as t, Settings2 as u, Layers as v, Compass as w, FolderKanban as x, GraduationCap as y };

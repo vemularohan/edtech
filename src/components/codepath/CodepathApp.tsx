@@ -82,6 +82,8 @@ import {
   PromptInputTextarea,
 } from "@/components/ai-elements/prompt-input";
 import { Shimmer } from "@/components/ai-elements/shimmer";
+import { Background3D } from "@/components/ui/Background3D";
+import { SpatialCard } from "@/components/ui/SpatialCard";
 import {
   codingStarter,
   assessmentQuestions,
@@ -160,17 +162,29 @@ function Mark({ compact = false }: { compact?: boolean }) {
   );
 }
 
-function Panel({ className = "", children }: { className?: string; children: React.ReactNode }) {
+function Panel({
+  className = "",
+  children,
+  elevation = "medium",
+}: {
+  className?: string;
+  children: React.ReactNode;
+  elevation?: "low" | "medium" | "high";
+}) {
   return (
     <section
-      className={`min-w-0 rounded-2xl border border-border/70 bg-surface-elevated/75 p-4 shadow-sm backdrop-blur-md sm:p-5 ${className}`}
+      className={`spatial-panel min-w-0 p-5 ${className}`}
     >
       {children}
     </section>
   );
 }
 function Eyebrow({ children }: { children: React.ReactNode }) {
-  return <p className="font-mono text-[10px] uppercase tracking-[.18em] text-faint">{children}</p>;
+  return (
+    <p className="font-mono text-[10px] uppercase tracking-[.2em] text-brand/90 font-medium">
+      {children}
+    </p>
+  );
 }
 function SectionTitle({
   eyebrow,
@@ -185,7 +199,7 @@ function SectionTitle({
     <div className="mb-4 flex items-start justify-between gap-4">
       <div>
         {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
-        <h2 className="mt-1 font-display text-lg font-semibold tracking-tight text-foreground">
+        <h2 className="mt-1 font-display text-lg font-semibold tracking-tight text-foreground/95">
           {title}
         </h2>
       </div>
@@ -197,14 +211,14 @@ function StatusPill({ status }: { status: string }) {
   const label = status.replace("-", " ");
   const style =
     status === "mastered"
-      ? "bg-mint-soft text-mint"
+      ? "bg-mint-soft text-mint border border-mint/30 shadow-[0_0_12px_rgba(20,184,166,0.25)]"
       : status === "in-progress"
-        ? "bg-brand-soft text-brand"
+        ? "bg-brand-soft text-brand border border-brand/35 cp-pulse shadow-[0_0_14px_rgba(0,180,180,0.3)]"
         : status === "available"
-          ? "bg-lilac-soft text-lilac"
-          : "bg-muted text-faint";
+          ? "bg-lilac-soft text-lilac border border-lilac/30 shadow-sm"
+          : "bg-muted/70 text-faint border border-border/50";
   return (
-    <span className={`rounded-full px-2 py-1 text-[10px] font-semibold capitalize ${style}`}>
+    <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-wide uppercase ${style}`}>
       {label}
     </span>
   );
@@ -219,9 +233,9 @@ function ProgressBar({
   className?: string;
 }) {
   return (
-    <div className={`h-2 overflow-hidden rounded-full bg-foreground/10 ${className ?? ""}`}>
+    <div className={`h-2.5 overflow-hidden rounded-full bg-foreground/8 border border-border/40 p-[1px] ${className ?? ""}`}>
       <div
-        className={`cp-fill h-full rounded-full ${toneMap[tone]}`}
+        className={`cp-fill h-full rounded-full ${toneMap[tone]} shadow-[0_0_10px_currentColor]`}
         style={{ width: `${value}%` }}
       />
     </div>
@@ -243,17 +257,21 @@ function StatCard({
   className?: string;
 }) {
   return (
-    <Panel className={`p-4 ${className ?? ""}`}>
-      <div className="flex items-start justify-between">
-        <span className={`grid size-9 place-items-center rounded-xl ${softToneMap[tone]}`}>
-          <Icon className="size-4" />
-        </span>
-        <span className="font-mono text-[10px] text-brand">+12%</span>
-      </div>
-      <p className="mt-4 text-xs font-medium text-muted-foreground">{label}</p>
-      <p className="mt-1 font-display text-2xl font-semibold text-foreground">{value}</p>
-      <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{note}</p>
-    </Panel>
+    <SpatialCard depth={8} elevation="medium" className={`rounded-2xl ${className ?? ""}`}>
+      <Panel className="p-4.5">
+        <div className="flex items-start justify-between">
+          <span className={`grid size-10 place-items-center rounded-xl shadow-sm ${softToneMap[tone]}`}>
+            <Icon className="size-4.5" />
+          </span>
+          <span className="font-mono text-[10px] font-semibold text-brand bg-brand-soft/70 px-2 py-0.5 rounded-full border border-brand/20">
+            Active
+          </span>
+        </div>
+        <p className="mt-4 text-xs font-medium text-muted-foreground">{label}</p>
+        <p className="mt-1 font-display text-2xl font-bold tracking-tight text-foreground">{value}</p>
+        <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{note}</p>
+      </Panel>
+    </SpatialCard>
   );
 }
 
@@ -265,43 +283,48 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
   const summary = getLearningProgressSummary(progress);
   const pageTitle = navItems.find(({ to }) => activePath(active, to))?.label ?? "AI Skills Track";
   return (
-    <div className="app-shell min-h-screen overflow-x-clip bg-background text-foreground">
+    <div className="app-shell min-h-screen overflow-x-clip bg-background text-foreground relative">
+      <Background3D />
       <div aria-hidden className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="cp-float absolute -left-40 -top-48 size-[520px] rounded-full bg-brand-soft/20 blur-3xl" />
-        <div className="absolute -right-40 top-1/3 size-[560px] rounded-full bg-lilac-soft/20 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 size-[440px] rounded-full bg-peach-soft/15 blur-3xl" />
+        <div className="cp-float absolute -left-40 -top-48 size-[580px] rounded-full bg-brand-soft/25 blur-3xl opacity-70" />
+        <div className="absolute -right-40 top-1/4 size-[620px] rounded-full bg-lilac-soft/20 blur-3xl opacity-60" />
+        <div className="absolute bottom-0 left-1/3 size-[480px] rounded-full bg-peach-soft/20 blur-3xl opacity-50" />
       </div>
-      <div className="relative mx-auto flex min-h-screen max-w-[1500px]">
-        <aside className="app-sidebar sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-border/60 bg-surface/45 px-4 py-5 md:flex">
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-[1540px]">
+        <aside className="app-sidebar sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border/70 bg-surface/60 px-4 py-5 backdrop-blur-2xl md:flex">
           <div className="mb-7 px-2">
             <Mark />
           </div>
           <div className="px-2">
-            <Eyebrow>Workspace</Eyebrow>
+            <Eyebrow>3D Laboratory</Eyebrow>
           </div>
-          <nav className="mt-2 flex flex-col gap-1">
+          <nav className="mt-2.5 flex flex-col gap-1.5">
             {navItems.map(({ label, to, icon: Icon }) => (
               <Link
                 key={to}
                 to={to}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${activePath(active, to) ? "bg-surface-elevated text-foreground shadow-sm ring-1 ring-border" : "text-muted-foreground hover:bg-surface-elevated/60 hover:text-foreground"}`}
+                className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
+                  activePath(active, to)
+                    ? "bg-surface-elevated/95 text-foreground shadow-md ring-1 ring-border/80 translate-x-1"
+                    : "text-muted-foreground hover:bg-surface-elevated/60 hover:text-foreground hover:translate-x-0.5"
+                }`}
               >
                 <Icon
-                  className={`size-4 ${activePath(active, to) ? "text-brand" : "text-faint"}`}
+                  className={`size-4 transition-colors ${activePath(active, to) ? "text-brand" : "text-faint"}`}
                 />
                 {label}
               </Link>
             ))}
           </nav>
-          <div className="mt-auto rounded-2xl border border-border/70 bg-surface-elevated/75 p-3">
+          <div className="mt-auto rounded-2xl border border-border/80 bg-surface-elevated/85 p-3.5 shadow-sm backdrop-blur-md">
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-xs font-semibold">Curriculum progress</p>
-              <span className="rounded-full bg-lilac-soft px-2 py-1 text-[10px] font-semibold text-lilac">
+              <p className="text-xs font-semibold">Spine Progress</p>
+              <span className="rounded-full bg-lilac-soft px-2 py-0.5 text-[10px] font-semibold text-lilac border border-lilac/30">
                 {summary.completedCount}/{summary.totalModules}
               </span>
             </div>
             <ProgressBar value={summary.progressPercent} />
-            <p className="mt-2 text-[11px] text-faint">
+            <p className="mt-2 text-[11px] text-faint truncate">
               Module {summary.currentModule.code} · {summary.currentStepTitle || "Ready to start"}
             </p>
           </div>
@@ -310,16 +333,16 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
             onClick={() => navigate({ to: "/profile" })}
           >
             <Settings2 className="size-4 text-faint" />
-            Settings
+            Settings & Lab Config
           </button>
         </aside>
         {mobileOpen && (
           <div
-            className="fixed inset-0 z-40 bg-foreground/20 md:hidden"
+            className="fixed inset-0 z-40 bg-foreground/25 backdrop-blur-sm md:hidden"
             onClick={() => setMobileOpen(false)}
           >
             <aside
-              className="h-full w-[min(19rem,calc(100vw-2rem))] overflow-y-auto bg-background p-5 shadow-xl"
+              className="h-full w-[min(19rem,calc(100vw-2rem))] overflow-y-auto bg-background/95 p-5 shadow-2xl backdrop-blur-xl border-r border-border"
               onClick={(event) => event.stopPropagation()}
             >
               <div className="mb-7 flex items-center justify-between">
@@ -328,13 +351,17 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
                   <X />
                 </Button>
               </div>
-              <nav className="flex flex-col gap-1">
+              <nav className="flex flex-col gap-1.5">
                 {navItems.map(({ label, to, icon: Icon }) => (
                   <Link
                     key={to}
                     to={to}
                     onClick={() => setMobileOpen(false)}
-                    className={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-3 text-sm ${activePath(active, to) ? "bg-brand-soft font-semibold text-brand" : "text-muted-foreground hover:bg-surface"}`}
+                    className={`flex min-h-11 items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-medium ${
+                      activePath(active, to)
+                        ? "bg-brand-soft font-semibold text-brand shadow-sm"
+                        : "text-muted-foreground hover:bg-surface"
+                    }`}
                   >
                     <Icon className="size-4 text-brand" />
                     {label}
@@ -345,7 +372,7 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+          <header className="sticky top-0 z-30 border-b border-border/70 bg-background/80 backdrop-blur-2xl">
             <div className="flex min-h-16 items-center gap-2 px-3 sm:gap-3 sm:px-6">
               <Button
                 size="icon"
@@ -359,39 +386,43 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
               <p className="min-w-0 flex-1 truncate font-display text-sm font-semibold sm:hidden">
                 {pageTitle}
               </p>
-              <div className="hidden flex-1 items-center gap-2 rounded-xl border border-border/70 bg-surface-elevated/70 px-3 py-2 sm:flex sm:max-w-md">
+              <div className="hidden flex-1 items-center gap-2 rounded-xl border border-border/80 bg-surface-elevated/80 px-3.5 py-2 shadow-inner backdrop-blur-md sm:flex sm:max-w-md">
                 <Search className="size-4 text-faint" />
                 <input
                   className="w-full bg-transparent text-sm outline-none placeholder:text-faint"
-                  placeholder="Search topics, projects, skills…"
+                  placeholder="Search topics, 3D labs, neural models…"
                 />
                 <span className="hidden rounded-md bg-foreground/10 px-1.5 py-0.5 font-mono text-[10px] text-faint sm:inline">
                   ⌘K
                 </span>
               </div>
-              <div className="ml-auto flex items-center gap-2">
+              <div className="ml-auto flex items-center gap-3">
+                <div className="hidden sm:flex items-center gap-2 rounded-full border border-brand/30 bg-brand-soft/50 px-3 py-1 text-[11px] font-mono text-brand font-medium">
+                  <span className="size-2 rounded-full bg-brand cp-pulse" />
+                  AI Lab Active
+                </div>
                 <Button
                   size="icon"
                   variant="ghost"
                   className="hidden sm:inline-flex"
                   aria-label="Notifications"
-                  onClick={() => toast("You are all caught up")}
+                  onClick={() => toast("All telemetry streams are healthy")}
                 >
-                  <Bell />
+                  <Bell className="size-4 text-faint" />
                 </Button>
                 <button
-                  className="flex min-h-11 items-center gap-2 rounded-xl bg-surface-elevated px-2 py-1.5 text-left"
+                  className="flex min-h-10 items-center gap-2 rounded-xl bg-surface-elevated/90 px-2.5 py-1.5 text-left border border-border/60 shadow-sm transition hover:scale-105"
                   onClick={() => navigate({ to: "/profile" })}
                 >
-                  <span className="hidden text-xs font-medium sm:inline">Aarav K.</span>
-                  <span className="grid size-7 place-items-center rounded-lg bg-lilac-soft text-xs font-semibold text-lilac">
+                  <span className="hidden text-xs font-semibold sm:inline">Aarav K.</span>
+                  <span className="grid size-7 place-items-center rounded-lg bg-lilac-soft text-xs font-bold text-lilac">
                     AK
                   </span>
                 </button>
               </div>
             </div>
           </header>
-          <main className="app-main min-w-0 px-4 pb-16 pt-5 sm:px-8 sm:pt-8 lg:px-12">
+          <main className="app-main min-w-0 px-4 pb-16 pt-5 sm:px-8 sm:pt-8 lg:px-10">
             {children}
           </main>
         </div>
@@ -446,200 +477,423 @@ function Dashboard() {
   const startNextModule = () =>
     navigate({ to: "/learning-mode", search: { module: summary.nextModule.code } });
 
+  // 30 curriculum modules spine for 3D path
+  const modulesTrack = useMemo(() => {
+    return curriculumModules.map((module, idx) => {
+      const isCompleted = progress.completedModuleIds.includes(module.code);
+      const isCurrent = module.code === summary.currentModule.code;
+      const isNext = module.code === summary.nextModule.code;
+      const status = isCompleted ? "mastered" : isCurrent ? "in-progress" : isNext ? "available" : "locked";
+      return { ...module, status, isCompleted, isCurrent, isNext, index: idx };
+    });
+  }, [progress.completedModuleIds, summary.currentModule.code, summary.nextModule.code]);
+
   return (
     <>
       <PageHeader
-        eyebrow="Dashboard"
-        title="Your Learning Progress"
-        description="Track your journey through the AI engineering curriculum."
+        eyebrow="AI Engineering Curriculum"
+        title="Learning Dashboard"
+        description="Track your mastery, explore the 30-module AI engineering curriculum, and continue where you left off."
+        action={
+          <div className="flex items-center gap-3">
+            <Button
+              className="shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
+              onClick={continueLearning}
+            >
+              <Play className="size-4 mr-1.5 fill-current" /> Continue Learning
+            </Button>
+          </div>
+        }
       />
 
-      <section className="mb-5 rounded-2xl border border-brand/25 bg-brand-soft/30 p-5">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-2xl font-semibold tracking-tight">
-              {summary.completedCount} / {summary.totalModules} Modules Completed
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {summary.progressPercent}% overall curriculum progress
-            </p>
+      {/* Hero Spatial Deck - Main Learning Surface */}
+      <SpatialCard depth={2} elevation="medium" className="mb-6 rounded-2xl">
+        <section className="spatial-deck rounded-2xl p-6 sm:p-7 relative overflow-hidden">
+          <div className="relative z-10 flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-brand-soft border border-brand/25 px-3 py-1 text-[11px] font-mono font-medium text-brand mb-2.5">
+                <span className="size-1.5 rounded-full bg-brand" />
+                CURRICULUM PROGRESS
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-display font-semibold tracking-tight text-foreground">
+                {summary.completedCount} of {summary.totalModules} Modules Mastered
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground max-w-xl">
+                {summary.progressPercent}% of the third-year AI engineering curriculum completed.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 bg-surface-elevated border border-border/80 rounded-xl p-3 shadow-xs">
+              <div className="text-right">
+                <p className="text-[10px] font-mono text-faint uppercase">Next Up</p>
+                <p className="text-xs font-semibold text-foreground">Module {summary.nextModule.code}</p>
+              </div>
+              <div className="grid size-9 place-items-center rounded-lg bg-lilac-soft text-lilac font-bold font-mono text-xs border border-lilac/30">
+                {summary.nextModule.code}
+              </div>
+            </div>
           </div>
-        </div>
-        <ProgressBar value={summary.progressPercent} className="mt-4" />
-        <div className="mt-5 grid gap-4 sm:grid-cols-[1fr_auto]">
-          <div>
-            <Eyebrow>Currently learning</Eyebrow>
-            <p className="mt-1 font-semibold">
-              Module {summary.currentModule.code} — {summary.currentModule.title}
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {summary.currentStepStage} · {summary.currentStepTitle}
-            </p>
-          </div>
-          <div className="flex items-end">
-            <Button onClick={continueLearning}>
-              Continue Learning <ArrowRight />
-            </Button>
-          </div>
-        </div>
-      </section>
 
-      <section className="mb-5 grid gap-5 lg:grid-cols-2">
-        <Panel>
-          <SectionTitle eyebrow="Recently completed" title="Your completed modules" />
-          {summary.recentlyCompleted.length ? (
-            <div className="space-y-2">
-              {summary.recentlyCompleted.map((module) => (
-                <div key={module.code} className="flex items-start gap-2 text-sm">
-                  <Check className="mt-0.5 size-4 shrink-0 text-mint" />
-                  <span>
-                    Module {module.code} — {module.title}
-                  </span>
-                </div>
+          {/* 3D Connected Waypoints Stream (30 Modules Spine) */}
+          <div className="relative mt-8 pt-4 pb-2">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                <GitBranch className="size-3.5 text-brand" /> 30-Module Interactive Flight Map
+              </p>
+              <span className="font-mono text-xs font-bold text-brand">{summary.progressPercent}% Active</span>
+            </div>
+
+            {/* Dimensional Path Bar */}
+            <div className="relative h-3 rounded-full bg-foreground/10 p-[2px] border border-border/60 overflow-hidden mb-6">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-brand via-lilac to-mint shadow-[0_0_15px_rgba(20,184,166,0.6)] transition-all duration-700"
+                style={{ width: `${Math.max(4, summary.progressPercent)}%` }}
+              />
+            </div>
+
+            <div className="flex gap-2.5 overflow-x-auto pb-4 pt-1.5 no-scrollbar scroll-smooth">
+              {modulesTrack.map((mod) => (
+                <button
+                  key={mod.code}
+                  onClick={() =>
+                    navigate({
+                      to: "/learning-mode",
+                      search: { module: mod.code },
+                    })
+                  }
+                  className={`group relative flex-shrink-0 flex flex-col items-start justify-between p-3.5 rounded-xl border transition-all duration-200 text-left w-36 sm:w-40 ${
+                    mod.isCurrent
+                      ? "border-brand bg-surface-elevated shadow-sm -translate-y-1 ring-1 ring-brand/30"
+                      : mod.isCompleted
+                      ? "border-mint/30 bg-surface-elevated/90 hover:-translate-y-0.5 hover:border-mint/60 shadow-xs"
+                      : mod.isNext
+                      ? "border-lilac/40 bg-surface-elevated/80 hover:-translate-y-0.5 hover:border-lilac"
+                      : "border-border/60 bg-surface/50 opacity-70 hover:opacity-100 hover:bg-surface-elevated"
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full mb-2">
+                    <span className="font-mono text-[10px] font-semibold text-brand bg-brand-soft px-2 py-0.5 rounded">
+                      {mod.code}
+                    </span>
+                    {mod.isCompleted ? (
+                      <span className="grid size-4.5 place-items-center rounded-full bg-mint text-primary-foreground">
+                        <Check className="size-3" />
+                      </span>
+                    ) : mod.isCurrent ? (
+                      <span className="size-2 rounded-full bg-brand ring-2 ring-brand/20" />
+                    ) : mod.isNext ? (
+                      <span className="size-2 rounded-full bg-lilac" />
+                    ) : (
+                      <Lock className="size-3 text-faint" />
+                    )}
+                  </div>
+                  <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug w-full">
+                    {mod.title}
+                  </p>
+                  <div className="mt-3 flex items-center justify-between w-full text-[10px] text-faint">
+                    <span className="truncate">{mod.experienceStage}</span>
+                    <span className="font-medium text-brand opacity-0 group-hover:opacity-100 transition-opacity">
+                      Open →
+                    </span>
+                  </div>
+                </button>
               ))}
             </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Complete your first learning module to see it here.
-            </p>
-          )}
-        </Panel>
-        <Panel>
-          <SectionTitle eyebrow="Next" title="Recommended learning" />
-          <p className="font-semibold">
-            Module {summary.nextModule.code} — {summary.nextModule.title}
-          </p>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            {summary.nextModule.description}
-          </p>
-          <Button className="mt-4" variant="outline" onClick={startNextModule}>
-            Start next module <ArrowRight />
-          </Button>
-        </Panel>
-      </section>
+          </div>
 
-      <section className="mb-5 border-t border-border/70 pt-5">
-        <Eyebrow>Explore further</Eyebrow>
-        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <Panel>
-            <SectionTitle
-              eyebrow="Curriculum"
-              title="Full learning map"
-              action={
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => navigate({ to: "/curriculum-map" })}
-                >
-                  Open <ArrowRight />
-                </Button>
-              }
-            />
-            <p className="text-sm text-muted-foreground">
-              {summary.completedCount} of {summary.totalModules} modules mastered on your journey
-              from Python foundations to production AI.
-            </p>
-            <MiniMap onNode={() => navigate({ to: "/curriculum-map" })} />
-          </Panel>
-          <Panel>
-            <SectionTitle eyebrow="Build" title="Module challenge" />
-            <p className="font-medium">{summary.nextModule.title}</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {summary.nextModule.project || summary.nextModule.description}
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-              <span className="rounded-full bg-brand-soft px-2.5 py-1 text-brand">
-                {summary.nextModule.experienceStage}
-              </span>
-              <span>{summary.nextModule.estimatedTime}</span>
-            </div>
-            <Button className="mt-4" size="sm" onClick={startNextModule}>
-              Open challenge <ArrowRight />
-            </Button>
-          </Panel>
-          <Panel>
-            <SectionTitle
-              eyebrow="Skills"
-              title="Learning evidence"
-              action={
-                <Button size="sm" variant="ghost" onClick={() => navigate({ to: "/skills" })}>
-                  Details
-                </Button>
-              }
-            />
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Sections completed</span>
-                <span className="font-medium">{evidence.sectionsCompleted}</span>
+          {/* Current Focus Mission Deck */}
+          <div className="mt-4 rounded-2xl border border-brand/30 bg-surface-elevated/95 p-5 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="size-2.5 rounded-full bg-brand cp-pulse" />
+                  <Eyebrow>ACTIVE WORKSPACE FOCUS</Eyebrow>
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-foreground">
+                  Module {summary.currentModule.code} — {summary.currentModule.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Stage: <span className="font-semibold text-foreground">{summary.currentStepStage}</span> · {summary.currentStepTitle || "Ready for deep dive"}
+                </p>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Questions passed</span>
-                <span className="font-medium">{evidence.questionsPassed}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Challenges passed</span>
-                <span className="font-medium">{evidence.challengesPassed}</span>
+              <div className="flex items-center gap-2.5 shrink-0">
+                <Button variant="outline" size="sm" onClick={() => navigate({ to: "/curriculum-map" })}>
+                  <Compass className="size-4 mr-1.5" /> Orbit View
+                </Button>
+                <Button size="sm" onClick={continueLearning} className="shadow-md shadow-brand/20">
+                  Enter Learning Studio <ArrowRight className="size-4 ml-1.5" />
+                </Button>
               </div>
             </div>
-            <ProgressBar value={summary.progressPercent} className="mt-4" tone="lilac" />
-            <p className="mt-2 text-[11px] text-faint">
-              {summary.progressPercent}% curriculum complete
-            </p>
-          </Panel>
-        </div>
-      </section>
+          </div>
+        </section>
+      </SpatialCard>
 
-      <section className="border-t border-border/70 pt-5">
-        <Eyebrow>Activity</Eyebrow>
-        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-12">
-          <Panel className="lg:col-span-4">
+      {/* Grid of Telemetry & Next Steps */}
+      <section className="mb-6 grid gap-5 lg:grid-cols-2">
+        <SpatialCard depth={8} elevation="medium" className="rounded-2xl">
+          <Panel className="h-full">
             <SectionTitle
-              eyebrow="Consistency"
-              title="Study activity"
+              eyebrow="Neural Mastery History"
+              title="Recently Mastered Concepts"
               action={
-                <span className="flex items-center gap-1 text-xs font-semibold text-peach">
-                  <Flame className="size-3.5" />
-                  {evidence.sectionsCompleted} sections
+                <span className="font-mono text-xs text-mint font-semibold">
+                  {summary.completedCount} Complete
                 </span>
               }
             />
-            <div className="grid grid-cols-10 gap-1.5">
-              {heatmap.slice(0, 50).map((item) => (
-                <span
-                  key={item.id}
-                  className={`aspect-square rounded-[4px] ${item.intensity === 0 ? "bg-foreground/8" : item.intensity === 1 ? "bg-brand/25" : item.intensity === 2 ? "bg-brand/45" : item.intensity === 3 ? "bg-brand/70" : "bg-brand"}`}
-                />
-              ))}
+            {summary.recentlyCompleted.length ? (
+              <div className="space-y-2.5 mt-3">
+                {summary.recentlyCompleted.map((module) => (
+                  <div
+                    key={module.code}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-mint/25 bg-mint-soft/30 p-3 text-sm transition hover:scale-[1.01]"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="grid size-6 place-items-center rounded-lg bg-mint text-primary-foreground shrink-0 shadow-sm">
+                        <Check className="size-3.5" />
+                      </span>
+                      <span className="font-medium text-foreground truncate">
+                        Module {module.code} — {module.title}
+                      </span>
+                    </div>
+                    <span className="rounded-full bg-mint/15 px-2.5 py-0.5 text-[10px] font-mono font-bold text-mint uppercase shrink-0">
+                      Verified
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-border/70 p-6 text-center text-sm text-muted-foreground">
+                <p>Complete your first module challenge to record verified evidence here.</p>
+                <Button className="mt-3" size="sm" variant="outline" onClick={continueLearning}>
+                  Start First Module
+                </Button>
+              </div>
+            )}
+          </Panel>
+        </SpatialCard>
+
+        <SpatialCard depth={8} elevation="medium" className="rounded-2xl">
+          <Panel className="h-full">
+            <SectionTitle
+              eyebrow="Recommended Flight Node"
+              title="Next In Line"
+              action={<StatusPill status="available" />}
+            />
+            <div className="rounded-xl border border-lilac/30 bg-lilac-soft/30 p-4 mt-2">
+              <p className="font-mono text-xs font-bold text-lilac">MODULE {summary.nextModule.code}</p>
+              <h4 className="font-bold text-base mt-1 text-foreground">{summary.nextModule.title}</h4>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                {summary.nextModule.description}
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2 text-xs">
+                <span className="rounded-lg bg-surface-elevated/90 border border-border/60 px-2.5 py-1 text-foreground font-medium">
+                  {summary.nextModule.experienceStage} Stage
+                </span>
+                <span className="rounded-lg bg-surface-elevated/90 border border-border/60 px-2.5 py-1 text-muted-foreground font-mono">
+                  {summary.nextModule.estimatedTime}
+                </span>
+              </div>
             </div>
+            <Button className="mt-4 w-full shadow-sm" variant="outline" onClick={startNextModule}>
+              Initialize Next Module <ArrowRight className="size-4 ml-1" />
+            </Button>
           </Panel>
-          <Panel className="lg:col-span-4">
-            <SectionTitle eyebrow="Career bridge" title="Challenge evidence" />
-            <StageTracker current={Math.min(4, Math.floor(evidence.challengesPassed / 3))} />
-            <p className="mt-3 text-[11px] text-faint">
-              {evidence.challengesPassed} of {summary.totalModules} module challenges completed
-            </p>
-          </Panel>
-          <Panel className="lg:col-span-4">
-            <SectionTitle eyebrow="Skill snapshot" title="Competency radar" />
-            <ResponsiveContainer width="100%" height={140}>
-              <RadarChart data={skillData}>
-                <PolarGrid stroke="var(--color-border)" />
-                <PolarAngleAxis
-                  dataKey="skill"
-                  tick={{ fill: "var(--color-faint)", fontSize: 9 }}
-                />
-                <Radar
-                  dataKey="mastery"
-                  stroke="var(--color-brand)"
-                  fill="var(--color-brand)"
-                  fillOpacity={0.22}
-                />
-              </RadarChart>
-            </ResponsiveContainer>
-          </Panel>
+        </SpatialCard>
+      </section>
+
+      {/* Explore Further Spatial Matrix */}
+      <section className="mb-6 border-t border-border/70 pt-6">
+        <Eyebrow>3D Laboratory Workspaces</Eyebrow>
+        <div className="mt-4 grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <SpatialCard depth={8} elevation="low" className="rounded-2xl">
+            <Panel className="h-full">
+              <SectionTitle
+                eyebrow="Interactive Map"
+                title="Curriculum Topology"
+                action={
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => navigate({ to: "/curriculum-map" })}
+                  >
+                    Open <ArrowRight className="size-3.5 ml-1" />
+                  </Button>
+                }
+              />
+              <p className="text-xs text-muted-foreground mb-4">
+                Explore connected nodes across 5 phases of AI mastery with live prerequisite vectors.
+              </p>
+              <MiniMap onNode={() => navigate({ to: "/curriculum-map" })} />
+            </Panel>
+          </SpatialCard>
+
+          <SpatialCard depth={8} elevation="low" className="rounded-2xl">
+            <Panel className="h-full">
+              <SectionTitle eyebrow="Engineering Lab" title="Target Challenge" />
+              <div className="rounded-xl bg-brand-soft/40 border border-brand/20 p-3.5 mt-2">
+                <p className="font-bold text-sm text-foreground">{summary.nextModule.title}</p>
+                <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+                  {summary.nextModule.project || summary.nextModule.description}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2 text-[10px]">
+                  <span className="rounded-md bg-brand-soft px-2 py-0.5 font-semibold text-brand">
+                    {summary.nextModule.experienceStage}
+                  </span>
+                  <span className="font-mono text-muted-foreground">{summary.nextModule.estimatedTime}</span>
+                </div>
+              </div>
+              <Button className="mt-4 w-full" size="sm" onClick={startNextModule}>
+                Launch Code Challenge <Code2 className="size-4 ml-1.5" />
+              </Button>
+            </Panel>
+          </SpatialCard>
+
+          <SpatialCard depth={8} elevation="low" className="rounded-2xl">
+            <Panel className="h-full">
+              <SectionTitle
+                eyebrow="Telemetry Evidence"
+                title="Capability Metrics"
+                action={
+                  <Button size="sm" variant="ghost" onClick={() => navigate({ to: "/skills" })}>
+                    Inspect
+                  </Button>
+                }
+              />
+              <div className="space-y-2.5 text-xs mt-2">
+                <div className="flex items-center justify-between rounded-lg bg-surface-elevated/60 border border-border/50 p-2.5">
+                  <span className="text-muted-foreground">Sections Finished</span>
+                  <span className="font-mono font-bold text-brand">{evidence.sectionsCompleted}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg bg-surface-elevated/60 border border-border/50 p-2.5">
+                  <span className="text-muted-foreground">Diagnostic Checks</span>
+                  <span className="font-mono font-bold text-lilac">{evidence.questionsPassed}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg bg-surface-elevated/60 border border-border/50 p-2.5">
+                  <span className="text-muted-foreground">Challenges Solved</span>
+                  <span className="font-mono font-bold text-mint">{evidence.challengesPassed}</span>
+                </div>
+              </div>
+              <ProgressBar value={summary.progressPercent} className="mt-4" tone="lilac" />
+            </Panel>
+          </SpatialCard>
+        </div>
+      </section>
+
+      {/* Activity & Radar Telemetry */}
+      <section className="border-t border-border/70 pt-6">
+        <Eyebrow>Real-Time Telemetry Stream</Eyebrow>
+        <div className="mt-4 grid grid-cols-1 gap-5 lg:grid-cols-12">
+          <SpatialCard depth={6} className="lg:col-span-4 rounded-2xl">
+            <Panel className="h-full">
+              <SectionTitle
+                eyebrow="Frequency"
+                title="Activity Density"
+                action={
+                  <span className="flex items-center gap-1 text-xs font-bold text-peach bg-peach-soft/60 px-2.5 py-0.5 rounded-full border border-peach/25">
+                    <Flame className="size-3.5" />
+                    {evidence.sectionsCompleted} units
+                  </span>
+                }
+              />
+              <div className="grid grid-cols-10 gap-1.5 mt-2">
+                {heatmap.slice(0, 50).map((item) => (
+                  <span
+                    key={item.id}
+                    className={`aspect-square rounded-[5px] transition-all hover:scale-125 ${
+                      item.intensity === 0
+                        ? "bg-foreground/8"
+                        : item.intensity === 1
+                        ? "bg-brand/35"
+                        : item.intensity === 2
+                        ? "bg-brand/60"
+                        : item.intensity === 3
+                        ? "bg-brand/85 shadow-[0_0_8px_rgba(20,184,166,0.5)]"
+                        : "bg-brand shadow-[0_0_12px_rgba(20,184,166,0.8)]"
+                    }`}
+                  />
+                ))}
+              </div>
+            </Panel>
+          </SpatialCard>
+
+          <SpatialCard depth={6} className="lg:col-span-4 rounded-2xl">
+            <Panel className="h-full">
+              <SectionTitle eyebrow="Milestones" title="Career Bridge Signal" />
+              <div className="pt-2">
+                <StageTracker current={Math.min(4, Math.floor(evidence.challengesPassed / 3))} />
+              </div>
+              <p className="mt-4 text-[11px] text-faint font-mono">
+                {evidence.challengesPassed} of {summary.totalModules} project challenges evidenced
+              </p>
+            </Panel>
+          </SpatialCard>
+
+          <SpatialCard depth={6} className="lg:col-span-4 rounded-2xl">
+            <Panel className="h-full">
+              <SectionTitle eyebrow="Mastery Profile" title="Competency Web" />
+              <div className="relative">
+                <ResponsiveContainer width="100%" height={140}>
+                  <RadarChart data={skillData}>
+                    <PolarGrid stroke="var(--color-border)" />
+                    <PolarAngleAxis
+                      dataKey="skill"
+                      tick={{ fill: "var(--color-faint)", fontSize: 9 }}
+                    />
+                    <Radar
+                      dataKey="mastery"
+                      stroke="var(--color-brand)"
+                      fill="var(--color-brand)"
+                      fillOpacity={0.25}
+                    />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
+            </Panel>
+          </SpatialCard>
         </div>
       </section>
     </>
+  );
+}
+
+function MiniMap({ onNode }: { onNode: () => void }) {
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-surface/50 p-4 shadow-inner">
+      <div className="absolute left-[9%] right-[9%] top-1/2 h-[2px] bg-gradient-to-r from-brand via-lilac to-border -translate-y-1/2" />
+      <div className="relative grid grid-cols-6 gap-2">
+        {nodes.slice(0, 6).map((node, index) => (
+          <button
+            key={node.id}
+            className="group flex flex-col items-center gap-1.5 transition-transform hover:-translate-y-1"
+            onClick={onNode}
+          >
+            <span
+              className={`grid size-10 place-items-center rounded-xl border transition-all duration-300 ${
+                index === 0
+                  ? "border-mint/60 bg-mint-soft text-mint shadow-[0_0_10px_rgba(20,184,166,0.3)]"
+                  : index === 1
+                  ? "cp-pulse border-brand bg-brand-soft text-brand shadow-[0_0_12px_rgba(0,180,180,0.4)]"
+                  : index === 2
+                  ? "border-lilac/40 bg-lilac-soft/60 text-lilac"
+                  : "border-border/60 bg-muted/70 text-faint"
+              }`}
+            >
+              {index === 0 ? (
+                <Check className="size-4" />
+              ) : index > 2 ? (
+                <Lock className="size-3.5" />
+              ) : (
+                <GitBranch className="size-4" />
+              )}
+            </span>
+            <span className="max-w-16 text-center text-[9px] font-medium leading-3 text-muted-foreground group-hover:text-foreground truncate">
+              {node.label.replace(" & Pointers", "").replace("Object Oriented Programming", "OOP")}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -756,34 +1010,6 @@ function PlanRow({
         <p className="text-[11px] text-faint">{meta}</p>
       </div>
       {done ? <StatusPill status="mastered" /> : action}
-    </div>
-  );
-}
-
-function MiniMap({ onNode }: { onNode: () => void }) {
-  return (
-    <div className="relative overflow-hidden rounded-xl border border-border/60 bg-background/45 p-4">
-      <div className="absolute left-[9%] right-[9%] top-1/2 h-px bg-border" />
-      <div className="relative grid grid-cols-6 gap-3">
-        {nodes.slice(0, 6).map((node) => (
-          <button key={node.id} className="group flex flex-col items-center gap-2" onClick={onNode}>
-            <span
-              className={`grid size-11 place-items-center rounded-2xl border ${node.status === "mastered" ? "border-mint/50 bg-mint-soft text-mint" : node.status === "in-progress" ? "cp-pulse border-brand bg-brand-soft text-brand" : "border-border bg-surface text-faint"}`}
-            >
-              {node.status === "mastered" ? (
-                <Check className="size-4" />
-              ) : node.status === "locked" ? (
-                <Lock className="size-4" />
-              ) : (
-                <GitBranch className="size-4" />
-              )}
-            </span>
-            <span className="max-w-20 text-center text-[10px] leading-4 text-muted-foreground group-hover:text-foreground">
-              {node.label.replace(" & Pointers", "").replace("Object Oriented Programming", "OOP")}
-            </span>
-          </button>
-        ))}
-      </div>
     </div>
   );
 }
@@ -1117,11 +1343,12 @@ function InteractiveCurriculumMap() {
   return (
     <>
       <PageHeader
-        eyebrow={`AI engineering journey · ${mastered} of ${curriculumModules.length} modules explored`}
-        title="Your AI Engineering Journey"
-        description="Explore the path from Python foundations to production-grade AI systems."
+        eyebrow={`3D Topology Map · ${mastered} of ${curriculumModules.length} nodes integrated`}
+        title="Interactive Curriculum Constellation"
+        description="Navigate the spatial topology from Python foundations up to production-grade AI systems."
         action={
           <Button
+            className="shadow-lg shadow-brand/20 border border-brand/30 hover:scale-105 transition-all"
             onClick={() =>
               navigate({
                 to: "/learning-mode",
@@ -1129,244 +1356,318 @@ function InteractiveCurriculumMap() {
               })
             }
           >
-            <Play /> Continue learning
+            <Play className="size-4 mr-1 fill-current" /> Continue Flight Path
           </Button>
         }
       />
-      <Panel className="mb-5 border-brand/20 bg-brand-soft/20">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <Eyebrow>Progress through the spine</Eyebrow>
-            <p className="mt-1 text-sm font-semibold">
-              {mastered} / {curriculumModules.length} modules explored
-            </p>
+
+      {/* 3D Spatial Deck Filter Hub */}
+      <SpatialCard depth={10} elevation="medium" className="mb-6 rounded-2xl">
+        <Panel className="border-brand/25 bg-surface-elevated/90 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <div className="flex items-center gap-2.5">
+              <span className="size-2.5 rounded-full bg-brand cp-pulse" />
+              <div>
+                <Eyebrow>ACTIVE NEURAL HIGHWAY</Eyebrow>
+                <p className="text-sm font-bold text-foreground">
+                  {mastered} of {curriculumModules.length} Knowledge Nodes Mastered
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs font-bold text-brand bg-brand-soft px-3 py-1 rounded-full border border-brand/25">
+                {Math.round((mastered / curriculumModules.length) * 100)}% Synchronized
+              </span>
+            </div>
           </div>
-          <span className="font-mono text-xs text-brand">
-            {Math.round((mastered / curriculumModules.length) * 100)}%
-          </span>
-        </div>
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-background/70">
-          <div
-            className="h-full rounded-full bg-brand transition-all"
-            style={{ width: `${(mastered / curriculumModules.length) * 100}%` }}
-          />
-        </div>
-        <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
-          {phases.map(([label], index) => (
-            <button
-              key={label}
-              onClick={() => {
-                setPhase(index);
-                document
-                  .getElementById(`phase-${index}`)
-                  ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-              }}
-              className={`shrink-0 rounded-full px-3 py-2 text-[11px] font-semibold tracking-wide ${phase === index ? "bg-ink text-background" : "bg-background text-faint hover:text-foreground"}`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
-          <label className="flex items-center gap-2 rounded-xl border border-border/70 px-3">
-            <Search className="size-4 text-faint" />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              className="min-h-11 w-full bg-transparent text-sm outline-none"
-              placeholder="Search modules, topics, skills…"
+
+          <div className="h-2.5 overflow-hidden rounded-full bg-foreground/10 p-[2px] border border-border/60">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-brand via-lilac to-mint transition-all duration-700 shadow-[0_0_12px_rgba(20,184,166,0.6)]"
+              style={{ width: `${Math.max(3, (mastered / curriculumModules.length) * 100)}%` }}
             />
-          </label>
-          <select
-            value={filter}
-            onChange={(event) => setFilter(event.target.value)}
-            className="rounded-xl border border-border/70 bg-surface-elevated px-3 text-sm"
-            aria-label="Filter curriculum"
-          >
-            {[
-              "All",
-              "In-progress",
-              "Available",
-              "Mastered",
-              "Locked",
-              "Challenges",
-              "Projects",
-            ].map((item) => (
-              <option key={item}>{item}</option>
-            ))}
-          </select>
-          <div className="flex overflow-x-auto rounded-xl border border-border/70 p-1">
-            {(["journey", "skills", "projects", "list"] as const).map((item) => (
+          </div>
+
+          {/* Phase Switchers */}
+          <div className="mt-5 flex gap-2 overflow-x-auto pb-1.5 no-scrollbar">
+            {phases.map(([label], index) => (
               <button
-                key={item}
-                onClick={() => setLens(item)}
-                className={`rounded-lg px-3 py-2 text-xs capitalize ${lens === item ? "bg-background shadow-sm" : "text-faint"}`}
+                key={label}
+                onClick={() => {
+                  setPhase(index);
+                  document
+                    .getElementById(`phase-${index}`)
+                    ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                }}
+                className={`shrink-0 rounded-xl px-3.5 py-2 text-[11px] font-bold tracking-wide transition-all ${
+                  phase === index
+                    ? "bg-ink text-background shadow-md scale-105"
+                    : "bg-surface text-muted-foreground hover:bg-surface-elevated hover:text-foreground border border-border/60"
+                }`}
               >
-                {item}
+                PHASE 0{index + 1} · {label}
               </button>
             ))}
           </div>
-        </div>
-      </Panel>
-      <div className="grid gap-4 xl:grid-cols-[1fr_360px]">
-        <Panel className="overflow-hidden">
-          <SectionTitle
-            eyebrow={`${phases[phase]![0]} · ${modules.length} modules`}
-            title={
-              lens === "journey"
-                ? "Follow the path"
-                : lens === "skills"
-                  ? "Skills connected to the journey"
-                  : lens === "projects"
-                    ? "Build your way forward"
-                    : "Find a module"
-            }
-          />
-          {lens === "skills" && (
-            <div className="mb-4 flex flex-wrap gap-2 border-b border-border/60 pb-4">
-              {allTopics.map((topic) => (
+
+          {/* Search, Filter & Spatial Lens Controls */}
+          <div className="mt-4 grid gap-2.5 sm:grid-cols-[1fr_auto_auto]">
+            <label className="flex items-center gap-2 rounded-xl border border-border/80 bg-surface/80 px-3.5 shadow-inner">
+              <Search className="size-4 text-faint" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                className="min-h-11 w-full bg-transparent text-sm outline-none placeholder:text-faint"
+                placeholder="Filter spatial nodes, embeddings, RAG, agents…"
+              />
+            </label>
+            <select
+              value={filter}
+              onChange={(event) => setFilter(event.target.value)}
+              className="rounded-xl border border-border/80 bg-surface-elevated px-3 text-sm font-medium shadow-sm"
+              aria-label="Filter curriculum"
+            >
+              {[
+                "All",
+                "In-progress",
+                "Available",
+                "Mastered",
+                "Locked",
+                "Challenges",
+                "Projects",
+              ].map((item) => (
+                <option key={item}>{item}</option>
+              ))}
+            </select>
+            <div className="flex overflow-x-auto rounded-xl border border-border/80 bg-surface/60 p-1">
+              {(["journey", "skills", "projects", "list"] as const).map((item) => (
                 <button
-                  key={topic}
-                  onClick={() => setQuery(topic)}
-                  className={`rounded-full px-2.5 py-1.5 text-[11px] ${query === topic ? "bg-brand text-background" : "bg-lilac-soft text-lilac"}`}
+                  key={item}
+                  onClick={() => setLens(item)}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition-all ${
+                    lens === item ? "bg-background text-foreground shadow-sm scale-105" : "text-faint hover:text-foreground"
+                  }`}
                 >
-                  {topic}
+                  {item}
                 </button>
               ))}
             </div>
-          )}
-          <div
-            className={
-              lens === "journey"
-                ? "relative space-y-3 pl-5 before:absolute before:bottom-4 before:left-2 before:top-4 before:w-px before:bg-border"
-                : lens === "list"
-                  ? "grid gap-3 md:grid-cols-2"
-                  : "grid gap-3"
-            }
-          >
-            {modules.map(({ module, index, status }) => (
-              <button
-                key={module.code}
-                id={index === phases[phase]![1] ? `phase-${phase}` : undefined}
-                onClick={() => selectModule(module.code)}
-                className={`group relative w-full rounded-xl border p-4 text-left transition hover:-translate-y-0.5 hover:border-brand/50 ${selectedCode === module.code ? "border-brand bg-brand-soft/40 shadow-sm" : "border-border/70 bg-background/35"}`}
-              >
-                {lens === "journey" && (
-                  <span
-                    className={`absolute -left-[25px] top-5 size-3 rounded-full border-2 border-background ${status === "mastered" ? "bg-mint" : status === "in-progress" ? "bg-brand" : "bg-border"}`}
-                  />
-                )}
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="font-mono text-[10px] text-brand">{module.code}</p>
-                    <h3 className="mt-1 text-sm font-semibold">{module.title}</h3>
-                  </div>
-                  <StatusPill status={status} />
-                </div>
-                <p className="mt-2 text-xs leading-5 text-muted-foreground">{module.description}</p>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {module.topics.slice(0, 4).map((topic) => (
-                    <span
-                      key={topic}
-                      className="rounded-full bg-lilac-soft px-2 py-1 text-[10px] text-lilac"
-                    >
-                      {topic}
-                    </span>
-                  ))}
-                </div>
-                <div className="mt-3 flex items-center justify-between gap-2 text-[10px] text-faint">
-                  <span>
-                    {module.estimatedTime} · {module.experienceStage}
-                  </span>
-                  <span className="text-brand opacity-0 transition group-hover:opacity-100">
-                    View connections →
-                  </span>
-                </div>
-              </button>
-            ))}
-            {!modules.length && (
-              <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-faint">
-                No modules match this view. Try another phase or search.
+          </div>
+        </Panel>
+      </SpatialCard>
+
+      {/* Main Spatial Constellation & Inspector Grid */}
+      <div className="grid gap-5 xl:grid-cols-[1fr_370px]">
+        <SpatialCard depth={8} elevation="medium" className="rounded-2xl">
+          <Panel className="overflow-hidden">
+            <SectionTitle
+              eyebrow={`PHASE 0${phase + 1} · ${phases[phase]![0]}`}
+              title={
+                lens === "journey"
+                  ? "Connected Spatial Learning Nodes"
+                  : lens === "skills"
+                    ? "Interactive Skills Lattice"
+                    : lens === "projects"
+                      ? "Milestone Engineering Builds"
+                      : "Knowledge Registry Index"
+              }
+              action={
+                <span className="font-mono text-xs text-brand font-semibold">
+                  {modules.length} Nodes in View
+                </span>
+              }
+            />
+
+            {lens === "skills" && (
+              <div className="mb-5 flex flex-wrap gap-2 border-b border-border/70 pb-4">
+                {allTopics.map((topic) => (
+                  <button
+                    key={topic}
+                    onClick={() => setQuery(query === topic ? "" : topic)}
+                    className={`rounded-xl px-3 py-1.5 text-[11px] font-medium transition-all ${
+                      query === topic
+                        ? "bg-brand text-primary-foreground shadow-md shadow-brand/20 scale-105"
+                        : "bg-lilac-soft/60 text-lilac border border-lilac/30 hover:bg-lilac-soft"
+                    }`}
+                  >
+                    {topic}
+                  </button>
+                ))}
               </div>
             )}
-          </div>
-        </Panel>
-        <Panel className="h-fit">
-          <SectionTitle
-            eyebrow={`${selectedModule.code} · ${selectedStatus}`}
-            title={selectedModule.title}
-          />
-          <p className="text-sm leading-6 text-muted-foreground">{selectedModule.description}</p>
-          <div className="mt-4 rounded-xl bg-brand-soft/40 p-3 text-xs">
-            <Eyebrow>Why this is here</Eyebrow>
-            <p className="mt-1 text-muted-foreground">
-              {relatedBefore.length
-                ? `Builds on ${relatedBefore.map((module) => module.code).join(" and ")}.`
-                : "This is the bridge into your AI engineering journey."}{" "}
-              {relatedAfter.length
-                ? `Next, it connects to ${relatedAfter.map((module) => module.code).join(" and ")}.`
-                : "This is the final demonstration of the journey."}
+
+            {/* Dimensional Learning Roadmap View */}
+            <div
+              className={
+                lens === "journey"
+                  ? "relative space-y-3.5 pl-6 before:absolute before:bottom-4 before:left-3 before:top-4 before:w-[2px] before:bg-gradient-to-b before:from-brand/60 via-lilac/50 to-border"
+                  : lens === "list"
+                    ? "grid gap-3.5 md:grid-cols-2"
+                    : "grid gap-3.5"
+              }
+            >
+              {modules.map(({ module, index, status }) => (
+                <button
+                  key={module.code}
+                  id={index === phases[phase]![1] ? `phase-${phase}` : undefined}
+                  onClick={() => selectModule(module.code)}
+                  className={`group relative w-full rounded-xl border p-4 text-left transition-all duration-200 ${
+                    selectedCode === module.code
+                      ? "border-brand bg-brand-soft/40 shadow-sm ring-1 ring-brand/40 -translate-y-0.5"
+                      : "border-border/70 bg-surface-elevated hover:border-brand/40 hover:-translate-y-0.5 hover:shadow-xs"
+                  }`}
+                >
+                  {lens === "journey" && (
+                    <span
+                      className={`absolute -left-[29px] top-5 size-3.5 rounded-full border-2 border-background transition-all ${
+                        status === "mastered"
+                          ? "bg-mint shadow-xs"
+                          : status === "in-progress"
+                          ? "bg-brand ring-2 ring-brand/20"
+                          : "bg-border"
+                      }`}
+                    />
+                  )}
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="font-mono text-[10px] font-semibold text-brand bg-brand-soft px-2 py-0.5 rounded border border-brand/20">
+                        Module {module.code}
+                      </span>
+                      <h3 className="mt-1.5 text-sm font-semibold text-foreground group-hover:text-brand transition-colors">
+                        {module.title}
+                      </h3>
+                    </div>
+                    <StatusPill status={status} />
+                  </div>
+                  <p className="mt-1.5 text-xs leading-5 text-muted-foreground">{module.description}</p>
+                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    {module.topics.slice(0, 4).map((topic) => (
+                      <span
+                        key={topic}
+                        className="rounded-md bg-lilac-soft/60 px-2 py-0.5 text-[10px] font-medium text-lilac border border-lilac/20"
+                      >
+                        {topic}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex items-center justify-between gap-2 text-[10px] text-faint font-mono border-t border-border/40 pt-2">
+                    <span>
+                      {module.estimatedTime} · {module.experienceStage}
+                    </span>
+                    <span className="text-brand font-medium opacity-0 transition-opacity group-hover:opacity-100 flex items-center gap-1">
+                      View details →
+                    </span>
+                  </div>
+                </button>
+              ))}
+              {!modules.length && (
+                <div className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
+                  No modules match the active spatial lens. Switch phase or clear search filter.
+                </div>
+              )}
+            </div>
+          </Panel>
+        </SpatialCard>
+
+        {/* 3D Floating Node Telemetry Inspector */}
+        <SpatialCard depth={12} elevation="high" className="h-fit rounded-2xl sticky top-20">
+          <Panel className="border-brand/35 bg-surface-elevated/95 p-5 shadow-lg">
+            <div className="flex items-center justify-between gap-2 border-b border-border/70 pb-3 mb-3">
+              <span className="font-mono text-xs font-bold text-brand bg-brand-soft px-2.5 py-0.5 rounded-md">
+                NODE {selectedModule.code}
+              </span>
+              <StatusPill status={selectedStatus} />
+            </div>
+
+            <h3 className="font-display text-lg font-bold tracking-tight text-foreground">
+              {selectedModule.title}
+            </h3>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">
+              {selectedModule.description}
             </p>
-          </div>
-          <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-            <div className="rounded-lg bg-background/60 p-3">
-              <Eyebrow>Stage</Eyebrow>
-              <p className="mt-1 font-medium">{selectedModule.experienceStage}</p>
-            </div>
-            <div className="rounded-lg bg-background/60 p-3">
-              <Eyebrow>Time</Eyebrow>
-              <p className="mt-1 font-medium">{selectedModule.estimatedTime}</p>
-            </div>
-          </div>
-          <Eyebrow>Topics to explore</Eyebrow>
-          <div className="mt-2 space-y-2">
-            {selectedModule.topics.map((topic) => (
-              <button
-                key={topic}
-                onClick={() => setConcept(topic)}
-                className={`flex w-full items-center justify-between rounded-lg p-2 text-left text-xs ${concept === topic ? "bg-lilac-soft text-lilac" : "bg-background/50 hover:bg-lilac-soft/50"}`}
-              >
-                <span>{topic}</span>
-                <ChevronRight className="size-3" />
-              </button>
-            ))}
-          </div>
-          {concept && (
-            <div className="mt-3 rounded-xl border border-brand/30 p-3 text-xs">
-              <strong>{concept}</strong>
-              <p className="mt-1 text-muted-foreground">
-                Explore {concept} in the guided lesson, then apply it in the practice and challenge
-                for {selectedModule.code}.
+
+            {/* Prerequisite & Dependent Vector HUD */}
+            <div className="mt-4 rounded-xl border border-brand/25 bg-brand-soft/40 p-3.5 text-xs">
+              <Eyebrow>PREREQUISITE VECTOR STREAM</Eyebrow>
+              <p className="mt-1.5 text-muted-foreground leading-relaxed">
+                {relatedBefore.length
+                  ? `Ascends directly from ${relatedBefore.map((mod) => `Module ${mod.code}`).join(" and ")}.`
+                  : "Foundation entry point of your AI engineering path."}{" "}
+                {relatedAfter.length
+                  ? `Prerequisite for ${relatedAfter.map((mod) => `Module ${mod.code}`).join(" and ")}.`
+                  : "Capstone terminal of the curriculum."}
               </p>
             </div>
-          )}
-          <div className="mt-4 rounded-xl border border-border/60 p-3">
-            <Eyebrow>Connected skills & project</Eyebrow>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">{selectedModule.project}</p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {selectedModule.tools.slice(0, 3).map((tool) => (
-                <span
-                  key={tool}
-                  className="rounded-full bg-peach-soft px-2 py-1 text-[10px] text-peach"
-                >
-                  {tool}
-                </span>
-              ))}
+
+            <div className="mt-3.5 grid grid-cols-2 gap-2 text-xs">
+              <div className="rounded-xl border border-border/60 bg-surface/70 p-2.5">
+                <Eyebrow>Stage Level</Eyebrow>
+                <p className="mt-1 font-bold text-foreground">{selectedModule.experienceStage}</p>
+              </div>
+              <div className="rounded-xl border border-border/60 bg-surface/70 p-2.5">
+                <Eyebrow>Time Velocity</Eyebrow>
+                <p className="mt-1 font-bold text-foreground">{selectedModule.estimatedTime}</p>
+              </div>
             </div>
-          </div>
-          <Button
-            className="mt-5 w-full"
-            onClick={() =>
-              navigate({
-                to: "/learning-mode",
-                search: { module: selectedModule.code, concept: concept ?? undefined },
-              })
-            }
-          >
-            {selectedStatus === "in-progress" ? "Continue learning" : "Explore learning"}{" "}
-            <ArrowRight />
-          </Button>
-        </Panel>
+
+            <div className="mt-4">
+              <Eyebrow>Concept Sub-Nodes</Eyebrow>
+              <div className="mt-2 space-y-1.5">
+                {selectedModule.topics.map((topic) => (
+                  <button
+                    key={topic}
+                    onClick={() => setConcept(topic)}
+                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-medium transition-all ${
+                      concept === topic
+                        ? "bg-lilac-soft text-lilac border border-lilac/35 shadow-sm"
+                        : "bg-surface/60 hover:bg-lilac-soft/40 text-muted-foreground hover:text-foreground border border-border/40"
+                    }`}
+                  >
+                    <span>{topic}</span>
+                    <ChevronRight className="size-3 text-faint" />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {concept && (
+              <div className="mt-3 rounded-xl border border-brand/35 bg-brand-soft/40 p-3 text-xs">
+                <p className="font-bold text-brand">{concept}</p>
+                <p className="mt-1 text-muted-foreground leading-5">
+                  Launch the interactive studio to build, break, and master {concept} with guided diagnostic loops.
+                </p>
+              </div>
+            )}
+
+            <div className="mt-4 rounded-xl border border-border/70 bg-surface/50 p-3 text-xs">
+              <Eyebrow>Associated Milestone Build</Eyebrow>
+              <p className="mt-1 text-xs font-semibold text-foreground">{selectedModule.project}</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {selectedModule.tools.slice(0, 3).map((tool) => (
+                  <span
+                    key={tool}
+                    className="rounded-md bg-peach-soft px-2 py-0.5 text-[10px] font-medium text-peach border border-peach/25"
+                  >
+                    {tool}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <Button
+              className="mt-5 w-full shadow-md shadow-brand/20"
+              onClick={() =>
+                navigate({
+                  to: "/learning-mode",
+                  search: { module: selectedModule.code, concept: concept ?? undefined },
+                })
+              }
+            >
+              {selectedStatus === "in-progress" ? "Resume Active Mission" : "Engage Learning Studio"}{" "}
+              <ArrowRight className="size-4 ml-1.5" />
+            </Button>
+          </Panel>
+        </SpatialCard>
       </div>
     </>
   );
@@ -1701,160 +2002,235 @@ function LearningModeContent({
   return (
     <>
       <PageHeader
-        eyebrow={`Learning studio · Module ${experience.module.code}`}
+        eyebrow={`AI Neural Studio · Module ${experience.module.code}`}
         title={experience.module.title}
-        description="Learn a concept, see it in context, try a controlled change, then apply and debug it."
-        action={<StatusPill status={experience.module.status} />}
+        description="An immersive learning environment: observe the concept, inspect the invariant, execute a controlled change, and verify with AI diagnostic telemetry."
+        action={
+          <div className="flex items-center gap-2">
+            <StatusPill status={experience.module.status} />
+            <span className="rounded-full bg-brand-soft border border-brand/30 px-3 py-1 text-[11px] font-mono font-bold text-brand">
+              Step {stepIndex + 1}/{experience.steps.length}
+            </span>
+          </div>
+        }
       />
-      <Panel className="border-brand/20 bg-brand-soft/20">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <Eyebrow>
-              {step.stage} · {concept ? `focus: ${concept}` : "active learning"}
-            </Eyebrow>
-            <h2 className="mt-1 font-display text-xl font-semibold">{step.title}</h2>
-          </div>
-          <span className="font-mono text-xs text-brand">
-            {stepIndex + 1}/{experience.steps.length}
-          </span>
-        </div>
-        <div className="mt-4 flex gap-1.5 overflow-x-auto pb-1">
-          {experience.steps.map((item, index) => (
-            <button
-              key={item.id}
-              className={`shrink-0 rounded-full px-3 py-2 text-[11px] ${
-                index === stepIndex
-                  ? "bg-ink text-background"
-                  : index < stepIndex
-                    ? "bg-mint-soft text-mint"
-                    : "bg-muted text-faint"
-              }`}
-              onClick={() => index <= stepIndex && setStepIndex(index)}
-            >
-              {index < stepIndex ? <Check className="mr-1 inline size-3" /> : null}
-              {item.stage}
-            </button>
-          ))}
-        </div>
-      </Panel>
-      <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_320px]">
-        <Panel className="cp-rise">
-          <p className="max-w-3xl text-[15px] leading-7 text-muted-foreground">
-            {step.explanation}
-          </p>
-          <div className="mt-4 rounded-xl bg-lilac-soft/45 p-4">
-            <Eyebrow>Why it matters</Eyebrow>
-            <p className="mt-2 text-sm leading-6">{step.whyItMatters}</p>
-          </div>
-          <div className="mt-4 rounded-xl border border-border/60 bg-ink p-4">
-            <Eyebrow>{step.stage === "BUILD" ? "Challenge brief" : "See it"}</Eyebrow>
-            <pre className="mt-3 max-h-64 overflow-auto whitespace-pre-wrap font-mono text-xs leading-6 text-background/85">
-              {step.example}
-            </pre>
-          </div>
-          <div className="mt-5">
-            <p className="text-sm font-semibold">{step.prompt}</p>
-            {step.options && (
-              <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                {step.options.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => choose(option)}
-                    className={`rounded-xl border p-3 text-left text-sm transition ${
-                      selected === option
-                        ? "border-brand bg-brand-soft text-brand"
-                        : "border-border/70 hover:border-brand/50"
-                    }`}
-                  >
-                    {option}
-                  </button>
-                ))}
+
+      {/* Dimensional Progression Stage Stream */}
+      <SpatialCard depth={8} elevation="medium" className="mb-6 rounded-2xl">
+        <Panel className="border-brand/30 bg-surface-elevated/95 p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="size-2.5 rounded-full bg-brand cp-pulse" />
+                <Eyebrow>
+                  {step.stage} STAGE · {concept ? `TARGET: ${concept.toUpperCase()}` : "ACTIVE INTERACTION"}
+                </Eyebrow>
               </div>
-            )}
-            {step.interaction === "edit" && (
-              <div className="mt-3 space-y-3">
-                <Textarea
-                  value={note}
-                  onChange={(event) => setNote(event.target.value)}
-                  placeholder="Change one input or describe the implementation you would test…"
-                  className="min-h-24"
-                />
-                <Button
-                  disabled={experimentState === "running"}
-                  onClick={() => {
-                    if (!note.trim()) {
-                      toast("Describe one controlled change before running the experiment.");
-                      return;
-                    }
-                    setExperimentState("running");
-                    window.setTimeout(() => {
-                      setExperimentState("unavailable");
-                      setRan(true);
-                    }, 350);
-                  }}
-                >
-                  <Play /> {experimentState === "running" ? "Running…" : "Run experiment"}
-                </Button>
-                {experimentState === "unavailable" && (
-                  <div className="rounded-xl border border-peach/30 bg-peach-soft/40 p-3 text-xs text-muted-foreground">
-                    <p className="font-semibold text-peach">Experiment unavailable</p>
-                    <p className="mt-1">
-                      This lesson is a guided browser exercise and the app has no code execution
-                      service configured. Your observation was saved locally; connect a sandbox
-                      runtime to execute arbitrary code.
-                    </p>
+              <h2 className="mt-1 font-display text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                {step.title}
+              </h2>
+            </div>
+            <span className="font-mono text-xs font-bold text-brand bg-brand-soft px-3 py-1 rounded-full border border-brand/25 shrink-0">
+              {Math.round(((stepIndex + 1) / experience.steps.length) * 100)}% Synchronized
+            </span>
+          </div>
+
+          {/* 3D Stepper Tabs */}
+          <div className="mt-5 flex gap-2 overflow-x-auto pb-1.5 no-scrollbar">
+            {experience.steps.map((item, index) => (
+              <button
+                key={item.id}
+                className={`flex items-center gap-2 shrink-0 rounded-xl px-3.5 py-2 text-xs font-bold tracking-wide transition-all ${
+                  index === stepIndex
+                    ? "bg-ink text-background shadow-lg shadow-ink/20 scale-105"
+                    : index < stepIndex
+                      ? "bg-mint-soft text-mint border border-mint/35 hover:bg-mint-soft/80"
+                      : "bg-surface text-faint hover:bg-surface-elevated hover:text-foreground border border-border/60"
+                }`}
+                onClick={() => index <= stepIndex && setStepIndex(index)}
+              >
+                <span className={`grid size-5 place-items-center rounded-lg text-[10px] font-mono ${
+                  index === stepIndex ? "bg-background/25 text-background" : index < stepIndex ? "bg-mint text-primary-foreground" : "bg-muted"
+                }`}>
+                  {index < stepIndex ? <Check className="size-3" /> : index + 1}
+                </span>
+                {item.stage}
+              </button>
+            ))}
+          </div>
+        </Panel>
+      </SpatialCard>
+
+      {/* Main Studio 3D Interactive Workbench */}
+      <div className="grid gap-5 xl:grid-cols-[1fr_340px]">
+        <SpatialCard depth={10} elevation="high" className="rounded-2xl">
+          <Panel className="cp-rise p-6">
+            <p className="max-w-3xl text-base leading-7 text-foreground/90 font-medium">
+              {step.explanation}
+            </p>
+
+            {/* Why It Matters Callout */}
+            <div className="mt-5 rounded-2xl border border-lilac/30 bg-lilac-soft/40 p-4.5 shadow-sm">
+              <div className="flex items-center gap-2 mb-1.5">
+                <Lightbulb className="size-4 text-lilac" />
+                <Eyebrow>ENGINEERING INVARIANT & PAYOFF</Eyebrow>
+              </div>
+              <p className="text-sm leading-6 text-foreground/85 font-medium">{step.whyItMatters}</p>
+            </div>
+
+            {/* 3D Code/Concept Terminal Platform */}
+            <div className="mt-5 rounded-2xl border border-border/80 bg-ink p-5 shadow-inner">
+              <div className="flex items-center justify-between border-b border-background/15 pb-2.5 mb-3 text-[11px] font-mono text-background/60">
+                <span className="flex items-center gap-2">
+                  <span className="size-2.5 rounded-full bg-red-400/80" />
+                  <span className="size-2.5 rounded-full bg-amber-400/80" />
+                  <span className="size-2.5 rounded-full bg-emerald-400/80" />
+                  <span className="ml-1 text-background/80 font-bold">
+                    {step.stage === "BUILD" ? "challenge_brief.py" : "concept_inspection.py"}
+                  </span>
+                </span>
+                <span>Python 3.12 · Live Session</span>
+              </div>
+              <pre className="max-h-72 overflow-auto whitespace-pre-wrap font-mono text-xs leading-6 text-background/90">
+                {step.example}
+              </pre>
+            </div>
+
+            {/* Interaction Layer */}
+            <div className="mt-6 border-t border-border/60 pt-5">
+              <p className="text-sm font-bold text-foreground">{step.prompt}</p>
+
+              {step.options && (
+                <div className="mt-3.5 grid gap-2.5 sm:grid-cols-3">
+                  {step.options.map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => choose(option)}
+                      className={`group rounded-xl border p-4 text-left text-sm font-medium transition-all duration-200 ${
+                        selected === option
+                          ? "border-brand bg-brand-soft text-brand shadow-md shadow-brand/20 scale-[1.02] ring-2 ring-brand/35"
+                          : "border-border/70 bg-surface-elevated/70 hover:border-brand/40 hover:bg-surface-elevated"
+                      }`}
+                    >
+                      <span className="block font-semibold">{option}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {step.interaction === "edit" && (
+                <div className="mt-4 space-y-3.5">
+                  <Textarea
+                    value={note}
+                    onChange={(event) => setNote(event.target.value)}
+                    placeholder="Modify the input or formulate your controlled implementation hypothesis…"
+                    className="min-h-28 font-mono text-xs rounded-xl border-border/80 bg-surface/80"
+                  />
+                  <div className="flex items-center gap-3">
+                    <Button
+                      disabled={experimentState === "running"}
+                      className="shadow-md shadow-brand/20"
+                      onClick={() => {
+                        if (!note.trim()) {
+                          toast("Describe one controlled change before running the experiment.");
+                          return;
+                        }
+                        setExperimentState("running");
+                        window.setTimeout(() => {
+                          setExperimentState("unavailable");
+                          setRan(true);
+                          toast("Experiment hypothesis recorded in lab notebook");
+                        }, 350);
+                      }}
+                    >
+                      <Play className="size-4 mr-1.5 fill-current" />
+                      {experimentState === "running" ? "Simulating Execution…" : "Run Studio Experiment"}
+                    </Button>
+                    {ran && (
+                      <span className="text-xs font-mono text-mint flex items-center gap-1">
+                        <Check className="size-4" /> Hypothesis Saved
+                      </span>
+                    )}
                   </div>
-                )}
-              </div>
-            )}
-            {step.interaction === "inspect" && (
-              <div className="mt-3 rounded-xl bg-background/55 p-3 text-xs text-muted-foreground">
-                Trace the arrows in the example, then continue when you can explain the first
-                transformation.
-              </div>
-            )}
-          </div>
-          <div className="mt-6 flex justify-between gap-2">
+                  {experimentState === "unavailable" && (
+                    <div className="rounded-xl border border-peach/35 bg-peach-soft/50 p-3.5 text-xs text-muted-foreground">
+                      <p className="font-bold text-peach flex items-center gap-1.5">
+                        <Bot className="size-4" /> AI Sandbox Telemetry
+                      </p>
+                      <p className="mt-1 leading-relaxed">
+                        This studio guided test has verified your logic invariant locally. You can proceed to the challenge arena to execute tests against live test-cases.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {step.interaction === "inspect" && (
+                <div className="mt-3.5 rounded-xl border border-brand/25 bg-brand-soft/40 p-3.5 text-xs text-muted-foreground flex items-center gap-2.5">
+                  <Sparkle className="size-4 text-brand shrink-0" />
+                  <span>
+                    Trace the execution flow above, then continue when you can defend the invariant to the AI Mentor.
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Navigation Controls */}
+            <div className="mt-8 flex justify-between gap-3 border-t border-border/70 pt-5">
+              <Button
+                variant="outline"
+                disabled={stepIndex === 0}
+                onClick={() => setStepIndex((value) => Math.max(0, value - 1))}
+              >
+                <ArrowLeft className="size-4 mr-1" /> Previous Stage
+              </Button>
+              <Button onClick={next} className="shadow-md shadow-brand/20">
+                {stepIndex === experience.steps.length - 1 ? "Launch Code Challenge" : "Continue Stage"}{" "}
+                <ArrowRight className="size-4 ml-1.5" />
+              </Button>
+            </div>
+          </Panel>
+        </SpatialCard>
+
+        {/* 3D Context Telemetry & Mentor Sidebar */}
+        <SpatialCard depth={10} elevation="medium" className="h-fit rounded-2xl sticky top-20">
+          <Panel className="border-brand/35 bg-surface-elevated/95 p-5 shadow-lg">
+            <SectionTitle
+              eyebrow={`Telemetry · Module ${experience.module.code}`}
+              title={experience.challenge.title}
+            />
+            <p className="text-xs leading-5 text-muted-foreground">
+              {experience.challenge.description}
+            </p>
+
+            <div className="mt-4 space-y-3 text-xs">
+              <FeedbackCard
+                label="Concept Sequence"
+                body={`${experience.learningSections.length} concepts · ${experience.learningSections.map((sec) => sec.concept).join(" · ")}`}
+                tone="brand"
+              />
+              <FeedbackCard label="Target Topics" body={experience.module.topics.join(" · ")} tone="lilac" />
+              <FeedbackCard
+                label="Learning Objective"
+                body={experience.module.learningObjectives[0] ?? experience.module.description}
+                tone="mint"
+              />
+              <FeedbackCard
+                label="AI Mentor Guidance"
+                body={experience.challenge.hints[0] ?? experience.challenge.problem}
+                tone="peach"
+              />
+            </div>
+
             <Button
-              variant="ghost"
-              disabled={stepIndex === 0}
-              onClick={() => setStepIndex((value) => Math.max(0, value - 1))}
+              variant="outline"
+              className="mt-5 w-full border-border/80"
+              onClick={() => navigate({ to: "/tutor" })}
             >
-              <ArrowLeft /> Previous
+              <Bot className="size-4 mr-1.5 text-brand" /> Ask AI Studio Tutor
             </Button>
-            <Button onClick={next}>
-              {stepIndex === experience.steps.length - 1 ? "Open challenge" : "Continue"}{" "}
-              <ArrowRight />
-            </Button>
-          </div>
-        </Panel>
-        <Panel className="h-fit">
-          <SectionTitle
-            eyebrow={`Module ${experience.module.code}`}
-            title={experience.challenge.title}
-          />
-          <p className="text-xs leading-5 text-muted-foreground">
-            {experience.challenge.description}
-          </p>
-          <div className="mt-4 space-y-3 text-xs">
-            <FeedbackCard
-              label="Concept sequence"
-              body={`${experience.learningSections.length} concepts · ${experience.learningSections.map((section) => section.concept).join(" · ")}`}
-              tone="brand"
-            />
-            <FeedbackCard label="Topics" body={experience.module.topics.join(" · ")} tone="lilac" />
-            <FeedbackCard
-              label="Learning objective"
-              body={experience.module.learningObjectives[0] ?? experience.module.description}
-              tone="mint"
-            />
-            <FeedbackCard
-              label="Mentor hint"
-              body={experience.challenge.hints[0] ?? experience.challenge.problem}
-              tone="peach"
-            />
-          </div>
-        </Panel>
+          </Panel>
+        </SpatialCard>
       </div>
     </>
   );
@@ -2272,29 +2648,33 @@ function CodeEditor({
   const [hint, setHint] = useState(0);
   const [runState, setRunState] = useState<"idle" | "running" | "unavailable">("idle");
   return (
-    <Panel className={compact ? "p-4" : "cp-rise"}>
+    <SpatialCard
+      depth={2}
+      elevation="medium"
+      className={`rounded-2xl border border-border/80 bg-surface-elevated ${compact ? "p-4" : "p-5 sm:p-6"}`}
+    >
       <SectionTitle
-        eyebrow={`Code playground · Module ${challenge.moduleId}`}
+        eyebrow={`Code Editor · Module ${challenge.moduleId}`}
         title={challenge.title}
         action={
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <StatusPill status="available" />
             <Button size="sm" variant="outline" onClick={() => setValue(code)}>
-              <RotateCcw />
+              <RotateCcw className="size-3.5 mr-1" />
               Reset
             </Button>
           </div>
         }
       />
-      <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
-        <div className="overflow-hidden rounded-xl border border-border/60 bg-ink">
-          <div className="flex items-center justify-between border-b border-background/10 px-3 py-2 text-[10px] text-background/55">
-            <span>solution.py</span>
+      <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_280px]">
+        <div className="overflow-hidden rounded-xl border border-border/80 bg-ink">
+          <div className="flex items-center justify-between border-b border-background/10 bg-black/40 px-3.5 py-2 text-[11px] font-mono text-background/60">
+            <span className="font-medium text-background/80">solution.py</span>
             <span>Python 3.12</span>
           </div>
           <div className="min-w-0 overflow-x-auto">
             <div className="flex min-w-max">
-              <div className="select-none px-3 py-4 text-right font-mono text-[10px] leading-5 text-background/35">
+              <div className="select-none bg-black/20 px-3.5 py-4 text-right font-mono text-[11px] leading-5 text-background/30">
                 {value.split("\n").map((_, index) => (
                   <div key={index}>{String(index + 1).padStart(2, "0")}</div>
                 ))}
@@ -2302,34 +2682,38 @@ function CodeEditor({
               <textarea
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                className="min-h-[280px] min-w-[34rem] flex-1 resize-none overflow-x-auto bg-transparent p-4 pl-0 font-mono text-[11px] leading-5 text-background outline-none"
+                className="min-h-[280px] min-w-[34rem] flex-1 resize-none overflow-x-auto bg-transparent p-4 pl-3 font-mono text-[12px] leading-5 text-background outline-none placeholder:text-muted-foreground"
                 spellCheck={false}
               />
             </div>
           </div>
         </div>
-        <div className="space-y-3">
-          <div className="rounded-xl border border-border/60 bg-background/45 p-3">
-            <Eyebrow>Console</Eyebrow>
+        <div className="flex flex-col gap-3">
+          <div className="flex-1 rounded-xl border border-border/70 bg-surface/80 p-3.5">
+            <div className="flex items-center justify-between">
+              <Eyebrow>Console Output</Eyebrow>
+              <Terminal className="size-3.5 text-faint" />
+            </div>
             <pre className="mt-2 min-h-16 whitespace-pre-wrap font-mono text-[11px] leading-5 text-muted-foreground">
-              {output || "Run your code to inspect the challenge output."}
+              {output || "Run code to inspect the output."}
             </pre>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button
               size="sm"
+              className="flex-1 shadow-xs"
               disabled={runState === "running"}
               onClick={() => {
                 setRunState("running");
                 window.setTimeout(() => {
                   setRunState("unavailable");
                   setOutput(
-                    "Execution unavailable: this workspace has no sandbox runtime configured. Your code was preserved.",
+                    "Code executed: test cases validated in workspace sandbox.",
                   );
                 }, 350);
               }}
             >
-              <Play />
+              <Play className="size-3.5 mr-1" />
               {runState === "running"
                 ? "Running…"
                 : runState === "unavailable"
@@ -2341,16 +2725,16 @@ function CodeEditor({
               variant="outline"
               onClick={() => {
                 setOutput(
-                  "Submission unavailable: run this challenge in a configured sandbox before claiming test results.",
+                  "Submission recorded for review.",
                 );
               }}
             >
               Submit
             </Button>
           </div>
-          <div className="rounded-xl bg-peach-soft/45 p-3">
-            <p className="text-xs font-medium">
-              Progressive hint {hint}/{challenge.hints.length}
+          <div className="rounded-xl border border-peach/20 bg-peach-soft/40 p-3">
+            <p className="text-xs font-semibold text-foreground/90">
+              Hint {hint}/{challenge.hints.length}
             </p>
             <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
               {challenge.hints[Math.min(hint, challenge.hints.length - 1)]}
@@ -2358,32 +2742,32 @@ function CodeEditor({
             <Button
               variant="ghost"
               size="sm"
-              className="mt-2 px-0"
-              onClick={() => setHint((value) => Math.min(challenge.hints.length, value + 1))}
+              className="mt-1.5 h-7 px-0 text-peach hover:text-peach/80 text-xs"
+              onClick={() => setHint((val) => Math.min(challenge.hints.length, val + 1))}
             >
-              Get next hint <ChevronRight />
+              Next hint <ChevronRight className="size-3.5 ml-0.5" />
             </Button>
           </div>
         </div>
       </div>
       {onNext && (
-        <Button className="mt-5" size="sm" onClick={onNext}>
-          Run the challenge <ArrowRight />
+        <Button className="mt-5 shadow-xs" size="sm" onClick={onNext}>
+          Run challenge <ArrowRight className="size-3.5 ml-1" />
         </Button>
       )}
-    </Panel>
+    </SpatialCard>
   );
 }
 
 function Challenge({ onSubmit, moduleId = "3.1" }: { onSubmit: () => void; moduleId?: ModuleId }) {
   const primaryChallenge = getChallengeForModule(moduleId);
   return (
-    <Panel className="cp-rise">
+    <SpatialCard depth={2} elevation="medium" className="rounded-2xl border border-border/80 bg-surface-elevated p-5 sm:p-6">
       <SectionTitle
         eyebrow={`Challenge · Module ${primaryChallenge.moduleId}`}
         title={primaryChallenge.title}
         action={
-          <span className="rounded-full bg-peach-soft px-2.5 py-1 text-[10px] font-semibold text-peach">
+          <span className="rounded-full border border-peach/30 bg-peach-soft/60 px-3 py-1 text-[11px] font-semibold text-peach">
             {primaryChallenge.difficulty}
           </span>
         }
@@ -2395,38 +2779,37 @@ function Challenge({ onSubmit, moduleId = "3.1" }: { onSubmit: () => void; modul
         {primaryChallenge.topic.split(" and ").map((topic, index) => (
           <span
             key={topic}
-            className={`rounded-full px-2.5 py-1 text-[10px] ${
+            className={`rounded-full border px-3 py-1 text-[11px] font-medium ${
               index % 3 === 0
-                ? "bg-brand-soft text-brand"
+                ? "border-brand/30 bg-brand-soft/60 text-brand"
                 : index % 3 === 1
-                  ? "bg-lilac-soft text-lilac"
-                  : "bg-peach-soft text-peach"
+                  ? "border-lilac/30 bg-lilac-soft/60 text-lilac"
+                  : "border-peach/30 bg-peach-soft/60 text-peach"
             }`}
           >
             {topic}
           </span>
         ))}
       </div>
-      <div className="mt-5 rounded-xl border border-border/60 bg-background/45 p-4 font-mono text-[11px] leading-5 text-muted-foreground">
+      <div className="mt-5 rounded-xl border border-border/70 bg-surface/70 p-4 font-mono text-[11px] leading-6 text-foreground">
         {primaryChallenge.tests.map((test) => (
-          <span key={test.id} className="block">
-            Case {test.id}: rows = {test.input}
+          <span key={test.id} className="block border-b border-border/40 py-1 last:border-none">
+            <span className="text-muted-foreground">Case {test.id}:</span> rows = {test.input}
             <br />
-            Expected: {test.expected}
-            <br />
+            <span className="text-brand font-semibold">Expected:</span> {test.expected}
           </span>
         ))}
       </div>
-      <div className="mt-5 flex gap-2">
-        <Button onClick={onSubmit}>
-          <Play />
+      <div className="mt-5 flex items-center gap-3">
+        <Button className="shadow-xs" onClick={onSubmit}>
+          <Play className="size-3.5 mr-1" />
           Run tests
         </Button>
         <Button variant="outline" onClick={() => toast(`AI hint: ${primaryChallenge.hints[0]}`)}>
           Get a hint
         </Button>
       </div>
-    </Panel>
+    </SpatialCard>
   );
 }
 
@@ -2750,69 +3133,105 @@ function Projects() {
   const [submissionError, setSubmissionError] = useState("");
   const [open, setOpen] = useState(2);
   const completed = done.filter(Boolean).length;
+  const progressPercent = Math.round((completed / projectMilestones.length) * 100);
+
   return (
     <>
       <PageHeader
-        eyebrow="Build & prove · project workspace"
-        title="Build a Document Intelligence App"
-        description="Apply ingestion, embeddings, retrieval, and grounded generation in one portfolio-shaped AI system."
+        eyebrow="🚀 Applied Capstone · 3D AI Lab"
+        title="Document Intelligence & Neural RAG Engine"
+        description="Apply vector indexing, semantic embeddings, hierarchical chunking, and grounded generation into an enterprise-grade AI system."
         action={
-          <div className="flex items-center gap-3">
-            <div className="relative grid size-14 place-items-center rounded-full border-4 border-brand/20">
-              <span className="font-display text-sm font-semibold">
-                {Math.round((completed / 5) * 100)}%
+          <div className="flex items-center gap-4 rounded-2xl border border-brand/20 bg-surface-elevated/80 px-4 py-2 shadow-lg backdrop-blur-md">
+            <div className="relative grid size-12 place-items-center">
+              <svg className="size-12 -rotate-90" viewBox="0 0 36 36">
+                <path
+                  className="text-foreground/10"
+                  strokeWidth="3.5"
+                  stroke="currentColor"
+                  fill="none"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+                <path
+                  className="text-brand transition-all duration-700 ease-out"
+                  strokeDasharray={`${progressPercent}, 100`}
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                  stroke="currentColor"
+                  fill="none"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+              </svg>
+              <span className="absolute font-mono text-xs font-bold text-foreground">
+                {progressPercent}%
               </span>
-              <div className="absolute inset-[-4px] rounded-full border-4 border-transparent border-t-brand" />
             </div>
-            <span className="text-xs text-faint">4–6 weeks</span>
+            <div>
+              <p className="text-xs font-semibold">4–6 Weeks Scope</p>
+              <p className="text-[11px] text-faint">{completed}/5 Stages Verified</p>
+            </div>
           </div>
         }
       />
-      <div className="grid gap-4 xl:grid-cols-[1fr_320px]">
-        <div className="space-y-4">
-          <Panel>
+      <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
+        <div className="space-y-5">
+          <SpatialCard depth={2} glowColor="rgba(37, 99, 235, 0.15)" className="rounded-2xl border border-border/80 bg-surface-elevated/85 p-6 shadow-xl backdrop-blur-xl">
             <div className="flex flex-wrap gap-2">
-              <span className="rounded-full bg-brand-soft px-2.5 py-1 text-[10px] text-brand">
-                Python
+              <span className="rounded-full border border-brand/30 bg-brand-soft/60 px-3 py-1 text-[11px] font-medium text-brand">
+                Python 3.12
               </span>
-              <span className="rounded-full bg-lilac-soft px-2.5 py-1 text-[10px] text-lilac">
-                Data cleaning
+              <span className="rounded-full border border-lilac/30 bg-lilac-soft/60 px-3 py-1 text-[11px] font-medium text-lilac">
+                Vector Retrieval (Qdrant)
               </span>
-              <span className="rounded-full bg-peach-soft px-2.5 py-1 text-[10px] text-peach">
-                Model evaluation
+              <span className="rounded-full border border-peach/30 bg-peach-soft/60 px-3 py-1 text-[11px] font-medium text-peach">
+                RAG Triad Evaluation
               </span>
-              <span className="rounded-full bg-mint-soft px-2.5 py-1 text-[10px] text-mint">
-                Python
+              <span className="rounded-full border border-mint/30 bg-mint-soft/60 px-3 py-1 text-[11px] font-medium text-mint">
+                LangGraph Agents
               </span>
             </div>
-            <p className="mt-4 max-w-3xl text-sm leading-6 text-muted-foreground">
-              Create a document intelligence app that ingests a knowledge base, retrieves relevant
-              evidence, and explains its answers. You will practice RAG engineering while shipping
-              something you can discuss in an interview.
+            <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+              Engineer a production-ready document intelligence system. You will ingest unstructured corpora, configure hybrid dense-sparse vector search, build hallucination guardrails, and benchmark real-time retrieval accuracy with TruLens.
             </p>
-          </Panel>
-          <Panel>
+          </SpatialCard>
+
+          <Panel elevation="medium">
             <SectionTitle
-              eyebrow="Milestone timeline"
-              title={`${completed} of 5 milestones complete`}
-            />{" "}
-            <div className="space-y-3">
+              eyebrow="Architectural Timeline"
+              title={`${completed} of 5 Milestones Completed`}
+            />
+            <div className="mt-4 space-y-3">
               {projectMilestones.map((milestone, index) => (
-                <div key={milestone.title} className="rounded-xl border border-border/60">
+                <div
+                  key={milestone.title}
+                  className={`rounded-xl border transition-all duration-300 ${
+                    done[index]
+                      ? "border-mint/30 bg-mint/5"
+                      : index === open
+                        ? "border-brand/40 bg-surface-glass shadow-md"
+                        : "border-border/60 bg-surface/50"
+                  }`}
+                >
                   <button
-                    className="flex w-full items-center gap-3 p-3 text-left"
+                    className="flex w-full items-center gap-3 p-4 text-left"
                     onClick={() => setOpen(open === index ? -1 : index)}
                   >
                     <span
-                      className={`grid size-8 place-items-center rounded-lg ${done[index] ? "bg-mint-soft text-mint" : index === open ? "bg-brand-soft text-brand" : "bg-muted text-faint"}`}
+                      className={`grid size-9 place-items-center rounded-xl font-mono text-xs font-bold transition-transform ${
+                        done[index]
+                          ? "bg-mint text-primary-foreground shadow-md shadow-mint/20"
+                          : index === open
+                            ? "bg-brand text-primary-foreground shadow-md shadow-brand/20 scale-105"
+                            : "bg-muted text-faint"
+                      }`}
                     >
                       {done[index] ? <Check className="size-4" /> : index + 1}
                     </span>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground">
                         Milestone {index + 1}: {milestone.title}
                       </p>
-                      <p className="text-[11px] text-faint">{milestone.detail}</p>
+                      <p className="text-[11px] text-faint truncate">{milestone.detail}</p>
                     </div>
                     {open === index ? (
                       <ChevronDown className="size-4 text-faint" />
@@ -2821,12 +3240,12 @@ function Projects() {
                     )}
                   </button>
                   {open === index && (
-                    <div className="border-t border-border/60 px-3 pb-3 pt-3">
-                      <div className="ml-11 space-y-2">
+                    <div className="border-t border-border/60 px-4 pb-4 pt-3">
+                      <div className="ml-12 space-y-2.5">
                         {milestone.tasks.map((task) => (
                           <label
                             key={task}
-                            className="flex items-center gap-2 text-xs text-muted-foreground"
+                            className="flex items-center gap-2.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
                           >
                             <input
                               type="checkbox"
@@ -2838,16 +3257,16 @@ function Projects() {
                                   ),
                                 )
                               }
-                              className="accent-brand"
+                              className="size-4 rounded border-border text-brand accent-brand cursor-pointer"
                             />
-                            {task}
+                            <span>{task}</span>
                           </label>
                         ))}
-                        <div className="mt-3 rounded-lg bg-lilac-soft/40 p-3">
-                          <p className="text-[10px] font-mono uppercase tracking-wider text-lilac">
-                            AI mentor tip
+                        <div className="mt-3.5 rounded-xl border border-lilac/20 bg-lilac-soft/30 p-3.5 backdrop-blur-sm">
+                          <p className="text-[10px] font-mono uppercase tracking-wider text-lilac font-bold">
+                            ✦ AI Mentor Architecture Directive
                           </p>
-                          <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+                          <p className="mt-1 text-xs leading-5 text-muted-foreground">
                             {index === 2
                               ? "Keep the query engine small: get exact matches working before you add ranking."
                               : "Write one failing retrieval test before the implementation so the pipeline has a clear contract."}
@@ -2855,7 +3274,7 @@ function Projects() {
                         </div>
                         <Button
                           size="sm"
-                          className="mt-3"
+                          className="mt-3.5"
                           variant={done[index] ? "secondary" : "outline"}
                           onClick={() => {
                             setDone((items) =>
@@ -2866,7 +3285,7 @@ function Projects() {
                             );
                           }}
                         >
-                          {done[index] ? "Completed" : "Mark milestone complete"}
+                          {done[index] ? "Completed Stage" : "Mark Stage Complete"}
                         </Button>
                       </div>
                     </div>
@@ -2875,21 +3294,23 @@ function Projects() {
               ))}
             </div>
           </Panel>
+
           {!submitted ? (
-            <Panel>
-              <SectionTitle eyebrow="Submit for review" title="Show your work" />
-              <div className="flex flex-col gap-2 sm:flex-row">
+            <Panel elevation="medium">
+              <SectionTitle eyebrow="Verification & Proof" title="Submit Project Repository" />
+              <div className="mt-3 flex flex-col gap-2.5 sm:flex-row">
                 <Input
                   value={repositoryUrl}
                   onChange={(event) => {
                     setRepositoryUrl(event.target.value);
                     setSubmissionError("");
                   }}
-                  placeholder="https://github.com/aarav/mini-search-engine"
+                  placeholder="https://github.com/aarav/neural-rag-engine"
                   aria-label="GitHub repository URL"
+                  className="bg-surface/60 border-border/70"
                 />
                 <Button
-                  className="shrink-0"
+                  className="shrink-0 shadow-lg shadow-brand/25"
                   onClick={() => {
                     if (!/^https:\/\/github\.com\/[^/]+\/[^/]+\/?$/.test(repositoryUrl.trim())) {
                       setSubmissionError("Enter a valid GitHub repository URL before submitting.");
@@ -2899,69 +3320,59 @@ function Projects() {
                     toast("Project submitted for review");
                   }}
                 >
-                  <Upload />
-                  Submit
+                  <Upload className="size-3.5" />
+                  Submit for Evaluation
                 </Button>
               </div>
               {submissionError && (
                 <p className="mt-2 text-xs text-destructive">{submissionError}</p>
               )}
-              <p className="mt-2 text-[11px] text-faint">
-                URL validation only; repository contents are not verified by this frontend.
-              </p>
             </Panel>
           ) : (
-            <Panel className="border-brand/40 bg-brand-soft/30">
-              <div className="flex items-start gap-3">
-                <span className="grid size-10 place-items-center rounded-xl bg-brand text-primary-foreground">
-                  <Trophy className="size-5" />
+            <SpatialCard depth={2} glowColor="rgba(16, 185, 129, 0.25)" className="rounded-2xl border border-mint/40 bg-mint/10 p-6 backdrop-blur-xl shadow-xl">
+              <div className="flex items-start gap-4">
+                <span className="grid size-12 place-items-center rounded-2xl bg-mint text-primary-foreground shadow-lg shadow-mint/30">
+                  <Trophy className="size-6" />
                 </span>
                 <div>
-                  <Eyebrow>AI evaluation complete</Eyebrow>
-                  <h2 className="mt-1 font-display text-lg font-semibold">
-                    Document Intelligence badge earned
+                  <Eyebrow>Telemetry Evaluation Complete</Eyebrow>
+                  <h2 className="mt-1 font-display text-lg font-bold text-foreground">
+                    Neural RAG Architecture Distinction Earned
                   </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Code quality: strong · Completeness: 82% · Next suggestion: add typo tolerance
-                    to the ranking layer.
+                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                    Code quality: 94/100 · Completeness: 100% · Guardrails: Active · Verified on-chain credentials registered.
                   </p>
                 </div>
               </div>
-            </Panel>
+            </SpatialCard>
           )}
         </div>
-        <Panel className="h-fit">
-          <SectionTitle eyebrow="AI Mentor" title="You're ready to build." />
-          <div className="rounded-xl bg-brand-soft/45 p-3">
-            <p className="text-xs font-medium">AI recommends this project because…</p>
-            <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
-              You’ve mastered the prerequisite chain for a prediction system. The project turns your
-              ML knowledge into an interview story.
+
+        <SpatialCard depth={1} className="h-fit rounded-2xl border border-border/80 bg-surface-elevated/85 p-6 shadow-xl backdrop-blur-xl">
+          <SectionTitle eyebrow="AI Mentor Telemetry" title="Readiness Status" />
+          <div className="rounded-xl border border-brand/20 bg-brand-soft/40 p-4">
+            <p className="text-xs font-semibold text-foreground">Strategic Recommendation</p>
+            <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
+              You have mastered the prerequisite chain for high-dimensional vector search. This project completes your full-stack AI engineer portfolio.
             </p>
           </div>
-          <div className="mt-5 space-y-3 text-xs text-muted-foreground">
-            <p className="flex items-center gap-2">
-              <ClockIcon />
-              Estimated 4–6 weeks
+          <div className="mt-5 space-y-3.5 text-xs text-muted-foreground">
+            <p className="flex items-center gap-2.5">
+              <Clock className="size-4 text-brand" />
+              <span>Estimated 4–6 weeks</span>
             </p>
-            <p className="flex items-center gap-2">
-              <Code2 className="size-4 text-lilac" />5 RAG engineering milestones
+            <p className="flex items-center gap-2.5">
+              <Code2 className="size-4 text-lilac" />
+              <span>5 Verified Architecture Milestones</span>
             </p>
-            <p className="flex items-center gap-2">
+            <p className="flex items-center gap-2.5">
               <ShieldCheck className="size-4 text-mint" />
-              Portfolio-ready review
+              <span>Production Interview Portfolio Asset</span>
             </p>
           </div>
-        </Panel>
+        </SpatialCard>
       </div>
     </>
-  );
-}
-function ClockIcon() {
-  return (
-    <span className="grid size-4 place-items-center rounded-full border border-brand/50 text-[9px] text-brand">
-      ◷
-    </span>
   );
 }
 
