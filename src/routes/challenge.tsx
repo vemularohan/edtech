@@ -21,8 +21,8 @@ function ChallengeRoute() {
   return (
     <CodepathApp
       view="challenge"
-      moduleId={module as `3.${number}` | undefined}
-      challengeId={challenge}
+      {...(module ? { moduleId: module as `3.${number}` } : {})}
+      {...(challenge ? { challengeId: challenge } : {})}
     />
   );
 }

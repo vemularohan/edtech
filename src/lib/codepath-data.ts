@@ -70,7 +70,7 @@ export type CurriculumChallenge = {
   title: string;
   description: string;
   type: "BUILD" | "DEBUG" | "PREDICT" | "EXPERIMENT" | "DECISION";
-  difficulty: "Easy" | "Medium" | "Hard";
+  difficulty: "Easy" | "Medium" | "Hard" | "Beginner" | "Intermediate" | "Advanced";
   problem: string;
   starterCode: string;
   tests: ChallengeTest[];
@@ -81,6 +81,7 @@ export type CurriculumChallenge = {
 
 export const curriculumChallenges: CurriculumChallenge[] = [
   {
+    id: "3.6-01",
     moduleId: "3.6",
     topic: "Pandas data cleaning and aggregation",
     title: "Clean a Messy Student Dataset",
@@ -1258,7 +1259,7 @@ for (const module of curriculumModules) {
   assessmentQuestions.push({
     id: `module-${module.code}`,
     moduleId: module.code,
-    topic: module.topics[0],
+    topic: module.topics[0] ?? module.title,
     type: "SCENARIO",
     prompt,
     options,
@@ -1297,7 +1298,7 @@ for (const module of curriculumModules) {
     ({
       id: `module-${module.code}`,
       moduleId: module.code,
-      topic: module.topics[0],
+      topic: module.topics[0] ?? module.title,
       type: "SCENARIO",
       prompt: `You are applying ${module.topics[0]} in a real AI project. What should you inspect first?`,
       options: [

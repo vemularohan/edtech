@@ -12,13 +12,19 @@ export const Route = createFileRoute("/learning-mode")({
         .optional(),
     ),
     concept: z.string().trim().min(1).optional(),
+    step: z.coerce.number().int().min(0).optional(),
   }),
   component: LearningModeRoute,
 });
 
 function LearningModeRoute() {
-  const { module, concept } = Route.useSearch();
+  const { module, concept, step } = Route.useSearch();
   return (
-    <CodepathApp view="learning" moduleId={module as `3.${number}` | undefined} concept={concept} />
+    <CodepathApp
+      view="learning"
+      {...(module ? { moduleId: module as `3.${number}` } : {})}
+      {...(concept ? { concept } : {})}
+      {...(step !== undefined ? { stepIndex: step } : {})}
+    />
   );
 }

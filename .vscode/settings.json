@@ -1,19 +1,19 @@
 {
-    "chat.tools.terminal.autoApprove": {
-        "test": true,
-        "bun": true,
-        "/^npx prettier --write src/lib/codepath-data\\.ts src/lib/curriculum-data\\.ts src/components/codepath/CodepathApp\\.tsx && npx eslint src/lib/codepath-data\\.ts src/lib/curriculum-data\\.ts src/components/codepath/CodepathApp\\.tsx && git diff --check$/": {
-            "approve": true,
-            "matchCommandLine": true
-        },
-        "/^node --version && npm --version && test -d node_modules && echo node_modules-present \\|\\| echo node_modules-missing$/": {
-            "approve": true,
-            "matchCommandLine": true
-        },
-        "npx tsc": true,
-        "/^npx eslint src/lib/learning-progress\\.ts src/lib/learning-experiences\\.ts src/lib/codepath-data\\.ts src/components/codepath/CodepathApp\\.tsx$/": {
-            "approve": true,
-            "matchCommandLine": true
-        }
+  "chat.tools.terminal.autoApprove": {
+    "test": true,
+    "bun": true,
+    "/^npx prettier --write src/lib/codepath-data\\.ts src/lib/curriculum-data\\.ts src/components/codepath/CodepathApp\\.tsx && npx eslint src/lib/codepath-data\\.ts src/lib/curriculum-data\\.ts src/components/codepath/CodepathApp\\.tsx && git diff --check$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^node --version && npm --version && test -d node_modules && echo node_modules-present \\|\\| echo node_modules-missing$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "npx tsc": true,
+    "/^npx eslint src/lib/learning-progress\\.ts src/lib/learning-experiences\\.ts src/lib/codepath-data\\.ts src/components/codepath/CodepathApp\\.tsx$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
+  }
 }

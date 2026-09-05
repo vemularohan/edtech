@@ -1,0 +1,1 @@
+import{a as e}from"./CodepathApp-C4yZiTqX.js";var t=e;export{t as component};

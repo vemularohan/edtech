@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/verify._certificateId-CHvq1fp7.js","assets/link-DPT17Rzw.js","assets/CodepathApp-C4yZiTqX.js"])))=>i.map(i=>d[i]);
+import{n as e,r as t,t as n}from"./preload-helper-psnANCaL.js";var r=t(`/verify/$certificateId`)({component:e(()=>n(()=>import(`./verify._certificateId-CHvq1fp7.js`),__vite__mapDeps([0,1,2])),`component`)});export{r as t};

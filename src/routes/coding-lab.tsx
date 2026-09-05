@@ -17,5 +17,5 @@ export const Route = createFileRoute("/coding-lab")({
 
 function CodingLabRoute() {
   const { module } = Route.useSearch();
-  return <CodepathApp view="lab" moduleId={module as `3.${number}` | undefined} />;
+  return <CodepathApp view="lab" {...(module ? { moduleId: module as `3.${number}` } : {})} />;
 }

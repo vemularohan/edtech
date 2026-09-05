@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Activity,
@@ -99,7 +99,14 @@ import {
 import type { CurriculumChallenge } from "@/lib/codepath-data";
 import { curriculumModules } from "@/lib/curriculum-data";
 import { getLearningExperience } from "@/lib/learning-experiences";
-import { recordLearningEvidence, useLearningEvidence } from "@/lib/learning-progress";
+import {
+  completeLearningModule,
+  getLearningProgressSummary,
+  recordLearningEvidence,
+  updateLearningPosition,
+  useLearningEvidence,
+  useLearningProgress,
+} from "@/lib/learning-progress";
 
 type ModuleId = `3.${number}`;
 
@@ -118,12 +125,13 @@ type View =
 
 const navItems: { label: string; to: string; icon: typeof Activity }[] = [
   { label: "Discover", to: "/dashboard", icon: Compass },
-  { label: "Curriculum", to: "/curriculum-map", icon: GitBranch },
-  { label: "Challenges", to: "/learning-mode", icon: Zap },
-  { label: "Build", to: "/projects", icon: FolderKanban },
-  { label: "Skills", to: "/analytics", icon: BarChart3 },
-  { label: "Portfolio", to: "/profile", icon: UserRound },
-  { label: "Career", to: "/career-roadmap", icon: Target },
+  { label: "Curriculum", to: "/curriculum", icon: GitBranch },
+  { label: "Learning Mode", to: "/learning-mode", icon: BookOpen },
+  { label: "Challenges", to: "/challenges", icon: Zap },
+  { label: "Build", to: "/build", icon: FolderKanban },
+  { label: "Skills", to: "/skills", icon: BarChart3 },
+  { label: "Portfolio", to: "/portfolio", icon: UserRound },
+  { label: "Career", to: "/career", icon: Target },
 ];
 
 const toneMap = { brand: "bg-brand", lilac: "bg-lilac", peach: "bg-peach", mint: "bg-mint" };
@@ -201,9 +209,17 @@ function StatusPill({ status }: { status: string }) {
     </span>
   );
 }
-function ProgressBar({ value, tone = "brand" }: { value: number; tone?: keyof typeof toneMap }) {
+function ProgressBar({
+  value,
+  tone = "brand",
+  className,
+}: {
+  value: number;
+  tone?: keyof typeof toneMap;
+  className?: string;
+}) {
   return (
-    <div className="h-2 overflow-hidden rounded-full bg-foreground/10">
+    <div className={`h-2 overflow-hidden rounded-full bg-foreground/10 ${className ?? ""}`}>
       <div
         className={`cp-fill h-full rounded-full ${toneMap[tone]}`}
         style={{ width: `${value}%` }}
@@ -245,6 +261,8 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const evidence = useLearningEvidence();
+  const progress = useLearningProgress();
+  const summary = getLearningProgressSummary(progress);
   const pageTitle = navItems.find(({ to }) => activePath(active, to))?.label ?? "AI Skills Track";
   return (
     <div className="app-shell min-h-screen overflow-x-clip bg-background text-foreground">
@@ -277,14 +295,14 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
           </nav>
           <div className="mt-auto rounded-2xl border border-border/70 bg-surface-elevated/75 p-3">
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-xs font-semibold">Learning evidence</p>
+              <p className="text-xs font-semibold">Curriculum progress</p>
               <span className="rounded-full bg-lilac-soft px-2 py-1 text-[10px] font-semibold text-lilac">
-                {evidence.questionsPassed + evidence.challengesPassed} checks
+                {summary.completedCount}/{summary.totalModules}
               </span>
             </div>
-            <ProgressBar value={Math.min(100, evidence.sectionsCompleted * 5)} />
+            <ProgressBar value={summary.progressPercent} />
             <p className="mt-2 text-[11px] text-faint">
-              {evidence.sectionsCompleted} learning sections completed
+              Module {summary.currentModule.code} · {summary.currentStepTitle || "Ready to start"}
             </p>
           </div>
           <button
@@ -382,15 +400,16 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
   );
 }
 function activePath(active: View, to: string) {
-  return (
-    (active === "map" && to.includes("curriculum")) ||
-    (active === "lab" && to.includes("coding")) ||
-    (active === "career" && to.includes("career")) ||
-    (active === "projects" && to.includes("projects")) ||
-    (active === "analytics" && to.includes("analytics")) ||
-    (active === "profile" && to.includes("profile")) ||
-    to.includes(active)
-  );
+  if (active === "dashboard") return to === "/dashboard" || to === "/";
+  if (active === "map") return to === "/curriculum" || to.includes("curriculum");
+  if (active === "learning") return to === "/learning-mode";
+  if (active === "lab") return to === "/coding-lab" || to.includes("coding");
+  if (active === "challenge") return to === "/challenge" || to === "/challenges";
+  if (active === "projects") return to === "/build" || to === "/projects";
+  if (active === "analytics") return to === "/skills" || to === "/analytics";
+  if (active === "career") return to === "/career" || to === "/career-roadmap";
+  if (active === "profile") return to === "/portfolio" || to === "/profile";
+  return to.includes(active);
 }
 
 function PageHeader({
@@ -420,310 +439,206 @@ function PageHeader({
 
 function Dashboard() {
   const navigate = useNavigate();
-  const [diagnosticOpen, setDiagnosticOpen] = useState(false);
   const evidence = useLearningEvidence();
-  const nextModule =
-    curriculumModules.find((module) => module.status === "in-progress") ?? curriculumModules[0]!;
-  const masteredModules = curriculumModules.filter((module) => module.status === "mastered").length;
+  const progress = useLearningProgress();
+  const summary = getLearningProgressSummary(progress);
+  const continueLearning = () => navigate({ to: "/learning-mode", search: summary.continueSearch });
+  const startNextModule = () =>
+    navigate({ to: "/learning-mode", search: { module: summary.nextModule.code } });
+
   return (
     <>
       <PageHeader
-        eyebrow="Discover · Wed 12 Jun"
-        title="What do you want to build?"
-        description="Choose one interesting challenge. Your curriculum will quietly connect the skills underneath."
-        action={
-          <Button onClick={() => navigate({ to: "/learning-mode" })}>
-            <BookOpen />
-            Continue Learning
-          </Button>
-        }
+        eyebrow="Dashboard"
+        title="Your Learning Progress"
+        description="Track your journey through the AI engineering curriculum."
       />
-      <section className="mb-5 border-y border-border/70 py-5">
+
+      <section className="mb-5 rounded-2xl border border-brand/25 bg-brand-soft/30 p-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <Eyebrow>Your next challenge</Eyebrow>
-            <h2 className="mt-1 text-xl font-semibold tracking-tight">{nextModule.title}</h2>
-            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{nextModule.description}</p>
-          </div>
-          <Button onClick={() => navigate({ to: "/learning-mode" })}>
-            Continue <ArrowRight />
-          </Button>
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2 text-xs text-muted-foreground">
-          <span className="rounded-full bg-brand-soft px-2.5 py-1 text-brand">Build</span>
-          <span>25 min</span>
-          <span>·</span>
-          <span>Python · APIs · Prompting</span>
-        </div>
-      </section>
-      <section className="mb-5 border-y border-border/70 py-5">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <Eyebrow>Next milestone</Eyebrow>
-            <h2 className="mt-1 text-xl font-semibold tracking-tight">Model evaluation</h2>
+            <p className="text-2xl font-semibold tracking-tight">
+              {summary.completedCount} / {summary.totalModules} Modules Completed
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Complete this module to unlock your Machine Learning project.
+              {summary.progressPercent}% overall curriculum progress
             </p>
           </div>
-          <span className="text-sm text-brand">
-            {masteredModules} of {curriculumModules.length} modules mastered
-          </span>
         </div>
-        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
-          {[
-            ["Foundations", "mastered"],
-            ["Data", "mastered"],
-            ["Machine Learning", "in-progress"],
-            ["Deep Learning", "locked"],
-            ["LLMs", "locked"],
-            ["Production AI", "locked"],
-            ["Capstone", "locked"],
-          ].map(([label, status], index) => (
-            <div key={label} className="relative">
-              {index > 0 && (
-                <span className="absolute -left-3 top-5 hidden text-border lg:block">→</span>
-              )}
-              <div className="flex items-center gap-2">
-                <span
-                  className={`grid size-8 place-items-center rounded-full border ${
-                    status === "mastered"
-                      ? "border-mint/40 bg-mint-soft text-mint"
-                      : status === "in-progress"
-                        ? "border-brand bg-brand-soft text-brand"
-                        : "border-border bg-muted text-faint"
-                  }`}
+        <ProgressBar value={summary.progressPercent} className="mt-4" />
+        <div className="mt-5 grid gap-4 sm:grid-cols-[1fr_auto]">
+          <div>
+            <Eyebrow>Currently learning</Eyebrow>
+            <p className="mt-1 font-semibold">
+              Module {summary.currentModule.code} — {summary.currentModule.title}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {summary.currentStepStage} · {summary.currentStepTitle}
+            </p>
+          </div>
+          <div className="flex items-end">
+            <Button onClick={continueLearning}>
+              Continue Learning <ArrowRight />
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <section className="mb-5 grid gap-5 lg:grid-cols-2">
+        <Panel>
+          <SectionTitle eyebrow="Recently completed" title="Your completed modules" />
+          {summary.recentlyCompleted.length ? (
+            <div className="space-y-2">
+              {summary.recentlyCompleted.map((module) => (
+                <div key={module.code} className="flex items-start gap-2 text-sm">
+                  <Check className="mt-0.5 size-4 shrink-0 text-mint" />
+                  <span>
+                    Module {module.code} — {module.title}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Complete your first learning module to see it here.
+            </p>
+          )}
+        </Panel>
+        <Panel>
+          <SectionTitle eyebrow="Next" title="Recommended learning" />
+          <p className="font-semibold">
+            Module {summary.nextModule.code} — {summary.nextModule.title}
+          </p>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            {summary.nextModule.description}
+          </p>
+          <Button className="mt-4" variant="outline" onClick={startNextModule}>
+            Start next module <ArrowRight />
+          </Button>
+        </Panel>
+      </section>
+
+      <section className="mb-5 border-t border-border/70 pt-5">
+        <Eyebrow>Explore further</Eyebrow>
+        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <Panel>
+            <SectionTitle
+              eyebrow="Curriculum"
+              title="Full learning map"
+              action={
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => navigate({ to: "/curriculum-map" })}
                 >
-                  {status === "mastered" ? (
-                    <Check className="size-4" />
-                  ) : status === "locked" ? (
-                    <Lock className="size-3" />
-                  ) : (
-                    <span className="size-2 rounded-full bg-brand" />
-                  )}
-                </span>
-                <span className="text-xs font-medium leading-4">{label}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-      <section className="mb-5 border-b border-border/70 pb-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <Eyebrow>Today's mission · 20 minutes</Eyebrow>
-            <h2 className="mt-1 text-lg font-semibold tracking-tight">
-              Understand how models make predictions
-            </h2>
+                  Open <ArrowRight />
+                </Button>
+              }
+            />
+            <p className="text-sm text-muted-foreground">
+              {summary.completedCount} of {summary.totalModules} modules mastered on your journey
+              from Python foundations to production AI.
+            </p>
+            <MiniMap onNode={() => navigate({ to: "/curriculum-map" })} />
+          </Panel>
+          <Panel>
+            <SectionTitle eyebrow="Build" title="Module challenge" />
+            <p className="font-medium">{summary.nextModule.title}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              One focused experience to move you closer to building your first ML system.
+              {summary.nextModule.project || summary.nextModule.description}
             </p>
-          </div>
-          <Button size="sm" onClick={() => navigate({ to: "/learning-mode" })}>
-            Start mission <ArrowRight />
-          </Button>
+            <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
+              <span className="rounded-full bg-brand-soft px-2.5 py-1 text-brand">
+                {summary.nextModule.experienceStage}
+              </span>
+              <span>{summary.nextModule.estimatedTime}</span>
+            </div>
+            <Button className="mt-4" size="sm" onClick={startNextModule}>
+              Open challenge <ArrowRight />
+            </Button>
+          </Panel>
+          <Panel>
+            <SectionTitle
+              eyebrow="Skills"
+              title="Learning evidence"
+              action={
+                <Button size="sm" variant="ghost" onClick={() => navigate({ to: "/skills" })}>
+                  Details
+                </Button>
+              }
+            />
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Sections completed</span>
+                <span className="font-medium">{evidence.sectionsCompleted}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Questions passed</span>
+                <span className="font-medium">{evidence.questionsPassed}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Challenges passed</span>
+                <span className="font-medium">{evidence.challengesPassed}</span>
+              </div>
+            </div>
+            <ProgressBar value={summary.progressPercent} className="mt-4" tone="lilac" />
+            <p className="mt-2 text-[11px] text-faint">
+              {summary.progressPercent}% curriculum complete
+            </p>
+          </Panel>
         </div>
       </section>
-      <div className="dashboard-grid grid grid-cols-1 gap-5 lg:grid-cols-12">
-        <Panel className="dashboard-focus lg:col-span-7">
-          <SectionTitle
-            eyebrow="Pick up where you left off"
-            title="Continue learning"
-            action={
-              <span className="rounded-full bg-brand-soft px-2.5 py-1 text-[10px] font-semibold text-brand">
-                {evidence.sectionsCompleted} sections completed
-              </span>
-            }
-          />
-          <div className="mb-4 rounded-xl bg-background/60 p-3">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-medium">Make your first prediction</span>
-              <span className="font-mono text-brand">
-                {Math.min(100, evidence.sectionsCompleted * 5)}%
-              </span>
+
+      <section className="border-t border-border/70 pt-5">
+        <Eyebrow>Activity</Eyebrow>
+        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-12">
+          <Panel className="lg:col-span-4">
+            <SectionTitle
+              eyebrow="Consistency"
+              title="Study activity"
+              action={
+                <span className="flex items-center gap-1 text-xs font-semibold text-peach">
+                  <Flame className="size-3.5" />
+                  {evidence.sectionsCompleted} sections
+                </span>
+              }
+            />
+            <div className="grid grid-cols-10 gap-1.5">
+              {heatmap.slice(0, 50).map((item) => (
+                <span
+                  key={item.id}
+                  className={`aspect-square rounded-[4px] ${item.intensity === 0 ? "bg-foreground/8" : item.intensity === 1 ? "bg-brand/25" : item.intensity === 2 ? "bg-brand/45" : item.intensity === 3 ? "bg-brand/70" : "bg-brand"}`}
+                />
+              ))}
             </div>
-            <ProgressBar value={Math.min(100, evidence.sectionsCompleted * 5)} />
-            <p className="mt-1.5 text-[11px] text-faint">
-              Complete the next section in {nextModule.title}
+          </Panel>
+          <Panel className="lg:col-span-4">
+            <SectionTitle eyebrow="Career bridge" title="Challenge evidence" />
+            <StageTracker current={Math.min(4, Math.floor(evidence.challengesPassed / 3))} />
+            <p className="mt-3 text-[11px] text-faint">
+              {evidence.challengesPassed} of {summary.totalModules} module challenges completed
             </p>
-          </div>
-          <div className="space-y-2.5">
-            <PlanRow
-              done
-              title="Train a first prediction model"
-              meta="Introduction to Machine Learning · 25 min"
-            />
-            <PlanRow
-              active
-              title="Evaluate whether your model is actually good"
-              meta="Machine Learning: Going Deeper · 30 min"
-              action={
-                <Button size="sm" onClick={() => navigate({ to: "/learning-mode" })}>
-                  Continue
-                </Button>
-              }
-            />
-            <PlanRow
-              title="Clean a messy dataset"
-              meta="Data Basics & Cleaning · 20 min"
-              action={
-                <Button size="sm" variant="outline" onClick={() => setDiagnosticOpen(true)}>
-                  Start
-                </Button>
-              }
-            />
-          </div>
-        </Panel>
-        <Panel className="dashboard-coach border-lilac/25 bg-lilac-soft/30 lg:col-span-5">
-          <SectionTitle
-            eyebrow="AI planner"
-            title="Recommended next"
-            action={
-              <span className="cp-pulse grid size-8 place-items-center rounded-lg bg-lilac text-primary-foreground">
-                <BrainCircuit className="size-4" />
-              </span>
-            }
-          />
-          <p className="font-medium">Evaluate your first model</p>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            AI recommends this because you have the data foundations needed to compare a model
-            against real outcomes.
-          </p>
-          <div className="mt-4 flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => navigate({ to: "/learning-mode" })}
-            >
-              Open topic <ArrowRight />
-            </Button>
-            <span className="rounded-full bg-background/70 px-2.5 py-1 text-[10px] text-faint">
-              30 min
-            </span>
-          </div>
-        </Panel>
-        <Panel className="lg:col-span-4">
-          <SectionTitle eyebrow="Semester 3 · CSE" title="Curriculum progress" />
-          {subjects.slice(0, 4).map((subject) => (
-            <div key={subject.name} className="mb-4 last:mb-0">
-              <div className="mb-1.5 flex justify-between text-xs">
-                <span>{subject.name}</span>
-                <span className="text-faint">{subject.progress}%</span>
-              </div>
-              <ProgressBar value={subject.progress} tone={subject.tone as keyof typeof toneMap} />
-            </div>
-          ))}
-        </Panel>
-        <Panel className="lg:col-span-8">
-          <SectionTitle
-            eyebrow="Living skill graph"
-            title="Curriculum knowledge map"
-            action={
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => navigate({ to: "/curriculum-map" })}
-              >
-                Open full map <ArrowRight />
-              </Button>
-            }
-          />
-          <MiniMap onNode={() => navigate({ to: "/learning-mode" })} />
-        </Panel>
-        <Panel className="lg:col-span-4">
-          <SectionTitle
-            eyebrow="Consistency"
-            title="Study streak"
-            action={
-              <span className="flex items-center gap-1 text-xs font-semibold text-peach">
-                <Flame className="size-3.5" />
-                {evidence.sectionsCompleted} sections
-              </span>
-            }
-          />
-          <div className="grid grid-cols-10 gap-1.5">
-            {heatmap.slice(0, 50).map((item) => (
-              <span
-                key={item.id}
-                className={`aspect-square rounded-[4px] ${item.intensity === 0 ? "bg-foreground/8" : item.intensity === 1 ? "bg-brand/25" : item.intensity === 2 ? "bg-brand/45" : item.intensity === 3 ? "bg-brand/70" : "bg-brand"}`}
-              />
-            ))}
-          </div>
-          <p className="mt-3 text-[11px] text-faint">
-            Recorded activity · {evidence.sectionsCompleted + evidence.questionsPassed} learning
-            actions
-          </p>
-        </Panel>
-        <Panel className="lg:col-span-5">
-          <SectionTitle
-            eyebrow="Career bridge"
-            title={`AI Engineer · ${Math.min(100, Math.round((evidence.challengesPassed / 30) * 100))}% evidenced`}
-          />
-          <StageTracker current={Math.min(4, Math.floor(evidence.challengesPassed / 3))} />
-        </Panel>
-        <Panel className="bg-ink text-background lg:col-span-3">
-          <SectionTitle
-            eyebrow="In the lab"
-            title="Model evaluation"
-            action={
-              <span className="rounded-full bg-background/10 px-2 py-1 text-[10px] text-background/70">
-                Medium
-              </span>
-            }
-          />
-          <pre className="overflow-x-auto rounded-xl bg-background/10 p-3 font-mono text-[10px] leading-5 text-background/80">
-            {codingStarter.split("\n").slice(0, 7).join("\n")}
-          </pre>
-          <p className="mt-3 text-[11px] text-background/60">3/3 tests passing · AI review ready</p>
-        </Panel>
-        <Panel className="lg:col-span-4">
-          <SectionTitle
-            eyebrow="AI detected baseline"
-            title="Skill mastery snapshot"
-            action={
-              <Button size="sm" variant="ghost" onClick={() => navigate({ to: "/analytics" })}>
-                Details
-              </Button>
-            }
-          />
-          <ResponsiveContainer width="100%" height={180}>
-            <RadarChart data={skillData}>
-              <PolarGrid stroke="var(--color-border)" />
-              <PolarAngleAxis dataKey="skill" tick={{ fill: "var(--color-faint)", fontSize: 10 }} />
-              <Radar
-                dataKey="mastery"
-                stroke="var(--color-brand)"
-                fill="var(--color-brand)"
-                fillOpacity={0.22}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
-        </Panel>
-        <Panel className="lg:col-span-12">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <Eyebrow>Next checkpoint</Eyebrow>
-              <h2 className="mt-1 font-display text-lg font-semibold">
-                {evidence.challengesPassed > 0
-                  ? "Your latest challenge evidence is recorded."
-                  : "Complete the next learning section to create your first evidence."}
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Progress is based on completed learning sections, passed checks, and submitted
-                challenge evidence.
-              </p>
-            </div>
-            <Button
-              variant="default"
-              onClick={() => {
-                navigate({ to: "/learning-mode", search: { module: nextModule.code } });
-              }}
-            >
-              Continue evidence path <ArrowRight />
-            </Button>
-          </div>
-        </Panel>
-      </div>
-      {diagnosticOpen && <AssessmentPanel onClose={() => setDiagnosticOpen(false)} />}
+          </Panel>
+          <Panel className="lg:col-span-4">
+            <SectionTitle eyebrow="Skill snapshot" title="Competency radar" />
+            <ResponsiveContainer width="100%" height={140}>
+              <RadarChart data={skillData}>
+                <PolarGrid stroke="var(--color-border)" />
+                <PolarAngleAxis
+                  dataKey="skill"
+                  tick={{ fill: "var(--color-faint)", fontSize: 9 }}
+                />
+                <Radar
+                  dataKey="mastery"
+                  stroke="var(--color-brand)"
+                  fill="var(--color-brand)"
+                  fillOpacity={0.22}
+                />
+              </RadarChart>
+            </ResponsiveContainer>
+          </Panel>
+        </div>
+      </section>
     </>
   );
 }
@@ -1140,7 +1055,8 @@ function LegacyCurriculumMap() {
 
 function InteractiveCurriculumMap() {
   const navigate = useNavigate();
-  const evidence = useLearningEvidence();
+  const progress = useLearningProgress();
+  const summary = getLearningProgressSummary(progress);
   const [phase, setPhase] = useState(0);
   const [lens, setLens] = useState<"journey" | "skills" | "projects" | "list">("journey");
   const [filter, setFilter] = useState("All");
@@ -1154,9 +1070,9 @@ function InteractiveCurriculumMap() {
     ["ADVANCED AI ENGINEERING", 20, 27],
     ["CAREER & CAPSTONE", 28, 29],
   ] as const;
-  const mastered = Math.min(curriculumModules.length, Math.floor(evidence.sectionsCompleted / 4));
+  const mastered = summary.completedCount;
   const statusFor = (index: number) =>
-    index < mastered
+    progress.completedModuleIds.includes(curriculumModules[index]!.code)
       ? "mastered"
       : index === mastered
         ? "in-progress"
@@ -1209,7 +1125,7 @@ function InteractiveCurriculumMap() {
             onClick={() =>
               navigate({
                 to: "/learning-mode",
-                search: { module: selectedModule.code, concept: concept ?? undefined },
+                search: summary.continueSearch,
               })
             }
           >
@@ -1672,7 +1588,7 @@ function NotFoundState({
 }: {
   title: string;
   detail: string;
-  backTo: "/curriculum-map" | "/learning-mode";
+  backTo: "/curriculum" | "/curriculum-map" | "/learning-mode" | "/challenges";
 }) {
   const navigate = useNavigate();
   return (
@@ -1687,7 +1603,15 @@ function NotFoundState({
   );
 }
 
-function LearningMode({ moduleId = "3.1", concept }: { moduleId?: ModuleId; concept?: string }) {
+function LearningMode({
+  moduleId = "3.1",
+  concept,
+  stepIndex,
+}: {
+  moduleId?: ModuleId;
+  concept?: string;
+  stepIndex?: number;
+}) {
   const moduleExists = curriculumModules.some((module) => module.code === moduleId);
   if (!moduleExists) {
     return (
@@ -1698,15 +1622,17 @@ function LearningMode({ moduleId = "3.1", concept }: { moduleId?: ModuleId; conc
       />
     );
   }
-  return <LearningModeContent moduleId={moduleId} concept={concept} />;
+  return <LearningModeContent moduleId={moduleId} concept={concept} stepIndex={stepIndex} />;
 }
 
 function LearningModeContent({
   moduleId = "3.1",
   concept,
+  stepIndex: resumeStepIndex,
 }: {
   moduleId?: ModuleId;
   concept?: string;
+  stepIndex?: number;
 }) {
   const navigate = useNavigate();
   const experience = getLearningExperience(moduleId);
@@ -1715,7 +1641,7 @@ function LearningModeContent({
     : -1;
   const initialStep =
     conceptIndex >= 0 ? Math.min(2 + conceptIndex, experience.steps.length - 1) : 0;
-  const [stepIndex, setStepIndex] = useState(initialStep);
+  const [stepIndex, setStepIndex] = useState(resumeStepIndex ?? initialStep);
   const [selected, setSelected] = useState("");
   const [note, setNote] = useState("");
   const [ran, setRan] = useState(false);
@@ -1724,6 +1650,13 @@ function LearningModeContent({
   );
   const [recordedSteps, setRecordedSteps] = useState<Set<string>>(() => new Set());
   const step = experience.steps[stepIndex];
+  useEffect(() => {
+    updateLearningPosition({
+      currentModuleId: experience.module.code,
+      currentStepIndex: stepIndex,
+      currentTopic: step?.title ?? "",
+    });
+  }, [experience.module.code, step?.title, stepIndex]);
   const canContinue =
     step.interaction === "choose"
       ? selected.length > 0
@@ -1749,14 +1682,13 @@ function LearningModeContent({
     }
     if (stepIndex === experience.steps.length - 1) {
       if (!recordedSteps.has(experience.module.code)) {
-        recordLearningEvidence({ sectionsCompleted: experience.steps.length });
+        completeLearningModule(experience.module.code, experience.steps.length);
         setRecordedSteps((current) => new Set(current).add(experience.module.code));
       }
       navigate({
-        to: "/challenge",
+        to: "/challenges",
         search: {
           module: experience.module.code,
-          challenge: experience.challenge.id,
         },
       });
       return;
@@ -1913,10 +1845,14 @@ function LearningModeContent({
             <FeedbackCard label="Topics" body={experience.module.topics.join(" · ")} tone="lilac" />
             <FeedbackCard
               label="Learning objective"
-              body={experience.module.learningObjectives[0]}
+              body={experience.module.learningObjectives[0] ?? experience.module.description}
               tone="mint"
             />
-            <FeedbackCard label="Mentor hint" body={experience.challenge.hints[0]} tone="peach" />
+            <FeedbackCard
+              label="Mentor hint"
+              body={experience.challenge.hints[0] ?? experience.challenge.problem}
+              tone="peach"
+            />
           </div>
         </Panel>
       </div>
@@ -2067,7 +2003,11 @@ function LegacyLearningMode({ moduleId = "3.1" }: { moduleId?: ModuleId }) {
                   <strong className="text-foreground">{primaryChallenge.explanation}</strong>
                 </p>
                 <div className="mt-5 grid gap-3 md:grid-cols-3">
-                  <FeedbackCard label="Decision" body={primaryChallenge.hints[0]} tone="brand" />
+                  <FeedbackCard
+                    label="Decision"
+                    body={primaryChallenge.hints[0] ?? primaryChallenge.problem}
+                    tone="brand"
+                  />
                   <FeedbackCard
                     label="Invariant"
                     body="Only clean rows reach the aggregation."
@@ -2146,7 +2086,7 @@ function LegacyLearningMode({ moduleId = "3.1" }: { moduleId?: ModuleId }) {
                 </pre>
                 <div className="mt-4 grid gap-2 sm:grid-cols-2">
                   {[
-                    primaryChallenge.hints[0],
+                    primaryChallenge.hints[0] ?? primaryChallenge.problem,
                     primaryChallenge.hints[1] ?? "Test the edge case before shipping.",
                   ].map((choice) => (
                     <button
@@ -2306,7 +2246,7 @@ function LegacyLearningMode({ moduleId = "3.1" }: { moduleId?: ModuleId }) {
           <Button
             variant="outline"
             className="mt-4 w-full"
-            onClick={() => window.location.assign("/tutor")}
+            onClick={() => navigate({ to: "/tutor" })}
           >
             Ask AI Tutor <Bot />
           </Button>
@@ -2651,7 +2591,13 @@ function CodingLab({
       />
     );
   }
-  return <CodingLabContent challenge={challenge} moduleId={moduleId} challengeId={challengeId} />;
+  return (
+    <CodingLabContent
+      challenge={challenge}
+      moduleId={moduleId}
+      {...(challengeId ? { challengeId } : {})}
+    />
+  );
 }
 
 function CodingLabContent({
@@ -3020,16 +2966,20 @@ function ClockIcon() {
 }
 
 function Analytics() {
+  const navigate = useNavigate();
+  const progress = useLearningProgress();
+  const summary = getLearningProgressSummary(progress);
+  const evidence = useLearningEvidence();
   const pie = [
-    { name: "Complete", value: 62 },
-    { name: "Remaining", value: 38 },
+    { name: "Complete", value: summary.progressPercent },
+    { name: "Remaining", value: 100 - summary.progressPercent },
   ];
   return (
     <>
       <PageHeader
-        eyebrow="Learning analytics · last 6 weeks"
+        eyebrow="Learning analytics"
         title="See where effort becomes capability."
-        description="Your dashboard tells you what to do. Analytics shows which habits, skills, and assessments are changing the curve."
+        description={`${summary.completedCount} of ${summary.totalModules} curriculum modules completed.`}
         action={
           <Button variant="outline" onClick={() => toast("Weekly report exported")}>
             Export report
@@ -3040,37 +2990,37 @@ function Analytics() {
         <StatCard
           className="md:col-span-6 lg:col-span-3"
           icon={Activity}
-          label="Study time"
-          value="6h 48m"
-          note="+1h 12m vs last week"
+          label="Sections completed"
+          value={String(evidence.sectionsCompleted)}
+          note={`${summary.progressPercent}% curriculum`}
           tone="brand"
         />
         <StatCard
           className="md:col-span-6 lg:col-span-3"
           icon={Code2}
-          label="Problems solved"
-          value="24"
-          note="8 this week"
+          label="Questions passed"
+          value={String(evidence.questionsPassed)}
+          note="Learning checks"
           tone="lilac"
         />
         <StatCard
           className="md:col-span-6 lg:col-span-3"
           icon={Target}
-          label="Career readiness"
-          value="58%"
-          note="+6% this month"
+          label="Modules completed"
+          value={`${summary.completedCount}/${summary.totalModules}`}
+          note={`${summary.progressPercent}% complete`}
           tone="peach"
         />
         <StatCard
           className="md:col-span-6 lg:col-span-3"
           icon={Flame}
-          label="Current streak"
-          value="12 days"
-          note="Best: 18 days"
+          label="Challenges passed"
+          value={String(evidence.challengesPassed)}
+          note="Build evidence"
           tone="mint"
         />
         <Panel className="lg:col-span-4">
-          <SectionTitle eyebrow="Curriculum completion" title="Semester 3" />
+          <SectionTitle eyebrow="Curriculum completion" title="AI Curriculum · Year 3" />
           <div className="relative">
             <ResponsiveContainer width="100%" height={210}>
               <PieChart>
@@ -3094,7 +3044,7 @@ function Analytics() {
                   fontSize="28"
                   fontWeight="600"
                 >
-                  62%
+                  {summary.progressPercent}%
                 </text>
                 <text
                   x="50%"
@@ -3109,15 +3059,9 @@ function Analytics() {
               </PieChart>
             </ResponsiveContainer>
           </div>
-          {subjects.slice(0, 4).map((item) => (
-            <div key={item.name} className="mb-3 flex items-center gap-2 text-xs">
-              <span
-                className={`size-2 rounded-full ${toneMap[item.tone as keyof typeof toneMap]}`}
-              />
-              <span className="flex-1">{item.name}</span>
-              <span className="font-mono text-faint">{item.progress}%</span>
-            </div>
-          ))}
+          <p className="text-xs text-muted-foreground">
+            {summary.completedCount} of {summary.totalModules} modules mastered
+          </p>
         </Panel>
         <Panel className="lg:col-span-8">
           <SectionTitle eyebrow="Skill mastery" title="Competencies across your path" />
@@ -3186,7 +3130,7 @@ function Analytics() {
             eyebrow="Recovery queue"
             title="Weak areas"
             action={
-              <Button size="sm" onClick={() => window.location.assign("/recovery")}>
+              <Button size="sm" onClick={() => navigate({ to: "/recovery" })}>
                 Start recovery plan <ArrowRight />
               </Button>
             }
@@ -3259,6 +3203,7 @@ function Analytics() {
 }
 
 function Career() {
+  const navigate = useNavigate();
   const [track, setTrack] = useState("Software Engineer");
   const stages = [
     "B.Tech Curriculum",
@@ -3302,11 +3247,7 @@ function Career() {
                   <p className="text-sm font-medium">{gap.title}</p>
                   <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{gap.reason}</p>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => window.location.assign(gap.route)}
-                >
+                <Button size="sm" variant="outline" onClick={() => navigate({ to: gap.route })}>
                   Learn <ArrowRight />
                 </Button>
               </div>
@@ -3476,17 +3417,19 @@ function Profile() {
         <Panel>
           <SectionTitle eyebrow="Achievements" title="Proof you can show" />
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-              ["12", "Day streak", Flame, "peach"],
-              ["Machine learning", "Foundations", GitBranch, "brand"],
-              ["4/5", "Test runner", Code2, "lilac"],
-              ["?", "Next badge", Lock, "muted"],
-            ].map(([value, label, Icon, tone]) => (
-              <div key={label as string} className="rounded-xl border border-border/60 p-3">
+            {(
+              [
+                ["12", "Day streak", Flame, "peach"],
+                ["Machine learning", "Foundations", GitBranch, "brand"],
+                ["4/5", "Test runner", Code2, "lilac"],
+                ["?", "Next badge", Lock, "muted"],
+              ] as const
+            ).map(([value, label, IconComp, tone]) => (
+              <div key={label} className="rounded-xl border border-border/60 p-3">
                 <span
                   className={`grid size-8 place-items-center rounded-lg ${tone === "peach" ? "bg-peach-soft text-peach" : tone === "brand" ? "bg-brand-soft text-brand" : tone === "lilac" ? "bg-lilac-soft text-lilac" : "bg-muted text-faint"}`}
                 >
-                  <Icon className="size-4" />
+                  <IconComp className="size-4" />
                 </span>
                 <p className="mt-3 font-display text-lg font-semibold">{value as string}</p>
                 <p className="text-[10px] text-faint">{label as string}</p>
@@ -3512,6 +3455,7 @@ function Profile() {
 }
 
 function Recovery() {
+  const navigate = useNavigate();
   const [day, setDay] = useState(1);
   return (
     <>
@@ -3520,7 +3464,7 @@ function Recovery() {
         title="A 3-day recovery plan, not a guilt spiral."
         description="AI built this plan from your last six attempts: fundamentals first, guided coding next, then a small assessment to prove the gap is closing."
         action={
-          <Button variant="outline" onClick={() => window.location.assign("/analytics")}>
+          <Button variant="outline" onClick={() => navigate({ to: "/analytics" })}>
             <ArrowLeft />
             Back to analytics
           </Button>
@@ -3586,7 +3530,7 @@ function Recovery() {
               <button
                 key={item}
                 className="flex w-full items-center gap-3 rounded-xl border border-border/60 p-3 text-left text-sm hover:bg-surface"
-                onClick={() => window.location.assign(day === 2 ? "/coding-lab" : "/learning-mode")}
+                onClick={() => navigate({ to: day === 2 ? "/coding-lab" : "/learning-mode" })}
               >
                 <span className="grid size-8 place-items-center rounded-lg bg-background text-brand">
                   <ArrowRight className="size-4" />
@@ -3607,11 +3551,13 @@ export function CodepathApp({
   moduleId,
   concept,
   challengeId,
+  stepIndex,
 }: {
   view: View;
   moduleId?: ModuleId;
   concept?: string;
   challengeId?: string;
+  stepIndex?: number;
 }) {
   if (view === "dashboard")
     return (
@@ -3628,7 +3574,11 @@ export function CodepathApp({
   if (view === "learning")
     return (
       <Shell active="learning">
-        <LearningMode moduleId={moduleId} concept={concept} />
+        <LearningMode
+          {...(moduleId ? { moduleId } : {})}
+          {...(concept ? { concept } : {})}
+          {...(stepIndex !== undefined ? { stepIndex } : {})}
+        />
       </Shell>
     );
   if (view === "tutor")
@@ -3640,13 +3590,17 @@ export function CodepathApp({
   if (view === "lab")
     return (
       <Shell active="lab">
-        <CodingLab moduleId={moduleId} />
+        <CodingLab {...(moduleId ? { moduleId } : {})} />
       </Shell>
     );
   if (view === "challenge")
     return (
       <Shell active="challenge">
-        <CodingLab challenge moduleId={moduleId} challengeId={challengeId} />
+        <CodingLab
+          challenge
+          {...(moduleId ? { moduleId } : {})}
+          {...(challengeId ? { challengeId } : {})}
+        />
       </Shell>
     );
   if (view === "projects")
@@ -3805,34 +3759,36 @@ export function Landing() {
             </span>
           </div>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {[
+            {(
               [
-                "Curriculum Intelligence",
-                "Maps your real semester units to a live skill graph and finds the shortest path to mastery.",
-                GitBranch,
-                "brand",
-              ],
-              [
-                "AI Tutor & Feedback",
-                "Explains why a recommendation fits your level, then nudges you with hints instead of answers.",
-                Bot,
-                "lilac",
-              ],
-              [
-                "Coding Lab & Projects",
-                "Run, test, and get structured AI review — then prove it by shipping something real.",
-                Code2,
-                "peach",
-              ],
-            ].map(([title, body, Icon, tone]) => (
+                [
+                  "Curriculum Intelligence",
+                  "Maps your real semester units to a live skill graph and finds the shortest path to mastery.",
+                  GitBranch,
+                  "brand",
+                ],
+                [
+                  "AI Tutor & Feedback",
+                  "Explains why a recommendation fits your level, then nudges you with hints instead of answers.",
+                  Bot,
+                  "lilac",
+                ],
+                [
+                  "Coding Lab & Projects",
+                  "Run, test, and get structured AI review — then prove it by shipping something real.",
+                  Code2,
+                  "peach",
+                ],
+              ] as const
+            ).map(([title, body, IconComp, tone]) => (
               <div
-                key={title as string}
+                key={title}
                 className="rounded-2xl border border-border bg-surface-elevated/75 p-5 shadow-sm"
               >
                 <span
                   className={`grid size-10 place-items-center rounded-xl ${tone === "brand" ? "bg-brand-soft text-brand" : tone === "lilac" ? "bg-lilac-soft text-lilac" : "bg-peach-soft text-peach"}`}
                 >
-                  <Icon className="size-5" />
+                  <IconComp className="size-5" />
                 </span>
                 <h3 className="mt-4 font-display text-lg font-semibold">{title as string}</h3>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{body as string}</p>
@@ -4268,17 +4224,19 @@ export function Onboarding() {
             )}
             {step === 3 && (
               <div className="grid gap-3 sm:grid-cols-2">
-                {[
-                  ["AI Engineer", "Strong Python, ML, and project proof", Code2],
-                  ["Full-Stack Developer", "Products, APIs, and frontend fluency", Layers3],
-                  ["AI/ML Engineer", "Models, data, and applied experimentation", BrainCircuit],
-                  ["Data Scientist", "SQL, statistics, and analytical thinking", BarChart3],
-                ].map(([label, body, Icon], index) => (
+                {(
+                  [
+                    ["AI Engineer", "Strong Python, ML, and project proof", Code2],
+                    ["Full-Stack Developer", "Products, APIs, and frontend fluency", Layers3],
+                    ["AI/ML Engineer", "Models, data, and applied experimentation", BrainCircuit],
+                    ["Data Scientist", "SQL, statistics, and analytical thinking", BarChart3],
+                  ] as const
+                ).map(([label, body, IconComp], index) => (
                   <button
-                    key={label as string}
+                    key={label}
                     className={`rounded-xl border p-4 text-left ${index === 0 ? "border-brand bg-brand-soft/50" : "border-border"}`}
                   >
-                    <Icon className="size-5 text-brand" />
+                    <IconComp className="size-5 text-brand" />
                     <p className="mt-3 text-sm font-medium">{label as string}</p>
                     <p className="mt-1 text-[11px] leading-5 text-faint">{body as string}</p>
                   </button>

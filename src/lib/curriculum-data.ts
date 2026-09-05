@@ -17,7 +17,7 @@ export type CurriculumModule = {
   prerequisites: string[];
 };
 
-const moduleData: Array<Omit<CurriculumModule, "status"> & { status?: CurriculumStatus }> = [
+const rawModuleData: [string, string, string[], string[], ExperienceStage][] = [
   [
     "Why Code When You Can Vibe Code? (The Bridge)",
     "Understand why coding literacy still matters when AI can generate code.",
@@ -228,20 +228,27 @@ const moduleData: Array<Omit<CurriculumModule, "status"> & { status?: Curriculum
     ["GitHub", "Docker", "Cloud deployment"],
     "Demonstrate",
   ],
-].map(([title, description, topics, tools, experienceStage], index) => ({
-  code: `3.${index + 1}` as `3.${number}`,
-  title,
-  description,
-  topics,
-  tools,
-  experienceStage,
-  learningObjectives: topics.map((topic) => `Use ${topic} in an AI engineering workflow.`),
-  lesson: `${title}: ${description}`,
-  project: `Build a small ${title.toLowerCase()} artifact and document the engineering decisions.`,
-  difficulty: index < 5 ? "Beginner" : index < 20 ? "Intermediate" : "Advanced",
-  estimatedTime: index < 5 ? "20–30 min" : index < 20 ? "35–50 min" : "60–90 min",
-  prerequisites: index === 0 ? [] : [`3.${index}` as `3.${number}`],
-  status: index === 0 ? "in-progress" : index === 1 ? "available" : "locked",
-}));
+];
 
-export const curriculumModules: CurriculumModule[] = moduleData;
+export const curriculumModules: CurriculumModule[] = rawModuleData.map(
+  ([title, description, topics, tools, experienceStage], index) => ({
+    code: `3.${index + 1}` as `3.${number}`,
+    title,
+    description,
+    topics,
+    tools,
+    experienceStage,
+    learningObjectives: topics.map((topic) => `Use ${topic} in an AI engineering workflow.`),
+    lesson: `${title}: ${description}`,
+    project: `Build a small ${title.toLowerCase()} artifact and document the engineering decisions.`,
+    difficulty: (index < 5 ? "Beginner" : index < 20 ? "Intermediate" : "Advanced") as
+      "Beginner" | "Intermediate" | "Advanced",
+    estimatedTime: index < 5 ? "20–30 min" : index < 20 ? "35–50 min" : "60–90 min",
+    prerequisites: index === 0 ? [] : [`3.${index}` as `3.${number}`],
+    status: (index === 0
+      ? "in-progress"
+      : index === 1
+        ? "available"
+        : "locked") as CurriculumStatus,
+  }),
+);

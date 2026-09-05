@@ -159,7 +159,7 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
         interaction: "choose",
         prompt: focused.prompt,
         options,
-        answer: options[0],
+        answer: options[0] ?? `Inspect evidence for ${first}`,
       },
       {
         id: `${module.code}-learn`,
@@ -204,7 +204,7 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
         interaction: "choose",
         prompt: `What is the safest next step when working with ${first}?`,
         options,
-        answer: options[0],
+        answer: options[0] ?? `Inspect evidence for ${first}`,
       },
       {
         id: `${module.code}-build`,
