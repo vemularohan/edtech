@@ -1,11 +1,19 @@
 export type CurriculumStatus = "mastered" | "in-progress" | "available" | "locked";
 export type ExperienceStage = "Understand" | "Apply" | "Build" | "Ship" | "Demonstrate";
 
+export interface ConceptItem {
+  id: string;
+  title: string;
+  description: string;
+  estimatedMinutes: number;
+}
+
 export type CurriculumModule = {
   code: `3.${number}`;
   title: string;
   description: string;
   topics: string[];
+  concepts: ConceptItem[];
   tools: string[];
   experienceStage: ExperienceStage;
   status: CurriculumStatus;
@@ -15,6 +23,8 @@ export type CurriculumModule = {
   difficulty: "Beginner" | "Intermediate" | "Advanced";
   estimatedTime: string;
   prerequisites: string[];
+  masteryCriteria: string[];
+  nextRecommendedModuleCode: `3.${number}` | null;
 };
 
 const rawModuleData: [string, string, string[], string[], ExperienceStage][] = [

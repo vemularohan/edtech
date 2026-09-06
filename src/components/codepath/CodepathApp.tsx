@@ -906,7 +906,7 @@ function AssessmentPanel({ onClose }: { onClose: () => void }) {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [hintShown, setHintShown] = useState(false);
-  const question = assessmentQuestions[questionIndex];
+  const question = assessmentQuestions[questionIndex] ?? assessmentQuestions[0]!;
   const answered = selected !== null;
   const correct = selected === question.correctIndex;
   const next = () => {
@@ -1928,7 +1928,13 @@ function LearningMode({
       />
     );
   }
-  return <LearningModeContent moduleId={moduleId} concept={concept} stepIndex={stepIndex} />;
+  return (
+    <LearningModeContent
+      moduleId={moduleId}
+      {...(concept !== undefined ? { concept } : {})}
+      {...(stepIndex !== undefined ? { stepIndex } : {})}
+    />
+  );
 }
 
 function LearningModeContent({
@@ -1959,18 +1965,21 @@ function LearningModeContent({
     "idle",
   );
   const [recordedSteps, setRecordedSteps] = useState<Set<string>>(() => new Set());
-  const step = experience.steps[stepIndex];
+  const step = experience.steps[stepIndex] ?? experience.steps[0]!;
 
-  const currentConceptItem = experience.module.concepts[Math.min(conceptIndex >= 0 ? conceptIndex : 0, experience.module.concepts.length - 1)] ?? experience.module.concepts[0];
+  const currentConceptItem =
+    experience.module.concepts[
+      Math.min(conceptIndex >= 0 ? conceptIndex : 0, experience.module.concepts.length - 1)
+    ] ?? experience.module.concepts[0]!;
 
   useEffect(() => {
     updateLearningPosition({
       currentModuleId: experience.module.code,
       currentStepIndex: stepIndex,
-      currentTopic: step?.title ?? "",
-      currentConceptId: currentConceptItem?.id,
+      currentTopic: step.title,
+      currentConceptId: currentConceptItem.id,
     });
-  }, [experience.module.code, step?.title, stepIndex, currentConceptItem?.id]);
+  }, [experience.module.code, step.title, stepIndex, currentConceptItem.id]);
 
   const canContinue =
     step.stage === "HOOK"

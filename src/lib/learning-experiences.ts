@@ -1,19 +1,21 @@
 import { allCurriculumChallenges } from "./codepath-data";
 import { curriculumModules, type CurriculumModule } from "./curriculum-data";
 
+export type LearningStepStage =
+  | "HOOK"
+  | "WHY"
+  | "LEARN"
+  | "TRY IT"
+  | "PRACTICE"
+  | "BREAK IT"
+  | "YOUR TURN"
+  | "KNOWLEDGE CHECK"
+  | "MASTERY"
+  | "NEXT";
+
 export type LearningStep = {
   id: string;
-  stage:
-  | "HOOK"
-  | "LEARN"
-  | "SEE IT"
-  | "TRY IT"
-  | "CHECK"
-  | "BUILD"
-  | "BREAK"
-  | "YOUR TURN"
-  | "MASTER"
-  | "NEXT";
+  stage: LearningStepStage;
   title: string;
   explanation: string;
   whyItMatters: string;
@@ -22,6 +24,8 @@ export type LearningStep = {
   prompt: string;
   options?: string[];
   answer?: string;
+  fixedCode?: string;
+  misconceptionExpl?: string;
 };
 
 export type LearningSection = {
@@ -153,8 +157,8 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
         id: `${module.code}-hook`,
         stage: "HOOK",
         title: focused.prompt,
-        explanation: "Make a prediction before the implementation explains itself.",
-        whyItMatters: `Your prediction gives the ${module.title} lesson something concrete to test.`,
+        explanation: `Make an initial prediction before looking at the implementation. How would you solve this challenge in ${module.title}?`,
+        whyItMatters: `Forming a testable hypothesis before reading the solution engages active recall and primes your intuition.`,
         example: focused.example,
         interaction: "choose",
         prompt: focused.prompt,
@@ -162,108 +166,117 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
         answer: options[0] ?? `Inspect evidence for ${first}`,
       },
       {
-        id: `${module.code}-learn`,
-        stage: "LEARN",
-        title: `Learn the mental model for ${first}`,
-        explanation: focused.explanation,
-        whyItMatters: `Understanding ${first} helps you change an AI-generated implementation without guessing.`,
-        example: focused.example,
+        id: `${module.code}-why`,
+        stage: "WHY",
+        title: `Why ${first} matters in AI systems`,
+        explanation: `In production AI architectures, ${first} exists because developers must guarantee deterministic boundaries around probabilistic model behavior. Without ${first}, errors propagate silently through downstream pipeline stages.`,
+        whyItMatters: `Understanding why ${first} is required turns a syntax chore into an architectural decision you can defend.`,
+        example: `${module.topics.slice(0, 4).join(" ➔ ")}\n\nGoal: Ensure valid data transformations before model inference.`,
         interaction: "inspect",
-        prompt: `In your own words, what role does ${first} play?`,
+        prompt: `Why do engineers prioritize ${first} early in the lifecycle?`,
       },
       {
-        id: `${module.code}-see`,
-        stage: "SEE IT",
-        title: `See ${first} become ${second ?? "a result"}`,
-        explanation: `Trace the flow from ${first} to ${second ?? "the observable output"} before you edit it.`,
-        whyItMatters:
-          "A visible cause-and-effect chain makes debugging faster than memorising definitions.",
-        example: `${first}  →  ${second ?? "transformation"}  →  ${third ?? "result"}`,
+        id: `${module.code}-learn`,
+        stage: "LEARN",
+        title: `Core Concept: ${first}`,
+        explanation: focused.explanation,
+        whyItMatters: `Deep understanding of ${first} allows you to debug unexpected runtime errors and adapt code across diverse tech stacks.`,
+        example: focused.example,
         interaction: "inspect",
-        prompt: "Read the flow left to right, then identify the first transformation.",
+        prompt: `In your own words, what role does ${first} play in ${module.title}?`,
       },
       {
         id: `${module.code}-try`,
         stage: "TRY IT",
-        title: `Change one input to ${first}`,
-        explanation:
-          "Use the example as a small experiment. Change one value, run it, and compare the result with your prediction.",
-        whyItMatters:
-          "Small controlled changes reveal which part of a system actually causes the output.",
+        title: `Interactive Lab: Experiment with ${first}`,
+        explanation: `Run a small controlled experiment. Inspect the input parameters, observe the output transformation, and test what happens when values shift.`,
+        whyItMatters: `Interactive manipulation builds visceral comprehension faster than passive reading.`,
         example: focused.example,
         interaction: "edit",
-        prompt: `Write one observation about changing ${first}.`,
+        prompt: `Modify the input or formulate an experiment hypothesis for ${first}.`,
       },
       {
-        id: `${module.code}-check`,
-        stage: "CHECK",
-        title: `Check your understanding of ${module.topics.slice(0, 2).join(" and ")}`,
-        explanation: "Choose the decision that protects the module's core learning objective.",
-        whyItMatters: "A checkpoint confirms the concept before you spend effort building.",
-        example: challenge.problem,
-        interaction: "choose",
-        prompt: `What is the safest next step when working with ${first}?`,
-        options,
-        answer: options[0] ?? `Inspect evidence for ${first}`,
-      },
-      {
-        id: `${module.code}-build`,
-        stage: "BUILD",
-        title: challenge.title,
-        explanation: challenge.problem,
-        whyItMatters: `This challenge applies ${module.topics.slice(0, 3).join(", ")} in one coherent task.`,
+        id: `${module.code}-practice`,
+        stage: "PRACTICE",
+        title: `Guided Practice: Implementing ${first}`,
+        explanation: `Practice applying ${first} to a realistic scenario. Write or verify the logic that ensures the expected outcome is met.`,
+        whyItMatters: `Scaffolded practice bridges the gap between passive observation and fully independent application.`,
         example: challenge.starterCode,
-        interaction: "edit",
-        prompt: "Describe the implementation you are about to build.",
+        interaction: "choose",
+        prompt: `Which approach best implements the invariant for ${first}?`,
+        options: [
+          `Explicitly validate inputs and handle edge cases for ${first}`,
+          `Ignore edge cases and hope the model handles it`,
+          `Hardcode a fixed value without dynamic transformation`,
+        ],
+        answer: `Explicitly validate inputs and handle edge cases for ${first}`,
       },
       {
         id: `${module.code}-break`,
-        stage: "BREAK",
-        title: `Break and debug ${first}`,
-        explanation: `Introduce one invalid assumption into the ${module.title} workflow, observe the failure, and use the evidence to fix it.`,
-        whyItMatters: "Reliable engineers understand failure modes, not only the happy path.",
-        example: challenge.tests[0]?.input ?? challenge.starterCode,
+        stage: "BREAK IT",
+        title: `Break It: Debugging & Edge Cases in ${first}`,
+        explanation: `We have introduced an intentional bug or anti-pattern. Predict what will fail, observe the error trace, and apply the fix.`,
+        whyItMatters: `Senior engineers are defined by their ability to anticipate failure modes and restore invariants.`,
+        example: challenge.tests[0]?.input
+          ? `# Buggy implementation example:\n${challenge.starterCode}\n# Fails on input:\n# ${challenge.tests[0].input}`
+          : challenge.starterCode,
         interaction: "choose",
-        prompt: `Which failure signal would you inspect first for ${first}?`,
+        prompt: `Predict which failure will occur when processing invalid or edge-case input for ${first}:`,
         options: [
-          "The failing input and observed output",
-          "A random implementation from another module",
-          "Only the visual styling",
+          "Runtime TypeError / boundary failure on unexpected or missing input",
+          "Visual CSS styling distortion",
+          "Silent network disconnect",
         ],
-        answer: "The failing input and observed output",
+        answer: "Runtime TypeError / boundary failure on unexpected or missing input",
+        fixedCode: challenge.solution,
       },
       {
         id: `${module.code}-your-turn`,
         stage: "YOUR TURN",
-        title: `Apply ${first} without the scaffold`,
-        explanation: challenge.problem,
-        whyItMatters:
-          "Independent transfer shows whether you can use the concept outside the worked example.",
-        example: challenge.tests[0]?.input ?? challenge.starterCode,
+        title: `Your Turn: Independent Application of ${first}`,
+        explanation: `Now apply the concept independently without step-by-step scaffolding. Formulate your solution for ${challenge.title}.`,
+        whyItMatters: `Independent transfer demonstrates genuine conceptual mastery rather than memorization.`,
+        example: challenge.problem,
         interaction: "edit",
-        prompt: "Write the approach you would implement and name the evidence you would check.",
+        prompt: `Explain your implementation approach and name the key invariant you will enforce for ${first}:`,
       },
       {
-        id: `${module.code}-master`,
-        stage: "MASTER",
-        title: `Prove your ${module.title} understanding`,
-        explanation: `Summarise how ${first}, ${second ?? "the next concept"}, and the challenge fit together.`,
-        whyItMatters:
-          "Mastery combines explanation, implementation, and debugging rather than rewarding a lucky answer.",
-        example: `${module.learningObjectives.slice(0, 2).join("\n")}\n\nChallenge evidence: ${challenge.explanation}`,
-        interaction: "edit",
-        prompt: "What would you explain to a teammate before shipping this?",
+        id: `${module.code}-check`,
+        stage: "KNOWLEDGE CHECK",
+        title: `Knowledge Check: ${first} & ${second ?? "Architecture"}`,
+        explanation: `Verify that you have internalized the core mechanism and trade-offs of ${module.title}.`,
+        whyItMatters: `Diagnostic checks give immediate objective feedback on your understanding.`,
+        example: `Evaluation Case: ${challenge.tests[0]?.input ?? "Standard input batch"} ➔ Expected: ${challenge.tests[0]?.expected ?? "Verified output"}`,
+        interaction: "choose",
+        prompt: `When implementing ${first} in production, what is the critical engineering safeguard?`,
+        options: [
+          `Validate and sanitize inputs before downstream processing`,
+          `Disable error logging to improve speed`,
+          `Assume all incoming payloads adhere to the happy path`,
+          `Bypass validation whenever the client claims it is safe`,
+        ],
+        answer: `Validate and sanitize inputs before downstream processing`,
+        misconceptionExpl: `In production AI systems, assuming inputs always follow the happy path leads to silent data corruption and unexpected hallucinations. Input sanitization is essential.`,
+      },
+      {
+        id: `${module.code}-mastery`,
+        stage: "MASTERY",
+        title: `Mastery Assessment: ${module.title}`,
+        explanation: `Review what you've learned, what you can build, and verify that all diagnostics have passed.`,
+        whyItMatters: `Mastery is awarded only after demonstrating both theoretical comprehension and practical execution.`,
+        example: `Completed Objectives:\n${module.learningObjectives.join("\n")}\n\nChallenge Invariant:\n${challenge.explanation}`,
+        interaction: "inspect",
+        prompt: `Confirm your readiness to tackle the independent challenge.`,
       },
       {
         id: `${module.code}-next`,
         stage: "NEXT",
-        title: `Next: extend ${module.title}`,
-        explanation:
-          "You have a guided model, an experiment, a failure mode, and an independent transfer task. Continue into the challenge when ready.",
-        whyItMatters: "The next challenge turns this lesson into durable project evidence.",
+        title: `Next Step: Challenge & Module Progression`,
+        explanation: `You've completed the classroom loop! Now transition to the independent Challenge Lab to test your implementation against automated unit tests.`,
+        whyItMatters: `Connecting classroom concepts directly to challenge labs turns knowledge into durable proof for your portfolio.`,
         example: challenge.solution,
         interaction: "inspect",
-        prompt: "Review the solution only after you have written your own approach.",
+        prompt: `Proceed to Challenge Lab for Module ${module.code}.`,
       },
     ],
   };

@@ -1,0 +1,1 @@
+import{c as e}from"./link-DPT17Rzw.js";import{t}from"./challenges-By0CK2n9.js";import{r as n}from"./CodepathApp-C-KjSiVe.js";var r=e();function i(){let{module:e,concept:i,step:a}=t.useSearch();return(0,r.jsx)(n,{view:`challenges`,...e?{moduleId:e}:{},...i?{concept:i}:{},...a===void 0?{}:{stepIndex:a}})}export{i as component};

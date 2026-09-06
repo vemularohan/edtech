@@ -197,7 +197,7 @@ export function recordConceptActivity(
 
 export function updateLearningPosition(
   position: Pick<LearningProgress, "currentModuleId" | "currentStepIndex" | "currentTopic"> & {
-    currentConceptId?: string;
+    currentConceptId?: string | undefined;
   },
 ) {
   const current = readLearningProgress();
@@ -238,7 +238,7 @@ export function completeLearningModule(moduleId: string, sectionsCompleted: numb
 export type ContinueLearningSearch = {
   module: CurriculumModule["code"];
   step: number;
-  conceptId?: string;
+  conceptId?: string | undefined;
 };
 
 export type LearningProgressSummary = {
@@ -246,7 +246,7 @@ export type LearningProgressSummary = {
   totalModules: number;
   progressPercent: number;
   currentModule: CurriculumModule;
-  currentConcept?: ConceptItem;
+  currentConcept?: ConceptItem | undefined;
   currentStepTitle: string;
   currentStepStage: string;
   recentlyCompleted: CurriculumModule[];

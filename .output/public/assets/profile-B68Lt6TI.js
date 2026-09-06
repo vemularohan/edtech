@@ -1,1 +1,0 @@
-import{c as e}from"./link-DPT17Rzw.js";import{r as t}from"./CodepathApp-C9s-tk4j.js";var n=e(),r=()=>(0,n.jsx)(t,{view:`profile`});export{r as component};

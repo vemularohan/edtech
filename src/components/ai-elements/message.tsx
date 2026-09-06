@@ -58,7 +58,7 @@ export const MessageAction = ({
   children,
   label,
   variant = "ghost",
-  size = "icon-sm",
+  size = "icon",
   ...props
 }: MessageActionProps) => {
   const button = (
@@ -218,7 +218,7 @@ export const MessageBranchPrevious = ({ children, ...props }: MessageBranchPrevi
       aria-label="Previous branch"
       disabled={totalBranches <= 1}
       onClick={goToPrevious}
-      size="icon-sm"
+      size="sm"
       type="button"
       variant="ghost"
       {...props}
@@ -238,7 +238,7 @@ export const MessageBranchNext = ({ children, ...props }: MessageBranchNextProps
       aria-label="Next branch"
       disabled={totalBranches <= 1}
       onClick={goToNext}
-      size="icon-sm"
+      size="sm"
       type="button"
       variant="ghost"
       {...props}
@@ -263,10 +263,12 @@ export const MessageBranchPage = ({ className, ...props }: MessageBranchPageProp
   );
 };
 
-export type MessageResponseProps = ComponentProps<"div">;
+export type MessageResponseProps = ComponentProps<"div"> & {
+  isAnimating?: boolean;
+};
 
 export const MessageResponse = memo(
-  ({ className, ...props }: MessageResponseProps) => (
+  ({ className, isAnimating: _isAnimating, ...props }: MessageResponseProps) => (
     <div
       className={cn("size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0", className)}
       {...props}
