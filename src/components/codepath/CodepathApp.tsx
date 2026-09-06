@@ -285,16 +285,36 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
   const evidence = useLearningEvidence();
   const progress = useLearningProgress();
   const summary = getLearningProgressSummary(progress);
-  const pageTitle = navItems.find(({ to }) => activePath(active, to))?.label ?? "AI Skills Track";
+  const activeItem = navItems.find(({ to }) => activePath(active, to));
+  const pageTitle = activeItem?.label ?? "AI Skills Track";
+
+  // Close mobile drawer on route change or ESC
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [mobileOpen]);
+
   return (
-    <div className="app-shell min-h-screen overflow-x-clip bg-background text-foreground relative">
+    <div className="app-shell min-h-screen w-full overflow-x-clip bg-background text-foreground relative">
       <Background3D />
       <div aria-hidden className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="cp-float absolute -left-40 -top-48 size-[580px] rounded-full bg-brand-soft/25 blur-3xl opacity-70" />
         <div className="absolute -right-40 top-1/4 size-[620px] rounded-full bg-lilac-soft/20 blur-3xl opacity-60" />
         <div className="absolute bottom-0 left-1/3 size-[480px] rounded-full bg-peach-soft/20 blur-3xl opacity-50" />
       </div>
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-[1540px]">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1540px]">
+        {/* Desktop Sidebar */}
         <aside className="app-sidebar sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border/70 bg-surface/60 px-4 py-5 backdrop-blur-2xl md:flex">
           <div className="mb-7 px-2">
             <Mark />
@@ -340,57 +360,113 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
             Settings & Lab Config
           </button>
         </aside>
+
+        {/* Mobile Navigation Drawer */}
         {mobileOpen && (
           <div
-            className="fixed inset-0 z-40 bg-foreground/25 backdrop-blur-sm md:hidden"
+            className="fixed inset-0 z-50 bg-foreground/30 backdrop-blur-sm md:hidden transition-opacity"
             onClick={() => setMobileOpen(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation Menu"
           >
             <aside
-              className="h-full w-[min(19rem,calc(100vw-2rem))] overflow-y-auto bg-background/95 p-5 shadow-2xl backdrop-blur-xl border-r border-border"
+              className="h-full w-[min(20rem,calc(100vw-2.5rem))] flex flex-col justify-between overflow-y-auto bg-background/95 p-5 shadow-2xl backdrop-blur-2xl border-r border-border touch-scroller"
               onClick={(event) => event.stopPropagation()}
             >
-              <div className="mb-7 flex items-center justify-between">
-                <Mark />
-                <Button size="icon" variant="ghost" onClick={() => setMobileOpen(false)}>
-                  <X />
-                </Button>
-              </div>
-              <nav className="flex flex-col gap-1.5">
-                {navItems.map(({ label, to, icon: Icon }) => (
-                  <Link
-                    key={to}
-                    to={to}
+              <div>
+                <div className="mb-6 flex items-center justify-between">
+                  <Mark />
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="min-h-[44px] min-w-[44px] rounded-xl hover:bg-surface"
+                    aria-label="Close navigation"
                     onClick={() => setMobileOpen(false)}
-                    className={`flex min-h-11 items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-medium ${
-                      activePath(active, to)
-                        ? "bg-brand-soft font-semibold text-brand shadow-sm"
-                        : "text-muted-foreground hover:bg-surface"
-                    }`}
                   >
-                    <Icon className="size-4 text-brand" />
-                    {label}
-                  </Link>
-                ))}
-              </nav>
+                    <X className="size-5" />
+                  </Button>
+                </div>
+
+                {/* Mobile Active Module Banner */}
+                <div className="mb-5 rounded-xl border border-brand/25 bg-brand-soft/50 p-3">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="font-mono font-bold text-brand">ACTIVE MISSION</span>
+                    <span className="font-mono font-semibold text-brand">Mod {summary.currentModule.code}</span>
+                  </div>
+                  <p className="mt-1 text-xs font-semibold text-foreground truncate">{summary.currentModule.title}</p>
+                  <div className="mt-2.5">
+                    <ProgressBar value={summary.progressPercent} />
+                  </div>
+                </div>
+
+                <nav className="flex flex-col gap-1.5" aria-label="Mobile Main Navigation">
+                  {navItems.map(({ label, to, icon: Icon }) => {
+                    const isActive = activePath(active, to);
+                    return (
+                      <Link
+                        key={to}
+                        to={to}
+                        onClick={() => setMobileOpen(false)}
+                        className={`flex min-h-[48px] items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
+                          isActive
+                            ? "bg-brand text-primary-foreground font-semibold shadow-md shadow-brand/20"
+                            : "text-muted-foreground hover:bg-surface-elevated hover:text-foreground"
+                        }`}
+                      >
+                        <Icon className={`size-4.5 shrink-0 ${isActive ? "text-primary-foreground" : "text-brand"}`} />
+                        <span>{label}</span>
+                        {isActive && <span className="ml-auto size-2 rounded-full bg-primary-foreground animate-pulse" />}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-border/70 space-y-2">
+                <button
+                  className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-medium text-muted-foreground hover:bg-surface-elevated hover:text-foreground transition"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    navigate({ to: "/profile" });
+                  }}
+                >
+                  <Settings2 className="size-4 text-faint" />
+                  <span>Profile & Learning Config</span>
+                </button>
+              </div>
             </aside>
           </div>
         )}
-        <div className="min-w-0 flex-1">
-          <header className="sticky top-0 z-30 border-b border-border/70 bg-background/80 backdrop-blur-2xl">
-            <div className="flex min-h-16 items-center gap-2 px-3 sm:gap-3 sm:px-6">
-              <Button
-                size="icon"
-                variant="ghost"
-                className="md:hidden"
-                aria-label="Open navigation menu"
-                onClick={() => setMobileOpen(true)}
-              >
-                <Menu />
-              </Button>
-              <p className="min-w-0 flex-1 truncate font-display text-sm font-semibold sm:hidden">
-                {pageTitle}
-              </p>
-              <div className="hidden flex-1 items-center gap-2 rounded-xl border border-border/80 bg-surface-elevated/80 px-3.5 py-2 shadow-inner backdrop-blur-md sm:flex sm:max-w-md">
+
+        {/* Main Content Viewport */}
+        <div className="min-w-0 flex-1 flex flex-col">
+          {/* Mobile & Desktop Header */}
+          <header className="sticky top-0 z-30 w-full border-b border-border/70 bg-background/90 backdrop-blur-2xl">
+            <div className="flex min-h-14 sm:min-h-16 items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6">
+              {/* Mobile Left: Menu Toggle + Brand Icon + Page Title */}
+              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="md:hidden min-h-[44px] min-w-[44px] rounded-xl text-foreground hover:bg-surface"
+                  aria-label="Open navigation menu"
+                  onClick={() => setMobileOpen(true)}
+                >
+                  <Menu className="size-5" />
+                </Button>
+                <div className="flex items-center gap-2 min-w-0 truncate">
+                  <div className="md:hidden grid size-7 place-items-center rounded-lg bg-ink text-background shrink-0">
+                    <GitBranch className="size-3.5" />
+                  </div>
+                  <p className="min-w-0 truncate font-display text-sm font-semibold text-foreground">
+                    {pageTitle}
+                  </p>
+                </div>
+              </div>
+
+              {/* Desktop Search Bar */}
+              <div className="hidden flex-1 items-center gap-2 rounded-xl border border-border/80 bg-surface-elevated/80 px-3.5 py-2 shadow-inner backdrop-blur-md sm:flex sm:max-w-md mx-2">
                 <Search className="size-4 text-faint" />
                 <input
                   className="w-full bg-transparent text-sm outline-none placeholder:text-faint"
@@ -400,7 +476,9 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
                   ⌘K
                 </span>
               </div>
-              <div className="ml-auto flex items-center gap-3">
+
+              {/* Right User & Actions */}
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                 <div className="hidden sm:flex items-center gap-2 rounded-full border border-brand/30 bg-brand-soft/50 px-3 py-1 text-[11px] font-mono text-brand font-medium">
                   <span className="size-2 rounded-full bg-brand cp-pulse" />
                   AI Lab Active
@@ -408,15 +486,16 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="hidden sm:inline-flex"
+                  className="hidden sm:inline-flex rounded-xl"
                   aria-label="Notifications"
                   onClick={() => toast("All telemetry streams are healthy")}
                 >
                   <Bell className="size-4 text-faint" />
                 </Button>
                 <button
-                  className="flex min-h-10 items-center gap-2 rounded-xl bg-surface-elevated/90 px-2.5 py-1.5 text-left border border-border/60 shadow-sm transition"
+                  className="flex min-h-[40px] items-center gap-2 rounded-xl bg-surface-elevated/90 px-2.5 py-1 text-left border border-border/60 shadow-xs hover:border-brand/40 transition"
                   onClick={() => navigate({ to: "/profile" })}
+                  aria-label="User Profile"
                 >
                   <span className="hidden text-xs font-semibold sm:inline">Aarav K.</span>
                   <span className="grid size-7 place-items-center rounded-lg bg-lilac-soft text-xs font-bold text-lilac">
@@ -426,7 +505,8 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
               </div>
             </div>
           </header>
-          <main className="app-main min-w-0 px-4 pb-16 pt-5 sm:px-8 sm:pt-8 lg:px-10">
+
+          <main className="app-main w-full min-w-0 flex-1 px-3.5 pb-20 pt-4 sm:px-6 sm:pt-6 lg:px-10">
             {children}
           </main>
         </div>
@@ -511,77 +591,77 @@ function Dashboard() {
       />
 
       {/* Hero Spatial Deck - Primary Learning Action Hub */}
-      <SpatialCard depth={2} elevation="medium" className="mb-6 rounded-2xl">
-        <section className="spatial-deck rounded-2xl p-6 sm:p-7 relative overflow-hidden">
-          <div className="relative z-10 flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-brand-soft border border-brand/25 px-3 py-1 text-[11px] font-mono font-bold text-brand mb-2.5">
+      <SpatialCard depth={2} elevation="medium" className="mb-6 rounded-2xl overflow-hidden">
+        <section className="spatial-deck rounded-2xl p-4 sm:p-7 relative overflow-hidden">
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <div className="inline-flex items-center gap-2 rounded-full bg-brand-soft border border-brand/25 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-[11px] font-mono font-bold text-brand mb-2">
                 <span className="size-2 rounded-full bg-brand cp-pulse" />
-                LEARNING STATE: {summary.moduleState}
+                STATE: {summary.moduleState}
               </div>
-              <h2 className="text-2xl sm:text-3xl font-display font-semibold tracking-tight text-foreground">
+              <h2 className="text-xl sm:text-3xl font-display font-bold tracking-tight text-foreground leading-snug">
                 Continue Learning
               </h2>
-              <p className="mt-1 text-base text-foreground/90 font-medium max-w-xl">
+              <p className="mt-1 text-sm sm:text-base text-foreground/90 font-semibold break-words">
                 Module {summary.currentModule.code} — {summary.currentModule.title}
               </p>
-              <p className="mt-0.5 text-xs text-muted-foreground font-mono">
+              <p className="mt-1 text-xs text-muted-foreground font-mono">
                 Next: {summary.currentConcept?.title ?? summary.currentStepTitle} · ~{summary.currentConcept?.estimatedMinutes ?? 12} min
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center w-full sm:w-auto">
               <Button
                 size="lg"
-                className="shadow-lg shadow-brand/25 hover:shadow-xl hover:-translate-y-0.5 transition-all text-sm font-bold"
+                className="w-full sm:w-auto min-h-[44px] shadow-lg shadow-brand/20 hover:shadow-xl transition-all text-sm font-bold"
                 onClick={continueLearning}
               >
-                <Play className="size-4 mr-2 fill-current" /> Resume Learning Studio
+                <Play className="size-4 mr-2 fill-current" /> Resume Studio
               </Button>
             </div>
           </div>
 
           {/* Curriculum Mastery Evidence Metrics */}
-          <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-border/60 pt-4">
-            <div className="rounded-xl bg-surface-elevated/80 border border-border/70 p-3">
-              <p className="text-[10px] font-mono text-faint uppercase">Curriculum Progress</p>
-              <p className="mt-1 text-lg font-bold text-foreground">{summary.progressPercent}%</p>
-              <p className="text-[11px] text-muted-foreground">{summary.completedCount} / {summary.totalModules} modules</p>
+          <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 border-t border-border/60 pt-4">
+            <div className="rounded-xl bg-surface-elevated/80 border border-border/70 p-2.5 sm:p-3">
+              <p className="text-[10px] font-mono text-faint uppercase truncate">Curriculum</p>
+              <p className="mt-0.5 text-base sm:text-lg font-bold text-foreground">{summary.progressPercent}%</p>
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">{summary.completedCount}/{summary.totalModules} modules</p>
             </div>
-            <div className="rounded-xl bg-surface-elevated/80 border border-border/70 p-3">
-              <p className="text-[10px] font-mono text-faint uppercase">Concepts Mastered</p>
-              <p className="mt-1 text-lg font-bold text-mint">{summary.masteredConceptsCount}</p>
-              <p className="text-[11px] text-muted-foreground">verified by check & challenge</p>
+            <div className="rounded-xl bg-surface-elevated/80 border border-border/70 p-2.5 sm:p-3">
+              <p className="text-[10px] font-mono text-faint uppercase truncate">Mastered</p>
+              <p className="mt-0.5 text-base sm:text-lg font-bold text-mint">{summary.masteredConceptsCount}</p>
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">concepts verified</p>
             </div>
-            <div className="rounded-xl bg-surface-elevated/80 border border-border/70 p-3">
-              <p className="text-[10px] font-mono text-faint uppercase">Needs Review</p>
-              <p className="mt-1 text-lg font-bold text-peach">{summary.reviewConceptsCount}</p>
-              <p className="text-[11px] text-muted-foreground">flagged for revision</p>
+            <div className="rounded-xl bg-surface-elevated/80 border border-border/70 p-2.5 sm:p-3">
+              <p className="text-[10px] font-mono text-faint uppercase truncate">Needs Review</p>
+              <p className="mt-0.5 text-base sm:text-lg font-bold text-peach">{summary.reviewConceptsCount}</p>
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">flagged revision</p>
             </div>
-            <div className="rounded-xl bg-surface-elevated/80 border border-border/70 p-3">
-              <p className="text-[10px] font-mono text-faint uppercase">Next Recommended</p>
-              <p className="mt-1 text-lg font-bold text-lilac">Module {summary.nextModule.code}</p>
-              <p className="text-[11px] text-muted-foreground truncate">{summary.nextModule.title}</p>
+            <div className="rounded-xl bg-surface-elevated/80 border border-border/70 p-2.5 sm:p-3">
+              <p className="text-[10px] font-mono text-faint uppercase truncate">Next Up</p>
+              <p className="mt-0.5 text-base sm:text-lg font-bold text-lilac truncate">Mod {summary.nextModule.code}</p>
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">{summary.nextModule.title}</p>
             </div>
           </div>
 
           {/* 3D Connected Waypoints Stream (30 Modules Spine) */}
-          <div className="relative mt-6 pt-2 pb-1">
+          <div className="relative mt-5 pt-2 pb-1">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-                <GitBranch className="size-3.5 text-brand" /> 30-Module AI Engineering Spine
+              <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 truncate">
+                <GitBranch className="size-3.5 text-brand shrink-0" /> 30-Module Spine
               </p>
-              <span className="font-mono text-xs font-bold text-brand">{summary.progressPercent}% Mastered</span>
+              <span className="font-mono text-xs font-bold text-brand shrink-0">{summary.progressPercent}% Done</span>
             </div>
 
             {/* Dimensional Path Bar */}
-            <div className="relative h-2.5 rounded-full bg-foreground/10 p-[2px] border border-border/60 overflow-hidden mb-5">
+            <div className="relative h-2 rounded-full bg-foreground/10 p-[2px] border border-border/60 overflow-hidden mb-3.5">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-brand via-lilac to-mint shadow-[0_0_15px_rgba(20,184,166,0.6)] transition-all duration-700"
+                className="h-full rounded-full bg-gradient-to-r from-brand via-lilac to-mint shadow-[0_0_12px_rgba(20,184,166,0.6)] transition-all duration-700"
                 style={{ width: `${Math.max(4, summary.progressPercent)}%` }}
               />
             </div>
 
-            <div className="flex gap-2.5 overflow-x-auto pb-3 pt-1 no-scrollbar scroll-smooth">
+            <div className="flex gap-2.5 overflow-x-auto pb-3 pt-1 no-scrollbar touch-scroller scroll-smooth">
               {modulesTrack.map((mod) => (
                 <button
                   key={mod.code}
@@ -591,38 +671,38 @@ function Dashboard() {
                       search: { module: mod.code },
                     })
                   }
-                  className={`group relative flex-shrink-0 flex flex-col items-start justify-between p-3.5 rounded-xl border transition-all duration-200 text-left w-36 sm:w-40 ${
+                  className={`group relative flex-shrink-0 flex flex-col items-start justify-between p-3 rounded-xl border transition-all duration-150 text-left w-32 sm:w-40 min-h-[100px] ${
                     mod.isCurrent
-                      ? "border-brand bg-surface-elevated shadow-sm -translate-y-1 ring-1 ring-brand/30"
+                      ? "border-brand bg-surface-elevated shadow-sm ring-1 ring-brand/30"
                       : mod.isCompleted
-                      ? "border-mint/30 bg-surface-elevated/90 hover:-translate-y-0.5 hover:border-mint/60 shadow-xs"
+                      ? "border-mint/30 bg-surface-elevated/90 shadow-xs"
                       : mod.isNext
-                      ? "border-lilac/40 bg-surface-elevated/80 hover:-translate-y-0.5 hover:border-lilac"
-                      : "border-border/60 bg-surface/50 opacity-70 hover:opacity-100 hover:bg-surface-elevated"
+                      ? "border-lilac/40 bg-surface-elevated/80"
+                      : "border-border/60 bg-surface/50 opacity-70 hover:opacity-100"
                   }`}
                 >
-                  <div className="flex items-center justify-between w-full mb-2">
-                    <span className="font-mono text-[10px] font-semibold text-brand bg-brand-soft px-2 py-0.5 rounded">
+                  <div className="flex items-center justify-between w-full mb-1.5">
+                    <span className="font-mono text-[10px] font-semibold text-brand bg-brand-soft px-1.5 py-0.5 rounded">
                       {mod.code}
                     </span>
                     {mod.isCompleted ? (
-                      <span className="grid size-4.5 place-items-center rounded-full bg-mint text-primary-foreground">
-                        <Check className="size-3" />
+                      <span className="grid size-4 place-items-center rounded-full bg-mint text-primary-foreground">
+                        <Check className="size-2.5" />
                       </span>
                     ) : mod.isCurrent ? (
                       <span className="size-2 rounded-full bg-brand ring-2 ring-brand/20" />
                     ) : mod.isNext ? (
                       <span className="size-2 rounded-full bg-lilac" />
                     ) : (
-                      <Lock className="size-3 text-faint" />
+                      <Lock className="size-2.5 text-faint" />
                     )}
                   </div>
-                  <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug w-full">
+                  <p className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-2 leading-tight w-full">
                     {mod.title}
                   </p>
-                  <div className="mt-3 flex items-center justify-between w-full text-[10px] text-faint">
+                  <div className="mt-2 flex items-center justify-between w-full text-[9px] sm:text-[10px] text-faint">
                     <span className="truncate">{mod.experienceStage}</span>
-                    <span className="font-medium text-brand opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="font-medium text-brand">
                       Open →
                     </span>
                   </div>
@@ -634,9 +714,9 @@ function Dashboard() {
       </SpatialCard>
 
       {/* Grid of Telemetry & Next Steps */}
-      <section className="mb-6 grid gap-5 lg:grid-cols-2">
+      <section className="mb-6 grid gap-4 sm:gap-5 lg:grid-cols-2">
         <SpatialCard depth={8} elevation="medium" className="rounded-2xl">
-          <Panel className="h-full">
+          <Panel className="h-full p-4 sm:p-5">
             <SectionTitle
               eyebrow="Neural Mastery History"
               title="Recently Mastered Concepts"
@@ -647,30 +727,30 @@ function Dashboard() {
               }
             />
             {summary.recentlyCompleted.length ? (
-              <div className="space-y-2.5 mt-3">
+              <div className="space-y-2 mt-3">
                 {summary.recentlyCompleted.map((module) => (
                   <div
                     key={module.code}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-mint/25 bg-mint-soft/30 p-3 text-sm transition"
+                    className="flex items-center justify-between gap-2.5 rounded-xl border border-mint/25 bg-mint-soft/30 p-2.5 sm:p-3 text-xs sm:text-sm transition"
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <span className="grid size-6 place-items-center rounded-lg bg-mint text-primary-foreground shrink-0 shadow-sm">
-                        <Check className="size-3.5" />
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="grid size-5.5 sm:size-6 place-items-center rounded-lg bg-mint text-primary-foreground shrink-0 shadow-xs">
+                        <Check className="size-3 sm:size-3.5" />
                       </span>
                       <span className="font-medium text-foreground truncate">
-                        Module {module.code} — {module.title}
+                        Mod {module.code} — {module.title}
                       </span>
                     </div>
-                    <span className="rounded-full bg-mint/15 px-2.5 py-0.5 text-[10px] font-mono font-bold text-mint uppercase shrink-0">
+                    <span className="rounded-full bg-mint/15 px-2 py-0.5 text-[9px] sm:text-[10px] font-mono font-bold text-mint uppercase shrink-0">
                       Verified
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="rounded-xl border border-dashed border-border/70 p-6 text-center text-sm text-muted-foreground">
+              <div className="rounded-xl border border-dashed border-border/70 p-5 text-center text-xs sm:text-sm text-muted-foreground">
                 <p>Complete your first module challenge to record verified evidence here.</p>
-                <Button className="mt-3" size="sm" variant="outline" onClick={continueLearning}>
+                <Button className="mt-3 min-h-[44px] w-full sm:w-auto" size="sm" variant="outline" onClick={continueLearning}>
                   Start First Module
                 </Button>
               </div>
@@ -679,28 +759,28 @@ function Dashboard() {
         </SpatialCard>
 
         <SpatialCard depth={8} elevation="medium" className="rounded-2xl">
-          <Panel className="h-full">
+          <Panel className="h-full p-4 sm:p-5">
             <SectionTitle
               eyebrow="Recommended Flight Node"
               title="Next In Line"
               action={<StatusPill status="available" />}
             />
-            <div className="rounded-xl border border-lilac/30 bg-lilac-soft/30 p-4 mt-2">
-              <p className="font-mono text-xs font-bold text-lilac">MODULE {summary.nextModule.code}</p>
-              <h4 className="font-bold text-base mt-1 text-foreground">{summary.nextModule.title}</h4>
-              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+            <div className="rounded-xl border border-lilac/30 bg-lilac-soft/30 p-3.5 sm:p-4 mt-2">
+              <p className="font-mono text-[10px] sm:text-xs font-bold text-lilac">MODULE {summary.nextModule.code}</p>
+              <h4 className="font-bold text-sm sm:text-base mt-1 text-foreground">{summary.nextModule.title}</h4>
+              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
                 {summary.nextModule.description}
               </p>
-              <div className="mt-4 flex flex-wrap gap-2 text-xs">
-                <span className="rounded-lg bg-surface-elevated/90 border border-border/60 px-2.5 py-1 text-foreground font-medium">
+              <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                <span className="rounded-lg bg-surface-elevated/90 border border-border/60 px-2.5 py-1 text-foreground font-medium text-[11px]">
                   {summary.nextModule.experienceStage} Stage
                 </span>
-                <span className="rounded-lg bg-surface-elevated/90 border border-border/60 px-2.5 py-1 text-muted-foreground font-mono">
+                <span className="rounded-lg bg-surface-elevated/90 border border-border/60 px-2.5 py-1 text-muted-foreground font-mono text-[11px]">
                   {summary.nextModule.estimatedTime}
                 </span>
               </div>
             </div>
-            <Button className="mt-4 w-full shadow-sm" variant="outline" onClick={startNextModule}>
+            <Button className="mt-4 w-full min-h-[44px] shadow-sm" variant="outline" onClick={startNextModule}>
               Initialize Next Module <ArrowRight className="size-4 ml-1" />
             </Button>
           </Panel>
@@ -1367,26 +1447,26 @@ function InteractiveCurriculumMap() {
       />
 
       {/* 3D Spatial Deck Filter Hub */}
-      <SpatialCard depth={10} elevation="medium" className="mb-6 rounded-2xl">
-        <Panel className="border-brand/25 bg-surface-elevated/90 p-5">
+      <SpatialCard depth={10} elevation="medium" className="mb-6 rounded-2xl overflow-hidden">
+        <Panel className="border-brand/25 bg-surface-elevated/90 p-4 sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
             <div className="flex items-center gap-2.5">
-              <span className="size-2.5 rounded-full bg-brand cp-pulse" />
+              <span className="size-2.5 rounded-full bg-brand cp-pulse shrink-0" />
               <div>
-                <Eyebrow>ACTIVE NEURAL HIGHWAY</Eyebrow>
-                <p className="text-sm font-bold text-foreground">
-                  {mastered} of {curriculumModules.length} Knowledge Nodes Mastered
+                <Eyebrow>ACTIVE HIGHWAY</Eyebrow>
+                <p className="text-xs sm:text-sm font-bold text-foreground">
+                  {mastered} of {curriculumModules.length} Nodes Mastered
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-bold text-brand bg-brand-soft px-3 py-1 rounded-full border border-brand/25">
+              <span className="font-mono text-[11px] sm:text-xs font-bold text-brand bg-brand-soft px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-brand/25">
                 {Math.round((mastered / curriculumModules.length) * 100)}% Synchronized
               </span>
             </div>
           </div>
 
-          <div className="h-2.5 overflow-hidden rounded-full bg-foreground/10 p-[2px] border border-border/60">
+          <div className="h-2 overflow-hidden rounded-full bg-foreground/10 p-[2px] border border-border/60">
             <div
               className="h-full rounded-full bg-gradient-to-r from-brand via-lilac to-mint transition-all duration-700 shadow-[0_0_12px_rgba(20,184,166,0.6)]"
               style={{ width: `${Math.max(3, (mastered / curriculumModules.length) * 100)}%` }}
@@ -1394,7 +1474,7 @@ function InteractiveCurriculumMap() {
           </div>
 
           {/* Phase Switchers */}
-          <div className="mt-5 flex gap-2 overflow-x-auto pb-1.5 no-scrollbar">
+          <div className="mt-4 flex gap-2 overflow-x-auto pb-1.5 no-scrollbar touch-scroller">
             {phases.map(([label], index) => (
               <button
                 key={label}
@@ -1404,9 +1484,9 @@ function InteractiveCurriculumMap() {
                     .getElementById(`phase-${index}`)
                     ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
                 }}
-                className={`shrink-0 rounded-xl px-3.5 py-2 text-[11px] font-bold tracking-wide transition-all ${
+                className={`shrink-0 rounded-xl px-3 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-[11px] font-bold tracking-wide transition-all ${
                   phase === index
-                    ? "bg-ink text-background shadow-md scale-105"
+                    ? "bg-ink text-background shadow-md"
                     : "bg-surface text-muted-foreground hover:bg-surface-elevated hover:text-foreground border border-border/60"
                 }`}
               >
@@ -1417,45 +1497,47 @@ function InteractiveCurriculumMap() {
 
           {/* Search, Filter & Spatial Lens Controls */}
           <div className="mt-4 grid gap-2.5 sm:grid-cols-[1fr_auto_auto]">
-            <label className="flex items-center gap-2 rounded-xl border border-border/80 bg-surface/80 px-3.5 shadow-inner">
-              <Search className="size-4 text-faint" />
+            <label className="flex min-w-0 items-center gap-2 rounded-xl border border-border/80 bg-surface/80 px-3.5 shadow-inner">
+              <Search className="size-4 text-faint shrink-0" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                className="min-h-11 w-full bg-transparent text-sm outline-none placeholder:text-faint"
-                placeholder="Filter spatial nodes, embeddings, RAG, agents…"
+                className="min-h-11 w-full bg-transparent text-xs sm:text-sm outline-none placeholder:text-faint"
+                placeholder="Filter nodes, embeddings, RAG, agents…"
               />
             </label>
-            <select
-              value={filter}
-              onChange={(event) => setFilter(event.target.value)}
-              className="rounded-xl border border-border/80 bg-surface-elevated px-3 text-sm font-medium shadow-sm"
-              aria-label="Filter curriculum"
-            >
-              {[
-                "All",
-                "In-progress",
-                "Available",
-                "Mastered",
-                "Locked",
-                "Challenges",
-                "Projects",
-              ].map((item) => (
-                <option key={item}>{item}</option>
-              ))}
-            </select>
-            <div className="flex overflow-x-auto rounded-xl border border-border/80 bg-surface/60 p-1">
-              {(["journey", "skills", "projects", "list"] as const).map((item) => (
-                <button
-                  key={item}
-                  onClick={() => setLens(item)}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition-all ${
-                    lens === item ? "bg-background text-foreground shadow-sm scale-105" : "text-faint hover:text-foreground"
-                  }`}
-                >
-                  {item}
-                </button>
-              ))}
+            <div className="flex gap-2">
+              <select
+                value={filter}
+                onChange={(event) => setFilter(event.target.value)}
+                className="min-h-11 flex-1 sm:flex-initial rounded-xl border border-border/80 bg-surface-elevated px-3 text-xs sm:text-sm font-medium shadow-xs"
+                aria-label="Filter curriculum"
+              >
+                {[
+                  "All",
+                  "In-progress",
+                  "Available",
+                  "Mastered",
+                  "Locked",
+                  "Challenges",
+                  "Projects",
+                ].map((item) => (
+                  <option key={item}>{item}</option>
+                ))}
+              </select>
+              <div className="flex overflow-x-auto rounded-xl border border-border/80 bg-surface/60 p-1 no-scrollbar">
+                {(["journey", "skills", "projects", "list"] as const).map((item) => (
+                  <button
+                    key={item}
+                    onClick={() => setLens(item)}
+                    className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold capitalize transition-all ${
+                      lens === item ? "bg-background text-foreground shadow-xs" : "text-faint hover:text-foreground"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </Panel>
@@ -1464,7 +1546,7 @@ function InteractiveCurriculumMap() {
       {/* Main Spatial Constellation & Inspector Grid */}
       <div className="grid gap-5 xl:grid-cols-[1fr_370px]">
         <SpatialCard depth={8} elevation="medium" className="rounded-2xl">
-          <Panel className="overflow-hidden">
+          <Panel className="overflow-hidden p-4 sm:p-5">
             <SectionTitle
               eyebrow={`PHASE 0${phase + 1} · ${phases[phase]![0]}`}
               title={
@@ -1477,21 +1559,21 @@ function InteractiveCurriculumMap() {
                       : "Knowledge Registry Index"
               }
               action={
-                <span className="font-mono text-xs text-brand font-semibold">
-                  {modules.length} Nodes in View
+                <span className="font-mono text-xs text-brand font-semibold shrink-0">
+                  {modules.length} Nodes
                 </span>
               }
             />
 
             {lens === "skills" && (
-              <div className="mb-5 flex flex-wrap gap-2 border-b border-border/70 pb-4">
+              <div className="mb-4 flex flex-wrap gap-1.5 border-b border-border/70 pb-3">
                 {allTopics.map((topic) => (
                   <button
                     key={topic}
                     onClick={() => setQuery(query === topic ? "" : topic)}
-                    className={`rounded-xl px-3 py-1.5 text-[11px] font-medium transition-all ${
+                    className={`rounded-xl px-2.5 py-1 text-[10px] sm:text-[11px] font-medium transition-all ${
                       query === topic
-                        ? "bg-brand text-primary-foreground shadow-md shadow-brand/20 scale-105"
+                        ? "bg-brand text-primary-foreground shadow-sm scale-105"
                         : "bg-lilac-soft/60 text-lilac border border-lilac/30 hover:bg-lilac-soft"
                     }`}
                   >
@@ -1505,26 +1587,31 @@ function InteractiveCurriculumMap() {
             <div
               className={
                 lens === "journey"
-                  ? "relative space-y-3.5 pl-6 before:absolute before:bottom-4 before:left-3 before:top-4 before:w-[2px] before:bg-gradient-to-b before:from-brand/60 via-lilac/50 to-border"
+                  ? "relative space-y-3 pl-4 sm:pl-6 before:absolute before:bottom-4 before:left-1.5 sm:before:left-3 before:top-4 before:w-[2px] before:bg-gradient-to-b before:from-brand/60 via-lilac/50 to-border"
                   : lens === "list"
-                    ? "grid gap-3.5 md:grid-cols-2"
-                    : "grid gap-3.5"
+                    ? "grid gap-3 md:grid-cols-2"
+                    : "grid gap-3"
               }
             >
               {modules.map(({ module, index, status }) => (
                 <button
                   key={module.code}
                   id={index === phases[phase]![1] ? `phase-${phase}` : undefined}
-                  onClick={() => selectModule(module.code)}
-                  className={`group relative w-full rounded-xl border p-4 text-left transition-all duration-200 ${
+                  onClick={() => {
+                    selectModule(module.code);
+                    if (window.innerWidth < 1280) {
+                      document.getElementById("module-inspector")?.scrollIntoView({ behavior: "smooth" });
+                    }
+                  }}
+                  className={`group relative w-full rounded-xl border p-3.5 sm:p-4 text-left transition-all duration-150 ${
                     selectedCode === module.code
-                      ? "border-brand bg-brand-soft/40 shadow-sm ring-1 ring-brand/40 -translate-y-0.5"
-                      : "border-border/70 bg-surface-elevated hover:border-brand/40 hover:-translate-y-0.5 hover:shadow-xs"
+                      ? "border-brand bg-brand-soft/40 shadow-xs ring-1 ring-brand/40"
+                      : "border-border/70 bg-surface-elevated hover:border-brand/40"
                   }`}
                 >
                   {lens === "journey" && (
                     <span
-                      className={`absolute -left-[29px] top-5 size-3.5 rounded-full border-2 border-background transition-all ${
+                      className={`absolute -left-[23px] sm:-left-[29px] top-5 size-3 sm:size-3.5 rounded-full border-2 border-background transition-all ${
                         status === "mastered"
                           ? "bg-mint shadow-xs"
                           : status === "in-progress"
@@ -1534,22 +1621,22 @@ function InteractiveCurriculumMap() {
                     />
                   )}
                   <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <span className="font-mono text-[10px] font-semibold text-brand bg-brand-soft px-2 py-0.5 rounded border border-brand/20">
+                    <div className="min-w-0 flex-1">
+                      <span className="font-mono text-[9px] sm:text-[10px] font-semibold text-brand bg-brand-soft px-1.5 py-0.5 rounded border border-brand/20">
                         Module {module.code}
                       </span>
-                      <h3 className="mt-1.5 text-sm font-semibold text-foreground group-hover:text-brand transition-colors">
+                      <h3 className="mt-1 text-xs sm:text-sm font-semibold text-foreground group-hover:text-brand transition-colors truncate">
                         {module.title}
                       </h3>
                     </div>
                     <StatusPill status={status} />
                   </div>
-                  <p className="mt-1.5 text-xs leading-5 text-muted-foreground">{module.description}</p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground line-clamp-2">{module.description}</p>
                   <div className="mt-2.5 flex flex-wrap gap-1.5">
-                    {module.topics.slice(0, 4).map((topic) => (
+                    {module.topics.slice(0, 3).map((topic) => (
                       <span
                         key={topic}
-                        className="rounded-md bg-lilac-soft/60 px-2 py-0.5 text-[10px] font-medium text-lilac border border-lilac/20"
+                        className="rounded-md bg-lilac-soft/60 px-2 py-0.5 text-[9px] sm:text-[10px] font-medium text-lilac border border-lilac/20"
                       >
                         {topic}
                       </span>
@@ -1559,14 +1646,14 @@ function InteractiveCurriculumMap() {
                     <span>
                       {module.estimatedTime} · {module.experienceStage}
                     </span>
-                    <span className="text-brand font-medium opacity-0 transition-opacity group-hover:opacity-100 flex items-center gap-1">
-                      View details →
+                    <span className="text-brand font-medium flex items-center gap-1">
+                      Inspect →
                     </span>
                   </div>
                 </button>
               ))}
               {!modules.length && (
-                <div className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
+                <div className="rounded-2xl border border-dashed border-border p-8 text-center text-xs sm:text-sm text-muted-foreground">
                   No modules match the active spatial lens. Switch phase or clear search filter.
                 </div>
               )}
@@ -1575,104 +1662,106 @@ function InteractiveCurriculumMap() {
         </SpatialCard>
 
         {/* 3D Floating Node Telemetry Inspector */}
-        <SpatialCard depth={12} elevation="high" className="h-fit rounded-2xl sticky top-20">
-          <Panel className="border-brand/35 bg-surface-elevated/95 p-5 shadow-lg">
-            <div className="flex items-center justify-between gap-2 border-b border-border/70 pb-3 mb-3">
-              <span className="font-mono text-xs font-bold text-brand bg-brand-soft px-2.5 py-0.5 rounded-md">
-                NODE {selectedModule.code}
-              </span>
-              <StatusPill status={selectedStatus} />
-            </div>
+        <div id="module-inspector">
+          <SpatialCard depth={12} elevation="high" className="h-fit rounded-2xl xl:sticky xl:top-20">
+            <Panel className="border-brand/35 bg-surface-elevated/95 p-4 sm:p-5 shadow-lg">
+              <div className="flex items-center justify-between gap-2 border-b border-border/70 pb-3 mb-3">
+                <span className="font-mono text-xs font-bold text-brand bg-brand-soft px-2.5 py-0.5 rounded-md">
+                  NODE {selectedModule.code}
+                </span>
+                <StatusPill status={selectedStatus} />
+              </div>
 
-            <h3 className="font-display text-lg font-bold tracking-tight text-foreground">
-              {selectedModule.title}
-            </h3>
-            <p className="mt-2 text-xs leading-5 text-muted-foreground">
-              {selectedModule.description}
-            </p>
-
-            {/* Prerequisite & Dependent Vector HUD */}
-            <div className="mt-4 rounded-xl border border-brand/25 bg-brand-soft/40 p-3.5 text-xs">
-              <Eyebrow>PREREQUISITE VECTOR STREAM</Eyebrow>
-              <p className="mt-1.5 text-muted-foreground leading-relaxed">
-                {relatedBefore.length
-                  ? `Ascends directly from ${relatedBefore.map((mod) => `Module ${mod.code}`).join(" and ")}.`
-                  : "Foundation entry point of your AI engineering path."}{" "}
-                {relatedAfter.length
-                  ? `Prerequisite for ${relatedAfter.map((mod) => `Module ${mod.code}`).join(" and ")}.`
-                  : "Capstone terminal of the curriculum."}
+              <h3 className="font-display text-base sm:text-lg font-bold tracking-tight text-foreground">
+                {selectedModule.title}
+              </h3>
+              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                {selectedModule.description}
               </p>
-            </div>
 
-            <div className="mt-3.5 grid grid-cols-2 gap-2 text-xs">
-              <div className="rounded-xl border border-border/60 bg-surface/70 p-2.5">
-                <Eyebrow>Stage Level</Eyebrow>
-                <p className="mt-1 font-bold text-foreground">{selectedModule.experienceStage}</p>
-              </div>
-              <div className="rounded-xl border border-border/60 bg-surface/70 p-2.5">
-                <Eyebrow>Time Velocity</Eyebrow>
-                <p className="mt-1 font-bold text-foreground">{selectedModule.estimatedTime}</p>
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <Eyebrow>Concept Sub-Nodes</Eyebrow>
-              <div className="mt-2 space-y-1.5">
-                {selectedModule.topics.map((topic) => (
-                  <button
-                    key={topic}
-                    onClick={() => setConcept(topic)}
-                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-medium transition-all ${
-                      concept === topic
-                        ? "bg-lilac-soft text-lilac border border-lilac/35 shadow-sm"
-                        : "bg-surface/60 hover:bg-lilac-soft/40 text-muted-foreground hover:text-foreground border border-border/40"
-                    }`}
-                  >
-                    <span>{topic}</span>
-                    <ChevronRight className="size-3 text-faint" />
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {concept && (
-              <div className="mt-3 rounded-xl border border-brand/35 bg-brand-soft/40 p-3 text-xs">
-                <p className="font-bold text-brand">{concept}</p>
-                <p className="mt-1 text-muted-foreground leading-5">
-                  Launch the interactive studio to build, break, and master {concept} with guided diagnostic loops.
+              {/* Prerequisite & Dependent Vector HUD */}
+              <div className="mt-3.5 rounded-xl border border-brand/25 bg-brand-soft/40 p-3 text-xs">
+                <Eyebrow>PREREQUISITE VECTOR STREAM</Eyebrow>
+                <p className="mt-1 text-muted-foreground leading-relaxed text-[11px] sm:text-xs">
+                  {relatedBefore.length
+                    ? `Ascends directly from ${relatedBefore.map((mod) => `Module ${mod.code}`).join(" and ")}.`
+                    : "Foundation entry point of your AI engineering path."}{" "}
+                  {relatedAfter.length
+                    ? `Prerequisite for ${relatedAfter.map((mod) => `Module ${mod.code}`).join(" and ")}.`
+                    : "Capstone terminal of the curriculum."}
                 </p>
               </div>
-            )}
 
-            <div className="mt-4 rounded-xl border border-border/70 bg-surface/50 p-3 text-xs">
-              <Eyebrow>Associated Milestone Build</Eyebrow>
-              <p className="mt-1 text-xs font-semibold text-foreground">{selectedModule.project}</p>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {selectedModule.tools.slice(0, 3).map((tool) => (
-                  <span
-                    key={tool}
-                    className="rounded-md bg-peach-soft px-2 py-0.5 text-[10px] font-medium text-peach border border-peach/25"
-                  >
-                    {tool}
-                  </span>
-                ))}
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                <div className="rounded-xl border border-border/60 bg-surface/70 p-2.5">
+                  <Eyebrow>Stage Level</Eyebrow>
+                  <p className="mt-0.5 font-bold text-foreground text-xs">{selectedModule.experienceStage}</p>
+                </div>
+                <div className="rounded-xl border border-border/60 bg-surface/70 p-2.5">
+                  <Eyebrow>Time Velocity</Eyebrow>
+                  <p className="mt-0.5 font-bold text-foreground text-xs">{selectedModule.estimatedTime}</p>
+                </div>
               </div>
-            </div>
 
-            <Button
-              className="mt-5 w-full shadow-md shadow-brand/20"
-              onClick={() =>
-                navigate({
-                  to: "/learning-mode",
-                  search: { module: selectedModule.code, concept: concept ?? undefined },
-                })
-              }
-            >
-              {selectedStatus === "in-progress" ? "Resume Active Mission" : "Engage Learning Studio"}{" "}
-              <ArrowRight className="size-4 ml-1.5" />
-            </Button>
-          </Panel>
-        </SpatialCard>
+              <div className="mt-3.5">
+                <Eyebrow>Concept Sub-Nodes</Eyebrow>
+                <div className="mt-2 space-y-1.5">
+                  {selectedModule.topics.map((topic) => (
+                    <button
+                      key={topic}
+                      onClick={() => setConcept(topic)}
+                      className={`flex min-h-[40px] w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-medium transition-all ${
+                        concept === topic
+                          ? "bg-lilac-soft text-lilac border border-lilac/35 shadow-xs"
+                          : "bg-surface/60 hover:bg-lilac-soft/40 text-muted-foreground hover:text-foreground border border-border/40"
+                      }`}
+                    >
+                      <span className="truncate">{topic}</span>
+                      <ChevronRight className="size-3 text-faint shrink-0 ml-1" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {concept && (
+                <div className="mt-3 rounded-xl border border-brand/35 bg-brand-soft/40 p-3 text-xs">
+                  <p className="font-bold text-brand">{concept}</p>
+                  <p className="mt-1 text-muted-foreground leading-relaxed text-[11px]">
+                    Launch the interactive studio to build, break, and master {concept} with guided diagnostic loops.
+                  </p>
+                </div>
+              )}
+
+              <div className="mt-3.5 rounded-xl border border-border/70 bg-surface/50 p-3 text-xs">
+                <Eyebrow>Associated Milestone Build</Eyebrow>
+                <p className="mt-1 text-xs font-semibold text-foreground">{selectedModule.project}</p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {selectedModule.tools.slice(0, 3).map((tool) => (
+                    <span
+                      key={tool}
+                      className="rounded-md bg-peach-soft px-2 py-0.5 text-[9px] sm:text-[10px] font-medium text-peach border border-peach/25"
+                    >
+                      {tool}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <Button
+                className="mt-4 w-full min-h-[44px] shadow-md shadow-brand/20 text-xs sm:text-sm font-semibold"
+                onClick={() =>
+                  navigate({
+                    to: "/learning-mode",
+                    search: { module: selectedModule.code, concept: concept ?? undefined },
+                  })
+                }
+              >
+                {selectedStatus === "in-progress" ? "Resume Active Mission" : "Engage Learning Studio"}{" "}
+                <ArrowRight className="size-4 ml-1.5" />
+              </Button>
+            </Panel>
+          </SpatialCard>
+        </div>
       </div>
     </>
   );
@@ -2068,74 +2157,75 @@ function LearningModeContent({
       />
 
       {/* Concept Progress Hierarchy Bar */}
-      <SpatialCard depth={4} elevation="low" className="mb-4 rounded-2xl p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <SpatialCard depth={4} elevation="low" className="mb-4 rounded-2xl p-3.5 sm:p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <GitBranch className="size-4 text-brand" />
-            <span className="text-xs font-bold text-foreground">Module {experience.module.code} Concept Hierarchy:</span>
+            <GitBranch className="size-3.5 sm:size-4 text-brand shrink-0" />
+            <span className="text-xs font-bold text-foreground">Mod {experience.module.code} Concepts:</span>
           </div>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-muted-foreground">Est. Total Time:</span>
-            <span className="font-mono font-bold text-brand">{experience.module.estimatedTime}</span>
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="text-muted-foreground text-[11px]">Est:</span>
+            <span className="font-mono font-bold text-brand text-[11px]">{experience.module.estimatedTime}</span>
           </div>
         </div>
-        <div className="mt-3 grid gap-2 sm:grid-cols-4">
+        <div className="mt-2.5 grid grid-cols-2 sm:grid-cols-4 gap-2">
           {experience.module.concepts.map((c, i) => (
             <div
               key={c.id}
-              className={`rounded-xl border p-2.5 text-xs transition ${
+              className={`rounded-xl border p-2 text-xs transition ${
                 c.id === currentConceptItem?.id
                   ? "border-brand bg-brand-soft/50 font-bold text-brand"
                   : "border-border/60 bg-surface/40 text-muted-foreground"
               }`}
             >
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between text-[10px]">
                 <span>Concept {i + 1}</span>
-                <span className="font-mono text-[10px]">{c.estimatedMinutes}m</span>
+                <span className="font-mono text-[9px]">{c.estimatedMinutes}m</span>
               </div>
-              <p className="mt-1 font-semibold text-foreground truncate">{c.title}</p>
+              <p className="mt-0.5 font-semibold text-foreground truncate text-[11px] sm:text-xs">{c.title}</p>
             </div>
           ))}
         </div>
       </SpatialCard>
 
       {/* 3D Stepper Tabs */}
-      <SpatialCard depth={8} elevation="medium" className="mb-6 rounded-2xl">
-        <Panel className="border-brand/30 bg-surface-elevated/95 p-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <SpatialCard depth={8} elevation="medium" className="mb-5 rounded-2xl overflow-hidden">
+        <Panel className="border-brand/30 bg-surface-elevated/95 p-4 sm:p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div>
               <div className="flex items-center gap-2">
-                <span className="size-2.5 rounded-full bg-brand cp-pulse" />
+                <span className="size-2 rounded-full bg-brand cp-pulse" />
                 <Eyebrow>{step.stage} STAGE · {currentConceptItem.title.toUpperCase()}</Eyebrow>
               </div>
-              <h2 className="mt-1 font-display text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              <h2 className="mt-1 font-display text-lg sm:text-2xl font-bold tracking-tight text-foreground">
                 {step.title}
               </h2>
             </div>
-            <span className="font-mono text-xs font-bold text-brand bg-brand-soft px-3 py-1 rounded-full border border-brand/25 shrink-0">
-              {Math.round(((stepIndex + 1) / experience.steps.length) * 100)}% Classroom Loop
+            <span className="font-mono text-[11px] sm:text-xs font-bold text-brand bg-brand-soft px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-brand/25 self-start sm:self-auto shrink-0">
+              {Math.round(((stepIndex + 1) / experience.steps.length) * 100)}% Complete
             </span>
           </div>
 
-          <div className="mt-5 flex gap-2 overflow-x-auto pb-1.5 no-scrollbar">
+          {/* Touch-Friendly Horizontal Step Selector */}
+          <div className="mt-4 flex gap-1.5 overflow-x-auto pb-2 no-scrollbar touch-scroller">
             {experience.steps.map((item, index) => (
               <button
                 key={item.id}
-                className={`flex items-center gap-2 shrink-0 rounded-xl px-3 py-2 text-xs font-bold tracking-wide transition-all ${
+                className={`flex min-h-[40px] items-center gap-1.5 shrink-0 rounded-xl px-2.5 py-1.5 text-[11px] font-bold tracking-wide transition-all ${
                   index === stepIndex
-                    ? "bg-ink text-background shadow-lg shadow-ink/20 scale-105"
+                    ? "bg-ink text-background shadow-md shadow-ink/20 scale-102"
                     : index < stepIndex
                       ? "bg-mint-soft text-mint border border-mint/35 hover:bg-mint-soft/80"
                       : "bg-surface text-faint hover:bg-surface-elevated hover:text-foreground border border-border/60"
                 }`}
                 onClick={() => index <= stepIndex && setStepIndex(index)}
               >
-                <span className={`grid size-5 place-items-center rounded-lg text-[10px] font-mono ${
+                <span className={`grid size-4.5 place-items-center rounded-md text-[9px] font-mono ${
                   index === stepIndex ? "bg-background/25 text-background" : index < stepIndex ? "bg-mint text-primary-foreground" : "bg-muted"
                 }`}>
-                  {index < stepIndex ? <Check className="size-3" /> : index + 1}
+                  {index < stepIndex ? <Check className="size-2.5" /> : index + 1}
                 </span>
-                {item.stage}
+                <span>{item.stage}</span>
               </button>
             ))}
           </div>
@@ -2145,41 +2235,41 @@ function LearningModeContent({
       {/* Main Studio 3D Interactive Workbench */}
       <div className="grid gap-5 xl:grid-cols-[1fr_340px]">
         <SpatialCard depth={10} elevation="high" className="rounded-2xl">
-          <Panel className="cp-rise p-6">
-            <p className="max-w-3xl text-base leading-7 text-foreground/90 font-medium">
+          <Panel className="cp-rise p-4 sm:p-6">
+            <p className="max-w-3xl text-sm sm:text-base leading-relaxed text-foreground/90 font-medium">
               {step.explanation}
             </p>
 
             {/* Why It Matters Callout */}
-            <div className="mt-5 rounded-2xl border border-lilac/30 bg-lilac-soft/40 p-4 shadow-sm">
-              <div className="flex items-center gap-2 mb-1.5">
-                <Lightbulb className="size-4 text-lilac" />
+            <div className="mt-4 rounded-2xl border border-lilac/30 bg-lilac-soft/40 p-3.5 sm:p-4 shadow-xs">
+              <div className="flex items-center gap-2 mb-1">
+                <Lightbulb className="size-4 text-lilac shrink-0" />
                 <Eyebrow>WHY THIS MATTERS</Eyebrow>
               </div>
-              <p className="text-sm leading-6 text-foreground/85 font-medium">{step.whyItMatters}</p>
+              <p className="text-xs sm:text-sm leading-relaxed text-foreground/85 font-medium">{step.whyItMatters}</p>
             </div>
 
             {/* Stage-specific Interactive Environments */}
             {step.stage === "BREAK IT" ? (
               <div className="mt-5 space-y-4">
-                <div className="rounded-2xl border border-peach/40 bg-ink p-4 text-xs font-mono text-background/90">
-                  <div className="flex items-center justify-between text-peach font-bold mb-2 pb-1 border-b border-background/20">
-                    <span>⚠️ INTENTIONALLY BROKEN CODE ARTIFACT</span>
-                    <span>Step 1: Predict & Inspect</span>
+                <div className="rounded-2xl border border-peach/40 bg-ink p-3.5 sm:p-4 text-xs font-mono text-background/90">
+                  <div className="flex items-center justify-between text-peach font-bold mb-2 pb-1 border-b border-background/20 text-[11px]">
+                    <span>⚠️ INTENTIONALLY BROKEN CODE</span>
+                    <span>Step 1: Predict</span>
                   </div>
-                  <pre className="overflow-x-auto whitespace-pre-wrap">{step.example}</pre>
+                  <pre className="overflow-x-auto whitespace-pre-wrap leading-relaxed touch-scroller text-[11px] sm:text-xs">{step.example}</pre>
                 </div>
 
-                <p className="text-sm font-bold text-foreground">1. Predict what will fail:</p>
+                <p className="text-xs sm:text-sm font-bold text-foreground">1. Predict what will fail:</p>
                 {step.options && (
                   <div className="grid gap-2 sm:grid-cols-3">
                     {step.options.map((opt) => (
                       <button
                         key={opt}
                         onClick={() => choose(opt)}
-                        className={`rounded-xl border p-3 text-left text-xs font-medium transition ${
+                        className={`min-h-[44px] rounded-xl border p-3 text-left text-xs font-medium transition ${
                           selected === opt
-                            ? "border-peach bg-peach-soft text-peach font-bold"
+                            ? "border-peach bg-peach-soft text-peach font-bold ring-1 ring-peach/30"
                             : "border-border/70 hover:border-peach/50 bg-surface-elevated"
                         }`}
                       >
@@ -2190,12 +2280,12 @@ function LearningModeContent({
                 )}
 
                 {breakPredicted && (
-                  <div className="mt-4 rounded-xl border border-mint/40 bg-mint-soft/30 p-4 space-y-3">
+                  <div className="mt-4 rounded-xl border border-mint/40 bg-mint-soft/30 p-3.5 sm:p-4 space-y-3">
                     <p className="text-xs font-bold text-mint">2. Fix the bug to restore invariants:</p>
-                    <pre className="font-mono text-xs bg-ink p-3 rounded-lg text-background">
+                    <pre className="font-mono text-[11px] sm:text-xs bg-ink p-3 rounded-lg text-background overflow-x-auto touch-scroller">
                       {step.fixedCode ?? "def process_data(items):\n    return [int(x) * 2 for x in items if str(x).isdigit()]"}
                     </pre>
-                    <Button size="sm" onClick={() => { setBreakFixed(true); toast("Bug resolved successfully!"); }}>
+                    <Button size="sm" className="min-h-[44px] w-full sm:w-auto" onClick={() => { setBreakFixed(true); toast("Bug resolved successfully!"); }}>
                       <Check className="size-4 mr-1" /> Verify Bug Fix
                     </Button>
                   </div>
@@ -2203,9 +2293,9 @@ function LearningModeContent({
               </div>
             ) : step.stage === "YOUR TURN" ? (
               <div className="mt-5 space-y-4">
-                <div className="rounded-2xl border border-brand/30 bg-surface-elevated p-4">
+                <div className="rounded-2xl border border-brand/30 bg-surface-elevated p-3.5 sm:p-4">
                   <p className="text-xs font-bold text-brand mb-1">INDEPENDENT APPLICATION</p>
-                  <p className="text-sm text-foreground mb-3">{step.prompt}</p>
+                  <p className="text-xs sm:text-sm text-foreground mb-3 leading-relaxed">{step.prompt}</p>
                   <Textarea
                     value={yourTurnDecision}
                     onChange={(e) => setYourTurnDecision(e.target.value)}
@@ -2219,18 +2309,18 @@ function LearningModeContent({
               </div>
             ) : step.stage === "KNOWLEDGE CHECK" ? (
               <div className="mt-5 space-y-4">
-                <p className="text-sm font-bold text-foreground">{step.prompt}</p>
+                <p className="text-xs sm:text-sm font-bold text-foreground leading-relaxed">{step.prompt}</p>
                 {step.options && (
-                  <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="grid gap-2.5 sm:grid-cols-2">
                     {step.options.map((opt, i) => (
                       <button
                         key={opt}
                         onClick={() => choose(opt)}
-                        className={`rounded-xl border p-3.5 text-left text-xs font-medium transition ${
+                        className={`min-h-[48px] rounded-xl border p-3.5 text-left text-xs sm:text-sm font-medium transition ${
                           selected === opt
                             ? selected === step.answer
-                              ? "border-mint bg-mint-soft text-mint font-bold"
-                              : "border-peach bg-peach-soft text-peach font-bold"
+                              ? "border-mint bg-mint-soft text-mint font-bold ring-1 ring-mint/30"
+                              : "border-peach bg-peach-soft text-peach font-bold ring-1 ring-peach/30"
                             : "border-border/70 hover:border-brand/40 bg-surface-elevated"
                         }`}
                       >
@@ -2243,26 +2333,26 @@ function LearningModeContent({
                 {selected && (
                   <div className={`rounded-xl p-3.5 text-xs ${selected === step.answer ? "bg-mint-soft/40 border border-mint/30" : "bg-peach-soft/40 border border-peach/30"}`}>
                     <p className="font-bold mb-1">{selected === step.answer ? "✓ Correct Analysis" : "⚠️ Misconception Clarification"}</p>
-                    <p>{step.misconceptionExpl ?? step.whyItMatters}</p>
+                    <p className="leading-relaxed">{step.misconceptionExpl ?? step.whyItMatters}</p>
                   </div>
                 )}
               </div>
             ) : step.stage === "MASTERY" ? (
-              <div className="mt-5 space-y-4">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-xl border border-mint/40 bg-mint-soft/30 p-3.5">
+              <div className="mt-5 space-y-3">
+                <div className="grid gap-2.5 sm:grid-cols-2">
+                  <div className="rounded-xl border border-mint/40 bg-mint-soft/30 p-3">
                     <p className="font-mono text-[10px] font-bold uppercase text-mint">WHAT YOU LEARNED</p>
                     <p className="mt-1 text-xs text-foreground font-medium">{experience.module.topics.join(" · ")}</p>
                   </div>
-                  <div className="rounded-xl border border-brand/40 bg-brand-soft/30 p-3.5">
+                  <div className="rounded-xl border border-brand/40 bg-brand-soft/30 p-3">
                     <p className="font-mono text-[10px] font-bold uppercase text-brand">WHAT YOU CAN DO</p>
                     <p className="mt-1 text-xs text-foreground font-medium">{experience.module.learningObjectives[0]}</p>
                   </div>
-                  <div className="rounded-xl border border-lilac/40 bg-lilac-soft/30 p-3.5">
+                  <div className="rounded-xl border border-lilac/40 bg-lilac-soft/30 p-3">
                     <p className="font-mono text-[10px] font-bold uppercase text-lilac">WHAT NEEDS REVIEW</p>
                     <p className="mt-1 text-xs text-foreground font-medium">None. All diagnostic checkpoints validated.</p>
                   </div>
-                  <div className="rounded-xl border border-peach/40 bg-peach-soft/30 p-3.5">
+                  <div className="rounded-xl border border-peach/40 bg-peach-soft/30 p-3">
                     <p className="font-mono text-[10px] font-bold uppercase text-peach">WHAT UNLOCKS NEXT</p>
                     <p className="mt-1 text-xs text-foreground font-medium">
                       {experience.module.nextRecommendedModuleCode ? `Module ${experience.module.nextRecommendedModuleCode}` : "Capstone Project"}
@@ -2273,12 +2363,12 @@ function LearningModeContent({
             ) : (
               /* Code / Inspect Terminal Platform */
               <div className="mt-5 space-y-4">
-                <div className="rounded-2xl border border-border/80 bg-ink p-5 shadow-inner">
-                  <div className="flex items-center justify-between border-b border-background/15 pb-2.5 mb-3 text-[11px] font-mono text-background/60">
+                <div className="rounded-2xl border border-border/80 bg-ink p-4 sm:p-5 shadow-inner">
+                  <div className="flex items-center justify-between border-b border-background/15 pb-2 mb-2.5 text-[10px] sm:text-[11px] font-mono text-background/60">
                     <span className="text-background/80 font-bold">concept_execution.py</span>
                     <span>Python 3.12</span>
                   </div>
-                  <pre className="max-h-72 overflow-auto whitespace-pre-wrap font-mono text-xs leading-6 text-background/90">
+                  <pre className="max-h-72 overflow-x-auto whitespace-pre-wrap font-mono text-[11px] sm:text-xs leading-relaxed text-background/90 touch-scroller">
                     {step.example}
                   </pre>
                 </div>
@@ -2289,9 +2379,9 @@ function LearningModeContent({
                       <button
                         key={option}
                         onClick={() => choose(option)}
-                        className={`rounded-xl border p-4 text-left text-sm font-medium transition ${
+                        className={`min-h-[44px] rounded-xl border p-3.5 text-left text-xs sm:text-sm font-medium transition ${
                           selected === option
-                            ? "border-brand bg-brand-soft text-brand font-bold"
+                            ? "border-brand bg-brand-soft text-brand font-bold ring-1 ring-brand/30"
                             : "border-border/70 bg-surface-elevated/70 hover:border-brand/40"
                         }`}
                       >
@@ -2311,6 +2401,7 @@ function LearningModeContent({
                     />
                     <Button
                       size="sm"
+                      className="min-h-[44px] w-full sm:w-auto"
                       onClick={() => {
                         if (!note.trim()) { toast("Provide an experiment hypothesis first."); return; }
                         setRan(true);
@@ -2325,15 +2416,16 @@ function LearningModeContent({
             )}
 
             {/* Navigation Controls */}
-            <div className="mt-8 flex justify-between gap-3 border-t border-border/70 pt-5">
+            <div className="mt-6 flex flex-col-reverse sm:flex-row justify-between gap-3 border-t border-border/70 pt-4">
               <Button
                 variant="outline"
                 disabled={stepIndex === 0}
+                className="min-h-[44px] w-full sm:w-auto"
                 onClick={() => setStepIndex((value) => Math.max(0, value - 1))}
               >
                 <ArrowLeft className="size-4 mr-1" /> Previous Stage
               </Button>
-              <Button onClick={next} className="shadow-md shadow-brand/20">
+              <Button onClick={next} className="min-h-[44px] w-full sm:w-auto shadow-md shadow-brand/20 font-bold">
                 {stepIndex === experience.steps.length - 1 ? "Advance to Challenge" : "Continue Stage"}{" "}
                 <ArrowRight className="size-4 ml-1.5" />
               </Button>
@@ -2342,17 +2434,17 @@ function LearningModeContent({
         </SpatialCard>
 
         {/* 3D Context Telemetry & Mentor Sidebar */}
-        <SpatialCard depth={10} elevation="medium" className="h-fit rounded-2xl sticky top-20">
-          <Panel className="border-brand/35 bg-surface-elevated/95 p-5 shadow-lg">
+        <SpatialCard depth={10} elevation="medium" className="h-fit rounded-2xl xl:sticky xl:top-20">
+          <Panel className="border-brand/35 bg-surface-elevated/95 p-4 sm:p-5 shadow-lg">
             <SectionTitle
               eyebrow={`Telemetry · Module ${experience.module.code}`}
               title={experience.challenge.title}
             />
-            <p className="text-xs leading-5 text-muted-foreground">
+            <p className="text-xs leading-relaxed text-muted-foreground">
               {experience.challenge.description}
             </p>
 
-            <div className="mt-4 space-y-3 text-xs">
+            <div className="mt-3.5 space-y-2.5 text-xs">
               <FeedbackCard
                 label="Concept Sequence"
                 body={`${experience.learningSections.length} concepts · ${experience.learningSections.map((sec) => sec.concept).join(" · ")}`}
@@ -2373,7 +2465,7 @@ function LearningModeContent({
 
             <Button
               variant="outline"
-              className="mt-5 w-full border-border/80"
+              className="mt-4 w-full min-h-[44px] border-border/80"
               onClick={() => navigate({ to: "/tutor" })}
             >
               <Bot className="size-4 mr-1.5 text-brand" /> Ask AI Studio Tutor
@@ -2800,15 +2892,15 @@ function CodeEditor({
     <SpatialCard
       depth={2}
       elevation="medium"
-      className={`rounded-2xl border border-border/80 bg-surface-elevated ${compact ? "p-4" : "p-5 sm:p-6"}`}
+      className={`rounded-2xl border border-border/80 bg-surface-elevated ${compact ? "p-3.5 sm:p-4" : "p-4 sm:p-6"}`}
     >
       <SectionTitle
         eyebrow={`Code Editor · Module ${challenge.moduleId}`}
         title={challenge.title}
         action={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <StatusPill status="available" />
-            <Button size="sm" variant="outline" onClick={() => setValue(code)}>
+            <Button size="sm" variant="outline" className="min-h-[38px] sm:min-h-0" onClick={() => setValue(code)}>
               <RotateCcw className="size-3.5 mr-1" />
               Reset
             </Button>
@@ -2821,9 +2913,9 @@ function CodeEditor({
             <span className="font-medium text-background/80">solution.py</span>
             <span>Python 3.12</span>
           </div>
-          <div className="min-w-0 overflow-x-auto">
-            <div className="flex min-w-max">
-              <div className="select-none bg-black/20 px-3.5 py-4 text-right font-mono text-[11px] leading-5 text-background/30">
+          <div className="min-w-0 overflow-x-auto touch-scroller">
+            <div className="flex min-w-full">
+              <div className="select-none bg-black/20 px-3 py-3.5 text-right font-mono text-[11px] leading-5 text-background/30">
                 {value.split("\n").map((_, index) => (
                   <div key={index}>{String(index + 1).padStart(2, "0")}</div>
                 ))}
@@ -2831,7 +2923,7 @@ function CodeEditor({
               <textarea
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                className="min-h-[280px] min-w-[34rem] flex-1 resize-none overflow-x-auto bg-transparent p-4 pl-3 font-mono text-[12px] leading-5 text-background outline-none placeholder:text-muted-foreground"
+                className="min-h-[240px] sm:min-h-[280px] w-full flex-1 resize-none bg-transparent p-3.5 pl-2.5 font-mono text-xs leading-5 text-background outline-none placeholder:text-muted-foreground whitespace-pre overflow-x-auto touch-scroller"
                 spellCheck={false}
               />
             </div>
@@ -2850,7 +2942,7 @@ function CodeEditor({
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button
               size="sm"
-              className="flex-1 shadow-xs"
+              className="flex-1 min-h-[44px] shadow-xs font-semibold"
               disabled={runState === "running"}
               onClick={() => {
                 setRunState("running");
@@ -2872,6 +2964,7 @@ function CodeEditor({
             <Button
               size="sm"
               variant="outline"
+              className="min-h-[44px]"
               onClick={() => {
                 setOutput(
                   "Submission recorded for review.",
@@ -2885,13 +2978,13 @@ function CodeEditor({
             <p className="text-xs font-semibold text-foreground/90">
               Hint {hint}/{challenge.hints.length}
             </p>
-            <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
               {challenge.hints[Math.min(hint, challenge.hints.length - 1)]}
             </p>
             <Button
               variant="ghost"
               size="sm"
-              className="mt-1.5 h-7 px-0 text-peach hover:text-peach/80 text-xs"
+              className="mt-1.5 h-8 px-0 text-peach hover:text-peach/80 text-xs"
               onClick={() => setHint((val) => Math.min(challenge.hints.length, val + 1))}
             >
               Next hint <ChevronRight className="size-3.5 ml-0.5" />
@@ -2900,7 +2993,7 @@ function CodeEditor({
         </div>
       </div>
       {onNext && (
-        <Button className="mt-5 shadow-xs" size="sm" onClick={onNext}>
+        <Button className="mt-5 min-h-[44px] w-full sm:w-auto shadow-xs font-semibold" size="sm" onClick={onNext}>
           Run challenge <ArrowRight className="size-3.5 ml-1" />
         </Button>
       )}
@@ -2911,24 +3004,24 @@ function CodeEditor({
 function Challenge({ onSubmit, moduleId = "3.1" }: { onSubmit: () => void; moduleId?: ModuleId }) {
   const primaryChallenge = getChallengeForModule(moduleId);
   return (
-    <SpatialCard depth={2} elevation="medium" className="rounded-2xl border border-border/80 bg-surface-elevated p-5 sm:p-6">
+    <SpatialCard depth={2} elevation="medium" className="rounded-2xl border border-border/80 bg-surface-elevated p-4 sm:p-6">
       <SectionTitle
         eyebrow={`Challenge · Module ${primaryChallenge.moduleId}`}
         title={primaryChallenge.title}
         action={
-          <span className="rounded-full border border-peach/30 bg-peach-soft/60 px-3 py-1 text-[11px] font-semibold text-peach">
+          <span className="rounded-full border border-peach/30 bg-peach-soft/60 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-[11px] font-semibold text-peach shrink-0">
             {primaryChallenge.difficulty}
           </span>
         }
       />
-      <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+      <p className="max-w-2xl text-xs sm:text-sm leading-relaxed text-muted-foreground">
         {primaryChallenge.problem}
       </p>
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-3.5 flex flex-wrap gap-1.5">
         {primaryChallenge.topic.split(" and ").map((topic, index) => (
           <span
             key={topic}
-            className={`rounded-full border px-3 py-1 text-[11px] font-medium ${
+            className={`rounded-full border px-2.5 py-0.5 text-[10px] font-medium ${
               index % 3 === 0
                 ? "border-brand/30 bg-brand-soft/60 text-brand"
                 : index % 3 === 1
@@ -2940,21 +3033,21 @@ function Challenge({ onSubmit, moduleId = "3.1" }: { onSubmit: () => void; modul
           </span>
         ))}
       </div>
-      <div className="mt-5 rounded-xl border border-border/70 bg-surface/70 p-4 font-mono text-[11px] leading-6 text-foreground">
+      <div className="mt-4 rounded-xl border border-border/70 bg-surface/70 p-3.5 font-mono text-[11px] leading-relaxed text-foreground overflow-x-auto touch-scroller">
         {primaryChallenge.tests.map((test) => (
-          <span key={test.id} className="block border-b border-border/40 py-1 last:border-none">
+          <span key={test.id} className="block border-b border-border/40 py-1.5 last:border-none">
             <span className="text-muted-foreground">Case {test.id}:</span> rows = {test.input}
             <br />
             <span className="text-brand font-semibold">Expected:</span> {test.expected}
           </span>
         ))}
       </div>
-      <div className="mt-5 flex items-center gap-3">
-        <Button className="shadow-xs" onClick={onSubmit}>
+      <div className="mt-5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
+        <Button className="min-h-[44px] shadow-xs font-semibold" onClick={onSubmit}>
           <Play className="size-3.5 mr-1" />
           Run tests
         </Button>
-        <Button variant="outline" onClick={() => toast(`AI hint: ${primaryChallenge.hints[0]}`)}>
+        <Button variant="outline" className="min-h-[44px]" onClick={() => toast(`AI hint: ${primaryChallenge.hints[0]}`)}>
           Get a hint
         </Button>
       </div>
@@ -3208,50 +3301,50 @@ function CodingLabContent({
             : "A focused workspace for practicing Python, Java, C++, and JavaScript against realistic test cases."
         }
         action={
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => toast(`Hint 1: ${primaryChallenge.hints[0]}`)}>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Button variant="outline" className="min-h-[44px] w-full sm:w-auto text-xs font-semibold" onClick={() => toast(`Hint 1: ${primaryChallenge.hints[0]}`)}>
               Get a hint
             </Button>
-            <Button onClick={() => setReview(true)}>
-              <BrainCircuit />
+            <Button className="min-h-[44px] w-full sm:w-auto text-xs font-bold" onClick={() => setReview(true)}>
+              <BrainCircuit className="size-4 mr-1.5" />
               AI Review My Code
             </Button>
           </div>
         }
       />
-      <div className="grid gap-4 xl:grid-cols-[1fr_300px]">
+      <div className="grid gap-5 xl:grid-cols-[1fr_300px]">
         <div>
           <CodeEditor code={primaryChallenge.starterCode} challenge={primaryChallenge} compact />
-          <Panel className="mt-4">
+          <Panel className="mt-4 p-4 sm:p-5">
             <SectionTitle
               eyebrow="Test cases"
               title="Submission output"
               action={
-                <span className="rounded-full bg-mint-soft px-2 py-1 text-[10px] font-semibold text-mint">
+                <span className="rounded-full bg-mint-soft px-2.5 py-1 text-[10px] font-semibold text-mint shrink-0">
                   3 / 3 passing
                 </span>
               }
             />
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="text-[10px] uppercase tracking-wider text-faint">
+            <div className="overflow-x-auto touch-scroller rounded-xl border border-border/60">
+              <table className="w-full text-left text-xs min-w-[380px]">
+                <thead className="text-[10px] uppercase tracking-wider text-faint bg-surface/80">
                   <tr>
-                    <th className="pb-3">Case</th>
-                    <th className="pb-3">Input</th>
-                    <th className="pb-3">Expected</th>
-                    <th className="pb-3">Actual</th>
-                    <th className="pb-3">Status</th>
+                    <th className="p-3">Case</th>
+                    <th className="p-3">Input</th>
+                    <th className="p-3">Expected</th>
+                    <th className="p-3">Actual</th>
+                    <th className="p-3">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {primaryChallenge.tests.map((test) => (
                     <tr key={test.id} className="border-t border-border/60">
-                      <td className="py-3 font-mono text-faint">{test.id}</td>
-                      <td className="py-3 font-mono">{test.input}</td>
-                      <td className="py-3 font-mono">{test.expected}</td>
-                      <td className="py-3 font-mono">{test.expected}</td>
-                      <td className="py-3">
-                        <span className="text-mint">✓ Pass</span>
+                      <td className="p-3 font-mono text-faint">{test.id}</td>
+                      <td className="p-3 font-mono">{test.input}</td>
+                      <td className="p-3 font-mono">{test.expected}</td>
+                      <td className="p-3 font-mono">{test.expected}</td>
+                      <td className="p-3">
+                        <span className="text-mint font-semibold">✓ Pass</span>
                       </td>
                     </tr>
                   ))}
@@ -3260,7 +3353,7 @@ function CodingLabContent({
             </div>
           </Panel>
         </div>
-        <Panel className="h-fit">
+        <Panel className="h-fit p-4 sm:p-5">
           <SectionTitle
             eyebrow="AI review"
             title={review ? "Structured feedback" : "Ready when you are"}
@@ -3281,39 +3374,39 @@ function CodingLabContent({
                 />
               </>
             ) : (
-              <div className="rounded-xl bg-brand-soft/40 p-3">
-                <p className="text-xs font-medium">AI recommends review because…</p>
-                <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+              <div className="rounded-xl bg-brand-soft/40 p-3.5">
+                <p className="text-xs font-semibold">AI recommends review because…</p>
+                <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
                   Your third test exposes a pattern that is more useful to study than a perfect
                   score.
                 </p>
               </div>
             )}
           </div>
-          <Button className="mt-4 w-full" onClick={() => setReview(true)}>
+          <Button className="mt-4 w-full min-h-[44px]" onClick={() => setReview(true)}>
             {review ? "Review updated" : "Review my code"}
-            <BrainCircuit />
+            <BrainCircuit className="size-4 ml-1.5" />
           </Button>
         </Panel>
       </div>
       {challenge && (
-        <Panel className="mt-4">
+        <Panel className="mt-5 p-4 sm:p-5">
           <SectionTitle
             eyebrow="Curriculum challenge library"
             title="One distinct build for every module"
           />
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {allCurriculumChallenges.map((item) => (
-              <div key={item.id} className="rounded-xl border border-border/60 p-3">
+              <div key={item.id} className="rounded-xl border border-border/60 p-3.5">
                 <div className="flex items-center justify-between gap-2">
                   <Eyebrow>Module {item.moduleId}</Eyebrow>
-                  <span className="rounded-full bg-brand-soft px-2 py-1 text-[10px] text-brand">
+                  <span className="rounded-full bg-brand-soft px-2 py-0.5 text-[10px] font-semibold text-brand">
                     {item.type}
                   </span>
                 </div>
-                <p className="mt-2 text-sm font-semibold">{item.title}</p>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.description}</p>
-                <p className="mt-2 text-[10px] text-faint">
+                <p className="mt-2 text-sm font-semibold text-foreground">{item.title}</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground line-clamp-2">{item.description}</p>
+                <p className="mt-2.5 text-[10px] text-faint font-mono">
                   {item.topic} · {item.difficulty}
                 </p>
               </div>
@@ -3440,7 +3533,7 @@ function Projects() {
                   </button>
                   {open === index && (
                     <div className="border-t border-border/60 px-4 pb-4 pt-3">
-                      <div className="ml-12 space-y-2.5">
+                      <div className="ml-2 sm:ml-12 space-y-2.5">
                         {milestone.tasks.map((task) => (
                           <label
                             key={task}
@@ -3903,26 +3996,28 @@ function Career() {
 }
 function StageTracker({ current, large = false }: { current: number; large?: boolean }) {
   return (
-    <div className={`grid gap-2 ${large ? "md:grid-cols-5" : "grid-cols-5"}`}>
-      {["Curriculum", "Core Skills", "Industry", "Projects", "Interview"].map((label, index) => (
-        <div key={label} className="relative flex flex-col items-center gap-2 text-center">
-          {index > 0 && (
+    <div className="overflow-x-auto pb-2 no-scrollbar">
+      <div className={`grid min-w-[340px] gap-2 ${large ? "grid-cols-5" : "grid-cols-5"}`}>
+        {["Curriculum", "Core Skills", "Industry", "Projects", "Interview"].map((label, index) => (
+          <div key={label} className="relative flex flex-col items-center gap-1.5 text-center">
+            {index > 0 && (
+              <span
+                className={`absolute right-1/2 top-4 -z-10 hidden h-px w-full sm:block ${index <= current ? "bg-brand/60" : "bg-border"}`}
+              />
+            )}
             <span
-              className={`absolute right-1/2 top-4 -z-10 hidden h-px w-full md:block ${index <= current ? "bg-brand/60" : "bg-border"}`}
-            />
-          )}
-          <span
-            className={`grid size-8 place-items-center rounded-full text-xs ${index < current ? "bg-mint text-primary-foreground" : index === current ? "cp-pulse bg-lilac text-primary-foreground ring-4 ring-lilac/15" : "border border-border bg-background text-faint"}`}
-          >
-            {index < current ? <Check className="size-3" /> : index + 1}
-          </span>
-          <span
-            className={`text-[10px] ${index === current ? "font-semibold text-foreground" : "text-faint"}`}
-          >
-            {label}
-          </span>
-        </div>
-      ))}
+              className={`grid size-8 place-items-center rounded-full text-xs font-semibold ${index < current ? "bg-mint text-primary-foreground" : index === current ? "cp-pulse bg-lilac text-primary-foreground ring-4 ring-lilac/15" : "border border-border bg-background text-faint"}`}
+            >
+              {index < current ? <Check className="size-3" /> : index + 1}
+            </span>
+            <span
+              className={`text-[10px] whitespace-nowrap ${index === current ? "font-semibold text-foreground" : "text-faint"}`}
+            >
+              {label}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

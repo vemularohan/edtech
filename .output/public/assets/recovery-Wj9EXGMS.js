@@ -1,1 +1,0 @@
-import{c as e}from"./link-DPT17Rzw.js";import{r as t}from"./CodepathApp-C-KjSiVe.js";var n=e(),r=()=>(0,n.jsx)(t,{view:`recovery`});export{r as component};
