@@ -1,0 +1,1 @@
+import{c as e}from"./link-DPT17Rzw.js";import{t}from"./coding-lab-CpFweH8O.js";import{r as n}from"./CodepathApp-C1YOfslP.js";var r=e();function i(){let{module:e}=t.useSearch();return(0,r.jsx)(n,{view:`lab`,...e?{moduleId:e}:{}})}export{i as component};

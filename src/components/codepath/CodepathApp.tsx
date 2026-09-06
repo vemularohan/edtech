@@ -13,6 +13,7 @@ import {
   ChevronDown,
   ChevronRight,
   CircleHelp,
+  Clock,
   Code2,
   Command,
   Compass,
@@ -35,6 +36,7 @@ import {
   ShieldCheck,
   Sparkle,
   Target,
+  Terminal,
   Trophy,
   Upload,
   UserRound,
@@ -104,6 +106,7 @@ import { getLearningExperience } from "@/lib/learning-experiences";
 import {
   completeLearningModule,
   getLearningProgressSummary,
+  recordConceptActivity,
   recordLearningEvidence,
   updateLearningPosition,
   useLearningEvidence,
@@ -119,6 +122,7 @@ type View =
   | "tutor"
   | "lab"
   | "challenge"
+  | "challenges"
   | "projects"
   | "analytics"
   | "career"
@@ -506,51 +510,78 @@ function Dashboard() {
         }
       />
 
-      {/* Hero Spatial Deck - Main Learning Surface */}
+      {/* Hero Spatial Deck - Primary Learning Action Hub */}
       <SpatialCard depth={2} elevation="medium" className="mb-6 rounded-2xl">
         <section className="spatial-deck rounded-2xl p-6 sm:p-7 relative overflow-hidden">
           <div className="relative z-10 flex flex-wrap items-start justify-between gap-4">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-brand-soft border border-brand/25 px-3 py-1 text-[11px] font-mono font-medium text-brand mb-2.5">
-                <span className="size-1.5 rounded-full bg-brand" />
-                CURRICULUM PROGRESS
+              <div className="inline-flex items-center gap-2 rounded-full bg-brand-soft border border-brand/25 px-3 py-1 text-[11px] font-mono font-bold text-brand mb-2.5">
+                <span className="size-2 rounded-full bg-brand cp-pulse" />
+                LEARNING STATE: {summary.moduleState}
               </div>
               <h2 className="text-2xl sm:text-3xl font-display font-semibold tracking-tight text-foreground">
-                {summary.completedCount} of {summary.totalModules} Modules Mastered
+                Continue Learning
               </h2>
-              <p className="mt-1 text-sm text-muted-foreground max-w-xl">
-                {summary.progressPercent}% of the third-year AI engineering curriculum completed.
+              <p className="mt-1 text-base text-foreground/90 font-medium max-w-xl">
+                Module {summary.currentModule.code} — {summary.currentModule.title}
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground font-mono">
+                Next: {summary.currentConcept?.title ?? summary.currentStepTitle} · ~{summary.currentConcept?.estimatedMinutes ?? 12} min
               </p>
             </div>
-            <div className="flex items-center gap-3 bg-surface-elevated border border-border/80 rounded-xl p-3 shadow-xs">
-              <div className="text-right">
-                <p className="text-[10px] font-mono text-faint uppercase">Next Up</p>
-                <p className="text-xs font-semibold text-foreground">Module {summary.nextModule.code}</p>
-              </div>
-              <div className="grid size-9 place-items-center rounded-lg bg-lilac-soft text-lilac font-bold font-mono text-xs border border-lilac/30">
-                {summary.nextModule.code}
-              </div>
+            <div className="flex items-center gap-3">
+              <Button
+                size="lg"
+                className="shadow-lg shadow-brand/25 hover:shadow-xl hover:-translate-y-0.5 transition-all text-sm font-bold"
+                onClick={continueLearning}
+              >
+                <Play className="size-4 mr-2 fill-current" /> Resume Learning Studio
+              </Button>
+            </div>
+          </div>
+
+          {/* Curriculum Mastery Evidence Metrics */}
+          <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-border/60 pt-4">
+            <div className="rounded-xl bg-surface-elevated/80 border border-border/70 p-3">
+              <p className="text-[10px] font-mono text-faint uppercase">Curriculum Progress</p>
+              <p className="mt-1 text-lg font-bold text-foreground">{summary.progressPercent}%</p>
+              <p className="text-[11px] text-muted-foreground">{summary.completedCount} / {summary.totalModules} modules</p>
+            </div>
+            <div className="rounded-xl bg-surface-elevated/80 border border-border/70 p-3">
+              <p className="text-[10px] font-mono text-faint uppercase">Concepts Mastered</p>
+              <p className="mt-1 text-lg font-bold text-mint">{summary.masteredConceptsCount}</p>
+              <p className="text-[11px] text-muted-foreground">verified by check & challenge</p>
+            </div>
+            <div className="rounded-xl bg-surface-elevated/80 border border-border/70 p-3">
+              <p className="text-[10px] font-mono text-faint uppercase">Needs Review</p>
+              <p className="mt-1 text-lg font-bold text-peach">{summary.reviewConceptsCount}</p>
+              <p className="text-[11px] text-muted-foreground">flagged for revision</p>
+            </div>
+            <div className="rounded-xl bg-surface-elevated/80 border border-border/70 p-3">
+              <p className="text-[10px] font-mono text-faint uppercase">Next Recommended</p>
+              <p className="mt-1 text-lg font-bold text-lilac">Module {summary.nextModule.code}</p>
+              <p className="text-[11px] text-muted-foreground truncate">{summary.nextModule.title}</p>
             </div>
           </div>
 
           {/* 3D Connected Waypoints Stream (30 Modules Spine) */}
-          <div className="relative mt-8 pt-4 pb-2">
+          <div className="relative mt-6 pt-2 pb-1">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-                <GitBranch className="size-3.5 text-brand" /> 30-Module Interactive Flight Map
+                <GitBranch className="size-3.5 text-brand" /> 30-Module AI Engineering Spine
               </p>
-              <span className="font-mono text-xs font-bold text-brand">{summary.progressPercent}% Active</span>
+              <span className="font-mono text-xs font-bold text-brand">{summary.progressPercent}% Mastered</span>
             </div>
 
             {/* Dimensional Path Bar */}
-            <div className="relative h-3 rounded-full bg-foreground/10 p-[2px] border border-border/60 overflow-hidden mb-6">
+            <div className="relative h-2.5 rounded-full bg-foreground/10 p-[2px] border border-border/60 overflow-hidden mb-5">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-brand via-lilac to-mint shadow-[0_0_15px_rgba(20,184,166,0.6)] transition-all duration-700"
                 style={{ width: `${Math.max(4, summary.progressPercent)}%` }}
               />
             </div>
 
-            <div className="flex gap-2.5 overflow-x-auto pb-4 pt-1.5 no-scrollbar scroll-smooth">
+            <div className="flex gap-2.5 overflow-x-auto pb-3 pt-1 no-scrollbar scroll-smooth">
               {modulesTrack.map((mod) => (
                 <button
                   key={mod.code}
@@ -597,32 +628,6 @@ function Dashboard() {
                   </div>
                 </button>
               ))}
-            </div>
-          </div>
-
-          {/* Current Focus Mission Deck */}
-          <div className="mt-4 rounded-2xl border border-brand/30 bg-surface-elevated/95 p-5 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="size-2.5 rounded-full bg-brand cp-pulse" />
-                  <Eyebrow>ACTIVE WORKSPACE FOCUS</Eyebrow>
-                </div>
-                <h3 className="text-base sm:text-lg font-bold text-foreground">
-                  Module {summary.currentModule.code} — {summary.currentModule.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  Stage: <span className="font-semibold text-foreground">{summary.currentStepStage}</span> · {summary.currentStepTitle || "Ready for deep dive"}
-                </p>
-              </div>
-              <div className="flex items-center gap-2.5 shrink-0">
-                <Button variant="outline" size="sm" onClick={() => navigate({ to: "/curriculum-map" })}>
-                  <Compass className="size-4 mr-1.5" /> Orbit View
-                </Button>
-                <Button size="sm" onClick={continueLearning} className="shadow-md shadow-brand/20">
-                  Enter Learning Studio <ArrowRight className="size-4 ml-1.5" />
-                </Button>
-              </div>
             </div>
           </div>
         </section>
@@ -1945,42 +1950,79 @@ function LearningModeContent({
   const [stepIndex, setStepIndex] = useState(resumeStepIndex ?? initialStep);
   const [selected, setSelected] = useState("");
   const [note, setNote] = useState("");
+  const [breakPredicted, setBreakPredicted] = useState(false);
+  const [breakFixed, setBreakFixed] = useState(false);
+  const [yourTurnDecision, setYourTurnDecision] = useState("");
+  const [kcScore, setKcScore] = useState<number | null>(null);
   const [ran, setRan] = useState(false);
   const [experimentState, setExperimentState] = useState<"idle" | "running" | "unavailable">(
     "idle",
   );
   const [recordedSteps, setRecordedSteps] = useState<Set<string>>(() => new Set());
   const step = experience.steps[stepIndex];
+
+  const currentConceptItem = experience.module.concepts[Math.min(conceptIndex >= 0 ? conceptIndex : 0, experience.module.concepts.length - 1)] ?? experience.module.concepts[0];
+
   useEffect(() => {
     updateLearningPosition({
       currentModuleId: experience.module.code,
       currentStepIndex: stepIndex,
       currentTopic: step?.title ?? "",
+      currentConceptId: currentConceptItem?.id,
     });
-  }, [experience.module.code, step?.title, stepIndex]);
+  }, [experience.module.code, step?.title, stepIndex, currentConceptItem?.id]);
+
   const canContinue =
-    step.interaction === "choose"
+    step.stage === "HOOK"
       ? selected.length > 0
-      : step.interaction === "edit"
-        ? ran || note.trim().length > 0
-        : true;
+      : step.stage === "BREAK IT"
+        ? breakPredicted && breakFixed
+        : step.stage === "YOUR TURN"
+          ? yourTurnDecision.trim().length > 0
+          : step.stage === "KNOWLEDGE CHECK"
+            ? selected.length > 0
+            : step.interaction === "edit"
+              ? ran || note.trim().length > 0
+              : true;
+
   const choose = (value: string) => {
     setSelected(value);
-    if (value === step.answer && !recordedSteps.has(step.id)) {
+    const isCorrect = value === step.answer;
+
+    if (step.stage === "KNOWLEDGE CHECK") {
+      const score = isCorrect ? 100 : 40;
+      setKcScore(score);
+      recordConceptActivity(currentConceptItem.id, { knowledgeCheckScore: score }, experience.module.code);
+    } else if (step.stage === "BREAK IT") {
+      setBreakPredicted(true);
+    }
+
+    if (isCorrect && !recordedSteps.has(step.id)) {
       recordLearningEvidence({ questionsPassed: 1 });
       setRecordedSteps((current) => new Set(current).add(step.id));
     }
+
     toast(
-      value === step.answer
+      isCorrect
         ? "Correct — connect that decision to the example."
-        : "Good attempt — inspect the example and try again.",
+        : "Good attempt — inspect the explanation and review the reasoning.",
     );
   };
+
   const next = () => {
     if (!canContinue) {
-      toast("Complete the experiment before moving on.");
+      toast("Complete the active learning stage before advancing.");
       return;
     }
+
+    if (step.stage === "BREAK IT") {
+      recordConceptActivity(currentConceptItem.id, { breakItCompleted: true }, experience.module.code);
+    } else if (step.stage === "YOUR TURN") {
+      recordConceptActivity(currentConceptItem.id, { yourTurnCompleted: true }, experience.module.code);
+    } else if (step.stage === "PRACTICE" || step.stage === "TRY IT") {
+      recordConceptActivity(currentConceptItem.id, { practiceCompleted: true }, experience.module.code);
+    }
+
     if (stepIndex === experience.steps.length - 1) {
       if (!recordedSteps.has(experience.module.code)) {
         completeLearningModule(experience.module.code, experience.steps.length);
@@ -1999,48 +2041,78 @@ function LearningModeContent({
     setNote("");
     setRan(false);
   };
+
   return (
     <>
       <PageHeader
-        eyebrow={`AI Neural Studio · Module ${experience.module.code}`}
+        eyebrow={`AI Classroom Studio · Module ${experience.module.code}`}
         title={experience.module.title}
-        description="An immersive learning environment: observe the concept, inspect the invariant, execute a controlled change, and verify with AI diagnostic telemetry."
+        description="A comprehensive pedagogical progression: Hook → Why → Learn → Try It → Practice → Break It → Your Turn → Knowledge Check → Mastery → Next."
         action={
           <div className="flex items-center gap-2">
             <StatusPill status={experience.module.status} />
             <span className="rounded-full bg-brand-soft border border-brand/30 px-3 py-1 text-[11px] font-mono font-bold text-brand">
-              Step {stepIndex + 1}/{experience.steps.length}
+              Stage {stepIndex + 1}/{experience.steps.length}: {step.stage}
             </span>
           </div>
         }
       />
 
-      {/* Dimensional Progression Stage Stream */}
+      {/* Concept Progress Hierarchy Bar */}
+      <SpatialCard depth={4} elevation="low" className="mb-4 rounded-2xl p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <GitBranch className="size-4 text-brand" />
+            <span className="text-xs font-bold text-foreground">Module {experience.module.code} Concept Hierarchy:</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-muted-foreground">Est. Total Time:</span>
+            <span className="font-mono font-bold text-brand">{experience.module.estimatedTime}</span>
+          </div>
+        </div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-4">
+          {experience.module.concepts.map((c, i) => (
+            <div
+              key={c.id}
+              className={`rounded-xl border p-2.5 text-xs transition ${
+                c.id === currentConceptItem?.id
+                  ? "border-brand bg-brand-soft/50 font-bold text-brand"
+                  : "border-border/60 bg-surface/40 text-muted-foreground"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span>Concept {i + 1}</span>
+                <span className="font-mono text-[10px]">{c.estimatedMinutes}m</span>
+              </div>
+              <p className="mt-1 font-semibold text-foreground truncate">{c.title}</p>
+            </div>
+          ))}
+        </div>
+      </SpatialCard>
+
+      {/* 3D Stepper Tabs */}
       <SpatialCard depth={8} elevation="medium" className="mb-6 rounded-2xl">
         <Panel className="border-brand/30 bg-surface-elevated/95 p-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
                 <span className="size-2.5 rounded-full bg-brand cp-pulse" />
-                <Eyebrow>
-                  {step.stage} STAGE · {concept ? `TARGET: ${concept.toUpperCase()}` : "ACTIVE INTERACTION"}
-                </Eyebrow>
+                <Eyebrow>{step.stage} STAGE · {currentConceptItem.title.toUpperCase()}</Eyebrow>
               </div>
               <h2 className="mt-1 font-display text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                 {step.title}
               </h2>
             </div>
             <span className="font-mono text-xs font-bold text-brand bg-brand-soft px-3 py-1 rounded-full border border-brand/25 shrink-0">
-              {Math.round(((stepIndex + 1) / experience.steps.length) * 100)}% Synchronized
+              {Math.round(((stepIndex + 1) / experience.steps.length) * 100)}% Classroom Loop
             </span>
           </div>
 
-          {/* 3D Stepper Tabs */}
           <div className="mt-5 flex gap-2 overflow-x-auto pb-1.5 no-scrollbar">
             {experience.steps.map((item, index) => (
               <button
                 key={item.id}
-                className={`flex items-center gap-2 shrink-0 rounded-xl px-3.5 py-2 text-xs font-bold tracking-wide transition-all ${
+                className={`flex items-center gap-2 shrink-0 rounded-xl px-3 py-2 text-xs font-bold tracking-wide transition-all ${
                   index === stepIndex
                     ? "bg-ink text-background shadow-lg shadow-ink/20 scale-105"
                     : index < stepIndex
@@ -2070,110 +2142,178 @@ function LearningModeContent({
             </p>
 
             {/* Why It Matters Callout */}
-            <div className="mt-5 rounded-2xl border border-lilac/30 bg-lilac-soft/40 p-4.5 shadow-sm">
+            <div className="mt-5 rounded-2xl border border-lilac/30 bg-lilac-soft/40 p-4 shadow-sm">
               <div className="flex items-center gap-2 mb-1.5">
                 <Lightbulb className="size-4 text-lilac" />
-                <Eyebrow>ENGINEERING INVARIANT & PAYOFF</Eyebrow>
+                <Eyebrow>WHY THIS MATTERS</Eyebrow>
               </div>
               <p className="text-sm leading-6 text-foreground/85 font-medium">{step.whyItMatters}</p>
             </div>
 
-            {/* 3D Code/Concept Terminal Platform */}
-            <div className="mt-5 rounded-2xl border border-border/80 bg-ink p-5 shadow-inner">
-              <div className="flex items-center justify-between border-b border-background/15 pb-2.5 mb-3 text-[11px] font-mono text-background/60">
-                <span className="flex items-center gap-2">
-                  <span className="size-2.5 rounded-full bg-red-400/80" />
-                  <span className="size-2.5 rounded-full bg-amber-400/80" />
-                  <span className="size-2.5 rounded-full bg-emerald-400/80" />
-                  <span className="ml-1 text-background/80 font-bold">
-                    {step.stage === "BUILD" ? "challenge_brief.py" : "concept_inspection.py"}
-                  </span>
-                </span>
-                <span>Python 3.12 · Live Session</span>
-              </div>
-              <pre className="max-h-72 overflow-auto whitespace-pre-wrap font-mono text-xs leading-6 text-background/90">
-                {step.example}
-              </pre>
-            </div>
-
-            {/* Interaction Layer */}
-            <div className="mt-6 border-t border-border/60 pt-5">
-              <p className="text-sm font-bold text-foreground">{step.prompt}</p>
-
-              {step.options && (
-                <div className="mt-3.5 grid gap-2.5 sm:grid-cols-3">
-                  {step.options.map((option) => (
-                    <button
-                      key={option}
-                      onClick={() => choose(option)}
-                      className={`group rounded-xl border p-4 text-left text-sm font-medium transition-all duration-200 ${
-                        selected === option
-                          ? "border-brand bg-brand-soft text-brand shadow-md shadow-brand/20 scale-[1.02] ring-2 ring-brand/35"
-                          : "border-border/70 bg-surface-elevated/70 hover:border-brand/40 hover:bg-surface-elevated"
-                      }`}
-                    >
-                      <span className="block font-semibold">{option}</span>
-                    </button>
-                  ))}
+            {/* Stage-specific Interactive Environments */}
+            {step.stage === "BREAK IT" ? (
+              <div className="mt-5 space-y-4">
+                <div className="rounded-2xl border border-peach/40 bg-ink p-4 text-xs font-mono text-background/90">
+                  <div className="flex items-center justify-between text-peach font-bold mb-2 pb-1 border-b border-background/20">
+                    <span>⚠️ INTENTIONALLY BROKEN CODE ARTIFACT</span>
+                    <span>Step 1: Predict & Inspect</span>
+                  </div>
+                  <pre className="overflow-x-auto whitespace-pre-wrap">{step.example}</pre>
                 </div>
-              )}
 
-              {step.interaction === "edit" && (
-                <div className="mt-4 space-y-3.5">
+                <p className="text-sm font-bold text-foreground">1. Predict what will fail:</p>
+                {step.options && (
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {step.options.map((opt) => (
+                      <button
+                        key={opt}
+                        onClick={() => choose(opt)}
+                        className={`rounded-xl border p-3 text-left text-xs font-medium transition ${
+                          selected === opt
+                            ? "border-peach bg-peach-soft text-peach font-bold"
+                            : "border-border/70 hover:border-peach/50 bg-surface-elevated"
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {breakPredicted && (
+                  <div className="mt-4 rounded-xl border border-mint/40 bg-mint-soft/30 p-4 space-y-3">
+                    <p className="text-xs font-bold text-mint">2. Fix the bug to restore invariants:</p>
+                    <pre className="font-mono text-xs bg-ink p-3 rounded-lg text-background">
+                      {step.fixedCode ?? "def process_data(items):\n    return [int(x) * 2 for x in items if str(x).isdigit()]"}
+                    </pre>
+                    <Button size="sm" onClick={() => { setBreakFixed(true); toast("Bug resolved successfully!"); }}>
+                      <Check className="size-4 mr-1" /> Verify Bug Fix
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : step.stage === "YOUR TURN" ? (
+              <div className="mt-5 space-y-4">
+                <div className="rounded-2xl border border-brand/30 bg-surface-elevated p-4">
+                  <p className="text-xs font-bold text-brand mb-1">INDEPENDENT APPLICATION</p>
+                  <p className="text-sm text-foreground mb-3">{step.prompt}</p>
                   <Textarea
-                    value={note}
-                    onChange={(event) => setNote(event.target.value)}
-                    placeholder="Modify the input or formulate your controlled implementation hypothesis…"
-                    className="min-h-28 font-mono text-xs rounded-xl border-border/80 bg-surface/80"
+                    value={yourTurnDecision}
+                    onChange={(e) => setYourTurnDecision(e.target.value)}
+                    placeholder="Write your independent code variation or parameter justification here..."
+                    className="min-h-32 font-mono text-xs bg-surface"
                   />
-                  <div className="flex items-center gap-3">
+                  <p className="mt-2 text-[11px] text-muted-foreground">
+                    State at least one key architectural decision (e.g. error handling strategy or boundary check).
+                  </p>
+                </div>
+              </div>
+            ) : step.stage === "KNOWLEDGE CHECK" ? (
+              <div className="mt-5 space-y-4">
+                <p className="text-sm font-bold text-foreground">{step.prompt}</p>
+                {step.options && (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {step.options.map((opt, i) => (
+                      <button
+                        key={opt}
+                        onClick={() => choose(opt)}
+                        className={`rounded-xl border p-3.5 text-left text-xs font-medium transition ${
+                          selected === opt
+                            ? selected === step.answer
+                              ? "border-mint bg-mint-soft text-mint font-bold"
+                              : "border-peach bg-peach-soft text-peach font-bold"
+                            : "border-border/70 hover:border-brand/40 bg-surface-elevated"
+                        }`}
+                      >
+                        <span className="mr-2 font-mono font-bold">{String.fromCharCode(65 + i)}.</span>
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {selected && (
+                  <div className={`rounded-xl p-3.5 text-xs ${selected === step.answer ? "bg-mint-soft/40 border border-mint/30" : "bg-peach-soft/40 border border-peach/30"}`}>
+                    <p className="font-bold mb-1">{selected === step.answer ? "✓ Correct Analysis" : "⚠️ Misconception Clarification"}</p>
+                    <p>{step.misconceptionExpl ?? step.whyItMatters}</p>
+                  </div>
+                )}
+              </div>
+            ) : step.stage === "MASTERY" ? (
+              <div className="mt-5 space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl border border-mint/40 bg-mint-soft/30 p-3.5">
+                    <p className="font-mono text-[10px] font-bold uppercase text-mint">WHAT YOU LEARNED</p>
+                    <p className="mt-1 text-xs text-foreground font-medium">{experience.module.topics.join(" · ")}</p>
+                  </div>
+                  <div className="rounded-xl border border-brand/40 bg-brand-soft/30 p-3.5">
+                    <p className="font-mono text-[10px] font-bold uppercase text-brand">WHAT YOU CAN DO</p>
+                    <p className="mt-1 text-xs text-foreground font-medium">{experience.module.learningObjectives[0]}</p>
+                  </div>
+                  <div className="rounded-xl border border-lilac/40 bg-lilac-soft/30 p-3.5">
+                    <p className="font-mono text-[10px] font-bold uppercase text-lilac">WHAT NEEDS REVIEW</p>
+                    <p className="mt-1 text-xs text-foreground font-medium">None. All diagnostic checkpoints validated.</p>
+                  </div>
+                  <div className="rounded-xl border border-peach/40 bg-peach-soft/30 p-3.5">
+                    <p className="font-mono text-[10px] font-bold uppercase text-peach">WHAT UNLOCKS NEXT</p>
+                    <p className="mt-1 text-xs text-foreground font-medium">
+                      {experience.module.nextRecommendedModuleCode ? `Module ${experience.module.nextRecommendedModuleCode}` : "Capstone Project"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Code / Inspect Terminal Platform */
+              <div className="mt-5 space-y-4">
+                <div className="rounded-2xl border border-border/80 bg-ink p-5 shadow-inner">
+                  <div className="flex items-center justify-between border-b border-background/15 pb-2.5 mb-3 text-[11px] font-mono text-background/60">
+                    <span className="text-background/80 font-bold">concept_execution.py</span>
+                    <span>Python 3.12</span>
+                  </div>
+                  <pre className="max-h-72 overflow-auto whitespace-pre-wrap font-mono text-xs leading-6 text-background/90">
+                    {step.example}
+                  </pre>
+                </div>
+
+                {step.options && (
+                  <div className="grid gap-2.5 sm:grid-cols-3">
+                    {step.options.map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => choose(option)}
+                        className={`rounded-xl border p-4 text-left text-sm font-medium transition ${
+                          selected === option
+                            ? "border-brand bg-brand-soft text-brand font-bold"
+                            : "border-border/70 bg-surface-elevated/70 hover:border-brand/40"
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {step.interaction === "edit" && (
+                  <div className="space-y-3">
+                    <Textarea
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      placeholder="Modify the input or formulate your controlled implementation hypothesis…"
+                      className="min-h-24 font-mono text-xs bg-surface"
+                    />
                     <Button
-                      disabled={experimentState === "running"}
-                      className="shadow-md shadow-brand/20"
+                      size="sm"
                       onClick={() => {
-                        if (!note.trim()) {
-                          toast("Describe one controlled change before running the experiment.");
-                          return;
-                        }
-                        setExperimentState("running");
-                        window.setTimeout(() => {
-                          setExperimentState("unavailable");
-                          setRan(true);
-                          toast("Experiment hypothesis recorded in lab notebook");
-                        }, 350);
+                        if (!note.trim()) { toast("Provide an experiment hypothesis first."); return; }
+                        setRan(true);
+                        toast("Studio experiment hypothesis recorded.");
                       }}
                     >
-                      <Play className="size-4 mr-1.5 fill-current" />
-                      {experimentState === "running" ? "Simulating Execution…" : "Run Studio Experiment"}
+                      <Play className="size-3.5 mr-1" /> Run Experiment
                     </Button>
-                    {ran && (
-                      <span className="text-xs font-mono text-mint flex items-center gap-1">
-                        <Check className="size-4" /> Hypothesis Saved
-                      </span>
-                    )}
                   </div>
-                  {experimentState === "unavailable" && (
-                    <div className="rounded-xl border border-peach/35 bg-peach-soft/50 p-3.5 text-xs text-muted-foreground">
-                      <p className="font-bold text-peach flex items-center gap-1.5">
-                        <Bot className="size-4" /> AI Sandbox Telemetry
-                      </p>
-                      <p className="mt-1 leading-relaxed">
-                        This studio guided test has verified your logic invariant locally. You can proceed to the challenge arena to execute tests against live test-cases.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {step.interaction === "inspect" && (
-                <div className="mt-3.5 rounded-xl border border-brand/25 bg-brand-soft/40 p-3.5 text-xs text-muted-foreground flex items-center gap-2.5">
-                  <Sparkle className="size-4 text-brand shrink-0" />
-                  <span>
-                    Trace the execution flow above, then continue when you can defend the invariant to the AI Mentor.
-                  </span>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             {/* Navigation Controls */}
             <div className="mt-8 flex justify-between gap-3 border-t border-border/70 pt-5">
@@ -2185,7 +2325,7 @@ function LearningModeContent({
                 <ArrowLeft className="size-4 mr-1" /> Previous Stage
               </Button>
               <Button onClick={next} className="shadow-md shadow-brand/20">
-                {stepIndex === experience.steps.length - 1 ? "Launch Code Challenge" : "Continue Stage"}{" "}
+                {stepIndex === experience.steps.length - 1 ? "Advance to Challenge" : "Continue Stage"}{" "}
                 <ArrowRight className="size-4 ml-1.5" />
               </Button>
             </div>
@@ -2830,114 +2970,164 @@ function FeedbackCard({
   );
 }
 
-function Tutor() {
-  const tutorModule = curriculumModules[0];
-  const tutorChallenge = getChallengeForModule(tutorModule.code);
-  const [messages, setMessages] = useState([
+function Tutor({
+  moduleId: initialModuleId = "3.1",
+  initialMessage,
+}: {
+  moduleId?: ModuleId;
+  initialMessage?: string;
+}) {
+  const navigate = useNavigate();
+  const progress = useLearningProgress();
+  const summary = getLearningProgressSummary(progress);
+  const currentModule = curriculumModules.find((m) => m.code === initialModuleId) ?? summary.currentModule;
+  const currentConcept = summary.currentConcept ?? currentModule.concepts[0];
+
+  const [escalationLevel, setEscalationLevel] = useState<1 | 2 | 3 | 4 | 5>(1);
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<
+    { role: "user" | "assistant"; content: string; level?: number }[]
+  >([
     {
-      from: "assistant" as const,
-      text: `You’re in Module ${tutorModule.code} · ${tutorModule.title}. Start by applying ${tutorChallenge.topic} to the current challenge.`,
+      role: "assistant",
+      content: initialMessage ??
+        `Welcome to Module ${currentModule.code}: ${currentModule.title}. I am your AI Teacher. We are focusing on ${currentConcept?.title ?? currentModule.topics[0]}. How can I guide your implementation today?`,
     },
   ]);
-  const [thinking, setThinking] = useState(false);
-  const prompts = [
-    "Explain like I'm a beginner",
-    "Give me a hint, not the answer",
-    "Connect this to yesterday's topic",
-    "Quiz me on this topic",
-  ];
-  const send = async (text: string) => {
-    if (!text.trim()) return;
-    setMessages((items) => [...items, { from: "user" as const, text }]);
-    setThinking(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 850));
-    setThinking(false);
-    const response = text.toLowerCase().includes("yesterday")
-      ? "Yesterday you practiced converting raw values into trustworthy data. Today we will use that discipline before aggregation."
-      : text.toLowerCase().includes("hint")
-        ? `Hint 1: ${tutorChallenge.hints[0]}`
-        : tutorChallenge.explanation;
-    setMessages((items) => [...items, { from: "assistant" as const, text: response }]);
+
+  const escalateHint = () => {
+    const nextLevel = Math.min(5, escalationLevel + 1) as 1 | 2 | 3 | 4 | 5;
+    setEscalationLevel(nextLevel);
+
+    let content = "";
+    switch (nextLevel) {
+      case 2:
+        content = `[Level 2 — Small Hint]: Focus on the invariant for ${currentConcept?.title ?? currentModule.topics[0]}. What condition must be true before transforming data?`;
+        break;
+      case 3:
+        content = `[Level 3 — Concept Explanation]: ${currentModule.description} In ${currentModule.title}, ${currentModule.topics[0]} ensures that invalid input is intercepted before passing down the pipeline.`;
+        break;
+      case 4:
+        content = `[Level 4 — Partial Example]:\n\`\`\`python\ndef validate_and_process(input_data):\n    if not input_data:\n        return None\n    # TODO: apply transformation for ${currentModule.topics[0]}\n    return [transform(x) for x in input_data]\n\`\`\``;
+        break;
+      case 5:
+        content = `[Level 5 — Full Explanation]: Here is the complete engineering walkthrough:\n${currentModule.masteryCriteria[0] ?? "Validate input types, handle nulls, and return sanitized outputs."}\n\nKey code pattern:\n\`\`\`python\ndef solution(items):\n    return [x for x in items if x is not None]\n\`\`\``;
+        break;
+    }
+
+    setMessages((prev) => [...prev, { role: "assistant", content, level: nextLevel }]);
   };
+
+  const handleSend = () => {
+    if (!input.trim()) return;
+    const userText = input.trim();
+    setInput("");
+
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", content: userText },
+      {
+        role: "assistant",
+        content: `[Level ${escalationLevel} Guidance]: Grounded in Module ${currentModule.code} (${currentModule.title}). You asked: "${userText}". Consider checking your input boundary and step assumptions first. Click 'Escalate Hint Level' if you need deeper scaffolding.`,
+        level: escalationLevel,
+      },
+    ]);
+  };
+
   return (
     <>
       <PageHeader
-        eyebrow="AI Tutor · context aware"
-        title="Ask better questions, build better instincts."
-        description="A tutor, coding mentor, and curriculum planner that keeps the current topic visible and explains why it is recommending a next step."
+        eyebrow={`AI Teacher · Escalation Level ${escalationLevel}/5`}
+        title={`Tutor: Module ${currentModule.code} — ${currentModule.title}`}
+        description="The AI Tutor operates as a teacher, providing progressive hint escalation (Level 1: Guiding Question → Level 5: Full Solution) to foster genuine engineering reasoning."
+        action={
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-brand-soft border border-brand/30 px-3 py-1 font-mono text-xs text-brand font-semibold">
+              State: {summary.moduleState}
+            </span>
+          </div>
+        }
       />
-      <div className="grid gap-4 xl:grid-cols-[1fr_300px]">
-        <Panel className="min-h-[650px] p-0">
-          <div className="border-b border-border/60 px-5 py-4">
-            <div className="flex items-center gap-3">
-              <span className="grid size-9 place-items-center rounded-xl bg-brand-soft text-brand">
-                <Bot className="size-5" />
-              </span>
-              <div>
-                <p className="text-sm font-semibold">AI Skills Tutor</p>
-                <p className="text-[11px] text-faint">
-                  Context: Module {tutorModule.code} · {tutorModule.title}
-                </p>
+
+      <div className="grid gap-5 xl:grid-cols-[1fr_320px]">
+        <SpatialCard depth={8} elevation="medium" className="rounded-2xl">
+          <Panel className="flex flex-col min-h-[520px] p-5">
+            <div className="flex items-center justify-between border-b border-border/70 pb-3 mb-4">
+              <div className="flex items-center gap-2">
+                <Bot className="size-5 text-brand" />
+                <span className="font-bold text-sm text-foreground">Interactive Teaching Assistant</span>
               </div>
-              <span className="ml-auto size-2 rounded-full bg-mint" />
-            </div>
-          </div>
-          <Conversation className="h-[420px]">
-            <ConversationContent className="gap-5 p-5">
-              {messages.map((message, index) => (
-                <Message key={index} from={message.from}>
-                  <MessageContent
-                    className={message.from === "user" ? "bg-ink text-background" : ""}
-                  >
-                    <MessageResponse>{message.text}</MessageResponse>
-                  </MessageContent>
-                </Message>
-              ))}
-              {thinking && (
-                <Message from="assistant">
-                  <MessageContent>
-                    <Shimmer>Thinking through your last attempt…</Shimmer>
-                  </MessageContent>
-                </Message>
-              )}
-            </ConversationContent>
-            <ConversationScrollButton />
-          </Conversation>
-          <PromptInput
-            onSubmit={(message) => {
-              void send(message.text);
-            }}
-            className="m-4"
-          >
-            <PromptInputTextarea placeholder="Ask about the code, concept, or your next move…" />
-            <PromptInputFooter className="justify-end">
-              <PromptInputSubmit />
-            </PromptInputFooter>
-          </PromptInput>
-        </Panel>
-        <Panel className="h-fit">
-          <SectionTitle eyebrow="Suggested prompts" title="Keep the loop moving" />
-          <div className="space-y-2">
-            {prompts.map((prompt) => (
-              <Button
-                key={prompt}
-                variant="outline"
-                className="h-auto w-full justify-start whitespace-normal py-2.5 text-left text-xs"
-                onClick={() => void send(prompt)}
-              >
-                {prompt}
-                <ArrowRight className="ml-auto shrink-0" />
+              <Button size="sm" variant="outline" onClick={escalateHint} disabled={escalationLevel >= 5}>
+                <Sparkle className="size-3.5 mr-1 text-brand" />
+                Escalate Hint Level ({escalationLevel}/5)
               </Button>
-            ))}
-          </div>
-          <div className="mt-5 rounded-xl bg-lilac-soft/50 p-3">
-            <p className="text-xs font-medium">Tutor memory</p>
-            <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
-              Yesterday: Python data cleaning · 92% mastery. Your tutor uses that to explain today’s
-              aggregation choices.
-            </p>
-          </div>
-        </Panel>
+            </div>
+
+            <div className="flex-1 space-y-4 overflow-y-auto pr-1 max-h-[420px]">
+              {messages.map((m, idx) => (
+                <div
+                  key={idx}
+                  className={`flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}
+                >
+                  <div
+                    className={`max-w-[85%] rounded-2xl p-4 text-xs leading-relaxed ${
+                      m.role === "user"
+                        ? "bg-brand text-primary-foreground font-medium rounded-br-none"
+                        : "bg-surface-elevated border border-border/80 text-foreground shadow-xs rounded-bl-none"
+                    }`}
+                  >
+                    {m.level && (
+                      <span className="block font-mono text-[9px] uppercase tracking-wider text-brand mb-1 font-bold">
+                        Escalation Level {m.level}
+                      </span>
+                    )}
+                    <pre className="whitespace-pre-wrap font-sans text-xs">{m.content}</pre>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 flex gap-2 border-t border-border/70 pt-4">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                placeholder={`Ask a question about ${currentConcept?.title ?? currentModule.title}…`}
+                className="flex-1 bg-surface-elevated text-xs"
+              />
+              <Button onClick={handleSend} className="shadow-md shadow-brand/20">
+                <Send className="size-4 mr-1" /> Send
+              </Button>
+            </div>
+          </Panel>
+        </SpatialCard>
+
+        <SpatialCard depth={6} elevation="low" className="rounded-2xl h-fit">
+          <Panel className="p-4 space-y-4">
+            <Eyebrow>Current Context</Eyebrow>
+            <div>
+              <p className="font-mono text-[10px] text-brand font-bold">Module {currentModule.code}</p>
+              <h4 className="font-bold text-sm text-foreground">{currentModule.title}</h4>
+              <p className="text-xs text-muted-foreground mt-1">{currentModule.description}</p>
+            </div>
+            <div className="rounded-xl bg-surface/60 border border-border/60 p-3 text-xs space-y-1.5">
+              <p className="font-semibold text-foreground">Escalation Ladder:</p>
+              <p className={`text-[11px] ${escalationLevel === 1 ? "font-bold text-brand" : "text-muted-foreground"}`}>1. Guiding Question</p>
+              <p className={`text-[11px] ${escalationLevel === 2 ? "font-bold text-brand" : "text-muted-foreground"}`}>2. Small Hint</p>
+              <p className={`text-[11px] ${escalationLevel === 3 ? "font-bold text-brand" : "text-muted-foreground"}`}>3. Concept Explanation</p>
+              <p className={`text-[11px] ${escalationLevel === 4 ? "font-bold text-brand" : "text-muted-foreground"}`}>4. Partial Code Example</p>
+              <p className={`text-[11px] ${escalationLevel === 5 ? "font-bold text-brand" : "text-muted-foreground"}`}>5. Full Solution & Walkthrough</p>
+            </div>
+            <Button
+              className="w-full"
+              variant="outline"
+              size="sm"
+              onClick={() => navigate({ to: "/learning-mode", search: { module: currentModule.code } })}
+            >
+              Return to Learning Studio <ArrowRight className="size-3.5 ml-1" />
+            </Button>
+          </Panel>
+        </SpatialCard>
       </div>
     </>
   );
@@ -4004,7 +4194,7 @@ export function CodepathApp({
         <CodingLab {...(moduleId ? { moduleId } : {})} />
       </Shell>
     );
-  if (view === "challenge")
+  if (view === "challenge" || view === "challenges")
     return (
       <Shell active="challenge">
         <CodingLab

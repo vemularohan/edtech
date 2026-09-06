@@ -16,250 +16,250 @@ globalThis.__nitro_vite_envs__ = services;
 //#endregion
 //#region #nitro/virtual/public-assets-data
 var public_assets_data_default = {
-	"/favicon.ico": {
-		"type": "image/vnd.microsoft.icon",
-		"etag": "\"4f95-3RXc3p2mhEAs1WBwaIvE0Y0uu0Y\"",
-		"mtime": "2026-09-05T19:53:12.734Z",
-		"size": 20373,
-		"path": "../public/favicon.ico"
-	},
-	"/assets/admin-CtOC1xZ_.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"4d-9L6dz7f5BdruRVa2QtSMJ1lna7Q\"",
-		"mtime": "2026-09-05T19:53:12.550Z",
-		"size": 77,
-		"path": "../public/assets/admin-CtOC1xZ_.js"
-	},
 	"/robots.txt": {
 		"type": "text/plain; charset=utf-8",
 		"etag": "\"a0-CKGXSIe7TSsqDTmGm/nY1t/o5d0\"",
-		"mtime": "2026-09-05T19:53:12.734Z",
+		"mtime": "2026-09-06T14:04:44.308Z",
 		"size": 160,
 		"path": "../public/robots.txt"
 	},
-	"/assets/build-DvPD6oDV.js": {
+	"/assets/admin-D8zUD88c.js": {
 		"type": "text/javascript; charset=utf-8",
-		"etag": "\"9b-laWoHDevbG+KML4w2PVi0fpLaa4\"",
-		"mtime": "2026-09-05T19:53:12.550Z",
+		"etag": "\"4d-m2kUuds4EWXkL93NoGAJkm8qkDY\"",
+		"mtime": "2026-09-06T14:04:44.182Z",
+		"size": 77,
+		"path": "../public/assets/admin-D8zUD88c.js"
+	},
+	"/assets/analytics-BzSvLxHl.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"9c-YnW0WjtVWfUe1h+Q9x/6sdRsGv0\"",
+		"mtime": "2026-09-06T14:04:44.182Z",
+		"size": 156,
+		"path": "../public/assets/analytics-BzSvLxHl.js"
+	},
+	"/assets/auth-Cbek2SBr.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"4d-lC7jb83pfMm0R+EkST9FQeQyxs4\"",
+		"mtime": "2026-09-06T14:04:44.182Z",
+		"size": 77,
+		"path": "../public/assets/auth-Cbek2SBr.js"
+	},
+	"/assets/career-D1XQdOu7.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"99-9k1F471kujMxVuZ2Ig4JiD+gf1w\"",
+		"mtime": "2026-09-06T14:04:44.182Z",
+		"size": 153,
+		"path": "../public/assets/career-D1XQdOu7.js"
+	},
+	"/assets/career-roadmap-D1XQdOu7.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"99-9k1F471kujMxVuZ2Ig4JiD+gf1w\"",
+		"mtime": "2026-09-06T14:04:44.182Z",
+		"size": 153,
+		"path": "../public/assets/career-roadmap-D1XQdOu7.js"
+	},
+	"/assets/build-4PF0LRb_.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"9b-DuMEnXVDExFoL2eeIPz+ZowZ7i8\"",
+		"mtime": "2026-09-06T14:04:44.182Z",
 		"size": 155,
-		"path": "../public/assets/build-DvPD6oDV.js"
+		"path": "../public/assets/build-4PF0LRb_.js"
 	},
-	"/assets/analytics-CkAIuHkR.js": {
+	"/assets/challenge-Ch4ZWkdY.js": {
 		"type": "text/javascript; charset=utf-8",
-		"etag": "\"9c-BMMioxx0SDkav+xnYpc6QxS/czA\"",
-		"mtime": "2026-09-05T19:53:12.550Z",
-		"size": 156,
-		"path": "../public/assets/analytics-CkAIuHkR.js"
-	},
-	"/assets/auth-atFtBtXk.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"4d-HR6Byt1HxkxgI9vaWIwi9Q6jCQ0\"",
-		"mtime": "2026-09-05T19:53:12.550Z",
-		"size": 77,
-		"path": "../public/assets/auth-atFtBtXk.js"
-	},
-	"/assets/career-DZQ2NUAR.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"99-hqEuGRspqUO6LsPfsgcY4AvbXLw\"",
-		"mtime": "2026-09-05T19:53:12.550Z",
-		"size": 153,
-		"path": "../public/assets/career-DZQ2NUAR.js"
-	},
-	"/assets/career-roadmap-DZQ2NUAR.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"99-hqEuGRspqUO6LsPfsgcY4AvbXLw\"",
-		"mtime": "2026-09-05T19:53:12.550Z",
-		"size": 153,
-		"path": "../public/assets/career-roadmap-DZQ2NUAR.js"
-	},
-	"/assets/challenge-2XrzaUWS.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"23e-eMN1Jn/IFatuei7NZPjGRILn2Q4\"",
-		"mtime": "2026-09-05T19:53:12.550Z",
+		"etag": "\"23e-kMNFexNlk3IHkm/k/jOH/c2tMTM\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
 		"size": 574,
-		"path": "../public/assets/challenge-2XrzaUWS.js"
+		"path": "../public/assets/challenge-Ch4ZWkdY.js"
 	},
-	"/assets/challenges-BVlHtsOO.js": {
+	"/assets/challenges-DdW-gyLd.js": {
 		"type": "text/javascript; charset=utf-8",
-		"etag": "\"26e-4khvV0tMACMazLrj5sBcN8hMO0o\"",
-		"mtime": "2026-09-05T19:53:12.550Z",
+		"etag": "\"147-XDPSTCja6gvjCU6p/+HjfabjAg4\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
+		"size": 327,
+		"path": "../public/assets/challenges-DdW-gyLd.js"
+	},
+	"/assets/challenges-DSGBmV3J.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"26e-H5fsiLKrMq9iXfjOkbdcNMosb9w\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
 		"size": 622,
-		"path": "../public/assets/challenges-BVlHtsOO.js"
+		"path": "../public/assets/challenges-DSGBmV3J.js"
 	},
-	"/assets/challenge-Cx_2cZK1.js": {
+	"/assets/challenge-CR8a-pR2.js": {
 		"type": "text/javascript; charset=utf-8",
-		"etag": "\"125-eeVO0g+FHYdwsT4qfPJsQPb09pQ\"",
-		"mtime": "2026-09-05T19:53:12.550Z",
+		"etag": "\"125-hvn59Q1Lq8SwT3dJzI6CV//tXPs\"",
+		"mtime": "2026-09-06T14:04:44.182Z",
 		"size": 293,
-		"path": "../public/assets/challenge-Cx_2cZK1.js"
+		"path": "../public/assets/challenge-CR8a-pR2.js"
 	},
-	"/assets/coding-lab-CjAstz6A.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"21a-QmNHLCs7hFPxgLoDIvNaS4X5Bpc\"",
-		"mtime": "2026-09-05T19:53:12.550Z",
-		"size": 538,
-		"path": "../public/assets/coding-lab-CjAstz6A.js"
+	"/favicon.ico": {
+		"type": "image/vnd.microsoft.icon",
+		"etag": "\"4f95-3RXc3p2mhEAs1WBwaIvE0Y0uu0Y\"",
+		"mtime": "2026-09-06T14:04:44.308Z",
+		"size": 20373,
+		"path": "../public/favicon.ico"
 	},
-	"/assets/coding-lab-DR5kbuFT.js": {
+	"/assets/curriculum-map-pwkhfEhi.js": {
 		"type": "text/javascript; charset=utf-8",
-		"etag": "\"fc-VKI6DPLTFXGulJo5Yp0OM7yi6kw\"",
-		"mtime": "2026-09-05T19:53:12.550Z",
-		"size": 252,
-		"path": "../public/assets/coding-lab-DR5kbuFT.js"
-	},
-	"/assets/curriculum-BX474fZV.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"96-CpgapYwqYy+xMAouqwdnfMKiOtQ\"",
-		"mtime": "2026-09-05T19:53:12.550Z",
+		"etag": "\"96-nGuJapg0qIHtL7nM4ixZlZNezQw\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
 		"size": 150,
-		"path": "../public/assets/curriculum-BX474fZV.js"
+		"path": "../public/assets/curriculum-map-pwkhfEhi.js"
 	},
-	"/assets/dashboard-kaLG8r8z.js": {
+	"/assets/dashboard-DKnzIv7E.js": {
 		"type": "text/javascript; charset=utf-8",
-		"etag": "\"9c-99F9Wqc79GJh2VdbjjYSN87S/JU\"",
-		"mtime": "2026-09-05T19:53:12.551Z",
+		"etag": "\"9c-rXo4dQ5hy/lFIdaz4RYU3NxPf54\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
 		"size": 156,
-		"path": "../public/assets/dashboard-kaLG8r8z.js"
+		"path": "../public/assets/dashboard-DKnzIv7E.js"
 	},
-	"/assets/curriculum-map-BX474fZV.js": {
+	"/assets/coding-lab-CpFweH8O.js": {
 		"type": "text/javascript; charset=utf-8",
-		"etag": "\"96-CpgapYwqYy+xMAouqwdnfMKiOtQ\"",
-		"mtime": "2026-09-05T19:53:12.550Z",
+		"etag": "\"21a-ikIqwi0GjoDxWYhIc8vqw/Cox4s\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
+		"size": 538,
+		"path": "../public/assets/coding-lab-CpFweH8O.js"
+	},
+	"/assets/coding-lab-Bz0MiUwe.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"fc-ypH5heQnhH6+i72BY5zmaOVJcZc\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
+		"size": 252,
+		"path": "../public/assets/coding-lab-Bz0MiUwe.js"
+	},
+	"/assets/curriculum-pwkhfEhi.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"96-nGuJapg0qIHtL7nM4ixZlZNezQw\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
 		"size": 150,
-		"path": "../public/assets/curriculum-map-BX474fZV.js"
+		"path": "../public/assets/curriculum-pwkhfEhi.js"
 	},
-	"/assets/challenges-Dm6s2a-J.js": {
+	"/assets/learning-mode-C66DUBce.js": {
 		"type": "text/javascript; charset=utf-8",
-		"etag": "\"146-OhvT9GiiatlaNTn5sAdZqQ/xiHA\"",
-		"mtime": "2026-09-05T19:53:12.550Z",
-		"size": 326,
-		"path": "../public/assets/challenges-Dm6s2a-J.js"
-	},
-	"/assets/index-C5_VvtSJ.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"4bc73-tOnXbhyBrIutHymXVCmw5oOvh4U\"",
-		"mtime": "2026-09-05T19:53:12.550Z",
-		"size": 310387,
-		"path": "../public/assets/index-C5_VvtSJ.js"
-	},
-	"/assets/learning-mode-_7vI_SOV.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"148-X/SzFiF9uAv4ArYPJSVOD0SN04U\"",
-		"mtime": "2026-09-05T19:53:12.551Z",
+		"etag": "\"148-2O+svJ1/pEDkYGkSLF+xUeI3HDo\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
 		"size": 328,
-		"path": "../public/assets/learning-mode-_7vI_SOV.js"
+		"path": "../public/assets/learning-mode-C66DUBce.js"
 	},
-	"/assets/learning-mode-U1WQBirx.js": {
+	"/assets/onboarding-DFOY-QGh.js": {
 		"type": "text/javascript; charset=utf-8",
-		"etag": "\"277-H3q3ivY/4kUOoc/f0mqkjxeYack\"",
-		"mtime": "2026-09-05T19:53:12.551Z",
-		"size": 631,
-		"path": "../public/assets/learning-mode-U1WQBirx.js"
-	},
-	"/assets/link-DPT17Rzw.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"8a71-EFLLr2tSiGxPMwmuj/7YlZtJNLo\"",
-		"mtime": "2026-09-05T19:53:12.551Z",
-		"size": 35441,
-		"path": "../public/assets/link-DPT17Rzw.js"
-	},
-	"/assets/onboarding-DOh7Gwa_.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"4d-1zPzThLo5/XTQeQuSFJVWN2KCzI\"",
-		"mtime": "2026-09-05T19:53:12.551Z",
+		"etag": "\"4d-9DbLw0uB4N7qieN1W5JX7bzHRLg\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
 		"size": 77,
-		"path": "../public/assets/onboarding-DOh7Gwa_.js"
+		"path": "../public/assets/onboarding-DFOY-QGh.js"
 	},
-	"/assets/portfolio-BW-2hSxS.js": {
+	"/assets/learning-mode-LpzOLJeH.js": {
 		"type": "text/javascript; charset=utf-8",
-		"etag": "\"9a-qAOiLg6mI+ErZ04h9MJVJSHac/Y\"",
-		"mtime": "2026-09-05T19:53:12.551Z",
-		"size": 154,
-		"path": "../public/assets/portfolio-BW-2hSxS.js"
+		"etag": "\"277-gMJ5i/Wfg2AjU8FWwaws2ojeZxE\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
+		"size": 631,
+		"path": "../public/assets/learning-mode-LpzOLJeH.js"
 	},
 	"/assets/preload-helper-psnANCaL.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"17d9-NSLNnCSS3sScAI2h2HNs46WH5z0\"",
-		"mtime": "2026-09-05T19:53:12.551Z",
+		"mtime": "2026-09-06T14:04:44.183Z",
 		"size": 6105,
 		"path": "../public/assets/preload-helper-psnANCaL.js"
 	},
-	"/assets/CodepathApp-flCvIbzF.js": {
+	"/assets/portfolio-aaQneuUr.js": {
 		"type": "text/javascript; charset=utf-8",
-		"etag": "\"a7a84-ITuAylzDLE4yE44HE8ujUJl6b78\"",
-		"mtime": "2026-09-05T19:53:12.550Z",
-		"size": 686724,
-		"path": "../public/assets/CodepathApp-flCvIbzF.js"
-	},
-	"/assets/profile-BW-2hSxS.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"9a-qAOiLg6mI+ErZ04h9MJVJSHac/Y\"",
-		"mtime": "2026-09-05T19:53:12.551Z",
+		"etag": "\"9a-cO2m+pIIT07LhKlXPStodp067n0\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
 		"size": 154,
-		"path": "../public/assets/profile-BW-2hSxS.js"
+		"path": "../public/assets/portfolio-aaQneuUr.js"
 	},
-	"/assets/projects-DvPD6oDV.js": {
+	"/assets/link-DPT17Rzw.js": {
 		"type": "text/javascript; charset=utf-8",
-		"etag": "\"9b-laWoHDevbG+KML4w2PVi0fpLaa4\"",
-		"mtime": "2026-09-05T19:53:12.551Z",
+		"etag": "\"8a71-EFLLr2tSiGxPMwmuj/7YlZtJNLo\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
+		"size": 35441,
+		"path": "../public/assets/link-DPT17Rzw.js"
+	},
+	"/assets/index-D6lylJk2.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"4bc73-6PCz82A/4T1Iwsj4uQXnUJCXUGI\"",
+		"mtime": "2026-09-06T14:04:44.182Z",
+		"size": 310387,
+		"path": "../public/assets/index-D6lylJk2.js"
+	},
+	"/assets/CodepathApp-C1YOfslP.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"a7235-XUGBshEk+EI02KxOyJYyjEHNkTQ\"",
+		"mtime": "2026-09-06T14:04:44.182Z",
+		"size": 684597,
+		"path": "../public/assets/CodepathApp-C1YOfslP.js"
+	},
+	"/assets/profile-aaQneuUr.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"9a-cO2m+pIIT07LhKlXPStodp067n0\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
+		"size": 154,
+		"path": "../public/assets/profile-aaQneuUr.js"
+	},
+	"/assets/projects-4PF0LRb_.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"9b-DuMEnXVDExFoL2eeIPz+ZowZ7i8\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
 		"size": 155,
-		"path": "../public/assets/projects-DvPD6oDV.js"
+		"path": "../public/assets/projects-4PF0LRb_.js"
 	},
-	"/assets/recovery-oQ_ErNmn.js": {
+	"/assets/routes-DKnzIv7E.js": {
 		"type": "text/javascript; charset=utf-8",
-		"etag": "\"9b-U/5MNU9r98+QCUaHXWa2lUR7ltU\"",
-		"mtime": "2026-09-05T19:53:12.551Z",
+		"etag": "\"9c-rXo4dQ5hy/lFIdaz4RYU3NxPf54\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
+		"size": 156,
+		"path": "../public/assets/routes-DKnzIv7E.js"
+	},
+	"/assets/skills-BzSvLxHl.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"9c-YnW0WjtVWfUe1h+Q9x/6sdRsGv0\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
+		"size": 156,
+		"path": "../public/assets/skills-BzSvLxHl.js"
+	},
+	"/assets/recovery-C5vNu4Pw.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"9b-u88MZqkRGPu06gpI9YtPzLVpf/Y\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
 		"size": 155,
-		"path": "../public/assets/recovery-oQ_ErNmn.js"
+		"path": "../public/assets/recovery-C5vNu4Pw.js"
 	},
-	"/assets/routes-kaLG8r8z.js": {
+	"/assets/tutor-DRfNXJnZ.js": {
 		"type": "text/javascript; charset=utf-8",
-		"etag": "\"9c-99F9Wqc79GJh2VdbjjYSN87S/JU\"",
-		"mtime": "2026-09-05T19:53:12.551Z",
-		"size": 156,
-		"path": "../public/assets/routes-kaLG8r8z.js"
-	},
-	"/assets/skills-CkAIuHkR.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"9c-BMMioxx0SDkav+xnYpc6QxS/czA\"",
-		"mtime": "2026-09-05T19:53:12.551Z",
-		"size": 156,
-		"path": "../public/assets/skills-CkAIuHkR.js"
-	},
-	"/assets/styles-FosNWiGX.css": {
-		"type": "text/css; charset=utf-8",
-		"etag": "\"2193f-pHcOBGHcgG+60xkefKY5iE1aMio\"",
-		"mtime": "2026-09-05T19:53:12.551Z",
-		"size": 137535,
-		"path": "../public/assets/styles-FosNWiGX.css"
-	},
-	"/assets/tutor-4zM-aMXe.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"98-IGl6CY8+37KlutvWYREVAd6m+3w\"",
-		"mtime": "2026-09-05T19:53:12.551Z",
+		"etag": "\"98-B3h1RukRu0gZAs3vRuR6CtNn8AA\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
 		"size": 152,
-		"path": "../public/assets/tutor-4zM-aMXe.js"
+		"path": "../public/assets/tutor-DRfNXJnZ.js"
 	},
-	"/assets/verify._certificateId-BkbDxa6m.js": {
+	"/assets/styles-DCR3W-PB.css": {
+		"type": "text/css; charset=utf-8",
+		"etag": "\"21aa8-KPqQF089rghBPH9d4TedF513bRs\"",
+		"mtime": "2026-09-06T14:04:44.184Z",
+		"size": 137896,
+		"path": "../public/assets/styles-DCR3W-PB.css"
+	},
+	"/assets/verify._certificateId-CJGbUjoN.js": {
 		"type": "text/javascript; charset=utf-8",
-		"etag": "\"fa-+jxMfW5CK8+e9fEvkIfp3jPniqw\"",
-		"mtime": "2026-09-05T19:53:12.551Z",
+		"etag": "\"fa-yAF2czYlNQ0zLX/Fh3Io4d9hx+A\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
 		"size": 250,
-		"path": "../public/assets/verify._certificateId-BkbDxa6m.js"
-	},
-	"/assets/verify._certificateId-DuMaGI17.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"192-X/egmvQNUVwPpD//WXTvgHy9Yuo\"",
-		"mtime": "2026-09-05T19:53:12.551Z",
-		"size": 402,
-		"path": "../public/assets/verify._certificateId-DuMaGI17.js"
+		"path": "../public/assets/verify._certificateId-CJGbUjoN.js"
 	},
 	"/assets/types-CdQ_w3Tu.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"dcbd-NWnsr/m+Fn3jYaGcwXnymGx1b5c\"",
-		"mtime": "2026-09-05T19:53:12.551Z",
+		"mtime": "2026-09-06T14:04:44.183Z",
 		"size": 56509,
 		"path": "../public/assets/types-CdQ_w3Tu.js"
+	},
+	"/assets/verify._certificateId-CauE6TSJ.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"192-eRWHbxZf5l0fN5QsrFyIzIeJupA\"",
+		"mtime": "2026-09-06T14:04:44.183Z",
+		"size": 402,
+		"path": "../public/assets/verify._certificateId-CauE6TSJ.js"
 	}
 };
 //#endregion

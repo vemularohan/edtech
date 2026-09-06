@@ -231,24 +231,43 @@ const rawModuleData: [string, string, string[], string[], ExperienceStage][] = [
 ];
 
 export const curriculumModules: CurriculumModule[] = rawModuleData.map(
-  ([title, description, topics, tools, experienceStage], index) => ({
-    code: `3.${index + 1}` as `3.${number}`,
-    title,
-    description,
-    topics,
-    tools,
-    experienceStage,
-    learningObjectives: topics.map((topic) => `Use ${topic} in an AI engineering workflow.`),
-    lesson: `${title}: ${description}`,
-    project: `Build a small ${title.toLowerCase()} artifact and document the engineering decisions.`,
-    difficulty: (index < 5 ? "Beginner" : index < 20 ? "Intermediate" : "Advanced") as
-      "Beginner" | "Intermediate" | "Advanced",
-    estimatedTime: index < 5 ? "20–30 min" : index < 20 ? "35–50 min" : "60–90 min",
-    prerequisites: index === 0 ? [] : [`3.${index}` as `3.${number}`],
-    status: (index === 0
-      ? "in-progress"
-      : index === 1
-        ? "available"
-        : "locked") as CurriculumStatus,
-  }),
+  ([title, description, topics, tools, experienceStage], index) => {
+    const code = `3.${index + 1}` as `3.${number}`;
+    const concepts: ConceptItem[] = topics.map((t, tIdx) => ({
+      id: `${code}-c${tIdx + 1}`,
+      title: t.charAt(0).toUpperCase() + t.slice(1),
+      description: `Understand the fundamentals and practical execution of ${t} in ${title}.`,
+      estimatedMinutes: 4 + (tIdx % 3) * 3,
+    }));
+    const nextCode = index < 29 ? (`3.${index + 2}` as `3.${number}`) : null;
+
+    return {
+      code,
+      title,
+      description,
+      topics,
+      concepts,
+      tools,
+      experienceStage,
+      learningObjectives: topics.map((topic) => `Use ${topic} in an AI engineering workflow.`),
+      lesson: `${title}: ${description}`,
+      project: `Build a small ${title.toLowerCase()} artifact and document the engineering decisions.`,
+      difficulty: (index < 5 ? "Beginner" : index < 20 ? "Intermediate" : "Advanced") as
+        "Beginner" | "Intermediate" | "Advanced",
+      estimatedTime: `~${concepts.reduce((acc, c) => acc + c.estimatedMinutes, 10)} min`,
+      prerequisites: index === 0 ? [] : [`3.${index}` as `3.${number}`],
+      masteryCriteria: [
+        "Pass Knowledge Check with >= 80% accuracy",
+        "Complete Break It debugging exercise",
+        "Complete Your Turn independent application",
+        "Pass module Mastery Assessment challenge",
+      ],
+      nextRecommendedModuleCode: nextCode,
+      status: (index === 0
+        ? "in-progress"
+        : index === 1
+          ? "available"
+          : "locked") as CurriculumStatus,
+    };
+  },
 );

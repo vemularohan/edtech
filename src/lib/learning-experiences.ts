@@ -4,16 +4,16 @@ import { curriculumModules, type CurriculumModule } from "./curriculum-data";
 export type LearningStep = {
   id: string;
   stage:
-    | "HOOK"
-    | "LEARN"
-    | "SEE IT"
-    | "TRY IT"
-    | "CHECK"
-    | "BUILD"
-    | "BREAK"
-    | "YOUR TURN"
-    | "MASTER"
-    | "NEXT";
+  | "HOOK"
+  | "LEARN"
+  | "SEE IT"
+  | "TRY IT"
+  | "CHECK"
+  | "BUILD"
+  | "BREAK"
+  | "YOUR TURN"
+  | "MASTER"
+  | "NEXT";
   title: string;
   explanation: string;
   whyItMatters: string;

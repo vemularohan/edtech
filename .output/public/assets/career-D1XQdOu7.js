@@ -1,0 +1,1 @@
+import{c as e}from"./link-DPT17Rzw.js";import{r as t}from"./CodepathApp-C1YOfslP.js";var n=e(),r=()=>(0,n.jsx)(t,{view:`career`});export{r as component};

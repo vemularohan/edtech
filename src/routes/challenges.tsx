@@ -21,7 +21,7 @@ function ChallengesRoute() {
   const { module, concept, step } = Route.useSearch();
   return (
     <CodepathApp
-      view="challenge"
+      view="challenges"
       {...(module ? { moduleId: module as `3.${number}` } : {})}
       {...(concept ? { concept } : {})}
       {...(step !== undefined ? { stepIndex: step } : {})}
