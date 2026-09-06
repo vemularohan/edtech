@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/verify._certificateId-BpcQGXaP.js","assets/link-DIt654cv.js","assets/CodepathApp-CGkCf8n5.js"])))=>i.map(i=>d[i]);
+import{n as e,r as t,t as n}from"./preload-helper-Ucm0VEts.js";var r=t(`/verify/$certificateId`)({component:e(()=>n(()=>import(`./verify._certificateId-BpcQGXaP.js`),__vite__mapDeps([0,1,2])),`component`)});export{r as t};

@@ -151,14 +151,14 @@ const softToneMap = {
 function Mark({ compact = false }: { compact?: boolean }) {
   return (
     <div className="flex items-center gap-2.5">
-      <div className="grid size-9 place-items-center rounded-xl bg-ink text-background">
-        <GitBranch className="size-5" />
+      <div className="grid size-9 place-items-center rounded-xl bg-ink text-background font-bold text-xs tracking-tight">
+        KLH
       </div>
       {!compact && (
         <div className="leading-tight">
-          <p className="font-display text-[15px] font-semibold text-foreground">AI Skills Track</p>
+          <p className="font-display text-[15px] font-semibold text-foreground">KLH AI Platform</p>
           <p className="text-[10px] uppercase tracking-[.18em] text-faint">
-            Curriculum intelligence
+            Academic & Skill Track
           </p>
         </div>
       )}
@@ -320,7 +320,7 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
             <Mark />
           </div>
           <div className="px-2">
-            <Eyebrow>3D Laboratory</Eyebrow>
+            <Eyebrow>Academic Navigation</Eyebrow>
           </div>
           <nav className="mt-2.5 flex flex-col gap-1.5">
             {navItems.map(({ label, to, icon: Icon }) => (
@@ -470,7 +470,7 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
                 <Search className="size-4 text-faint" />
                 <input
                   className="w-full bg-transparent text-sm outline-none placeholder:text-faint"
-                  placeholder="Search topics, 3D labs, neural models…"
+                  placeholder="Search subjects, modules, projects, skills…"
                 />
                 <span className="hidden rounded-md bg-foreground/10 px-1.5 py-0.5 font-mono text-[10px] text-faint sm:inline">
                   ⌘K
@@ -481,14 +481,14 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
               <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                 <div className="hidden sm:flex items-center gap-2 rounded-full border border-brand/30 bg-brand-soft/50 px-3 py-1 text-[11px] font-mono text-brand font-medium">
                   <span className="size-2 rounded-full bg-brand cp-pulse" />
-                  AI Lab Active
+                  KLH University Student
                 </div>
                 <Button
                   size="icon"
                   variant="ghost"
                   className="hidden sm:inline-flex rounded-xl"
                   aria-label="Notifications"
-                  onClick={() => toast("All telemetry streams are healthy")}
+                  onClick={() => toast("Academic progress synced with KLH LMS")}
                 >
                   <Bell className="size-4 text-faint" />
                 </Button>
@@ -497,7 +497,10 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
                   onClick={() => navigate({ to: "/profile" })}
                   aria-label="User Profile"
                 >
-                  <span className="hidden text-xs font-semibold sm:inline">Aarav K.</span>
+                  <div className="hidden sm:flex flex-col text-right leading-tight">
+                    <span className="text-xs font-semibold">Aarav Kulkarni</span>
+                    <span className="text-[10px] text-muted-foreground">B.Tech CSE · Sem 3</span>
+                  </div>
                   <span className="grid size-7 place-items-center rounded-lg bg-lilac-soft text-xs font-bold text-lilac">
                     AK
                   </span>
@@ -561,52 +564,95 @@ function Dashboard() {
   const startNextModule = () =>
     navigate({ to: "/learning-mode", search: { module: summary.nextModule.code } });
 
-  // 30 curriculum modules spine for 3D path
-  const modulesTrack = useMemo(() => {
-    return curriculumModules.map((module, idx) => {
-      const isCompleted = progress.completedModuleIds.includes(module.code);
-      const isCurrent = module.code === summary.currentModule.code;
-      const isNext = module.code === summary.nextModule.code;
-      const status = isCompleted ? "mastered" : isCurrent ? "in-progress" : isNext ? "available" : "locked";
-      return { ...module, status, isCompleted, isCurrent, isNext, index: idx };
-    });
-  }, [progress.completedModuleIds, summary.currentModule.code, summary.nextModule.code]);
-
   return (
     <>
-      <PageHeader
-        eyebrow="AI Engineering Curriculum"
-        title="Learning Dashboard"
-        description="Track your mastery, explore the 30-module AI engineering curriculum, and continue where you left off."
-        action={
-          <div className="flex items-center gap-3">
-            <Button
-              className="shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
-              onClick={continueLearning}
-            >
-              <Play className="size-4 mr-1.5 fill-current" /> Continue Learning
-            </Button>
+      {/* Student Academic Context Bar */}
+      <div className="mb-6 rounded-2xl border border-border/80 bg-surface-elevated/90 p-5 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[11px] font-bold text-brand bg-brand-soft px-2.5 py-0.5 rounded-full border border-brand/25">
+                KLH UNIVERSITY
+              </span>
+              <span className="text-xs text-muted-foreground font-medium">Academic Command Center</span>
+            </div>
+            <h1 className="mt-1.5 font-display text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+              Good morning, Aarav.
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              B.Tech Computer Science & Engineering · 3rd Year · Semester 3
+            </p>
           </div>
-        }
-      />
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="rounded-xl border border-border/60 bg-surface/70 px-3 py-2 text-right">
+              <p className="text-[10px] font-mono text-faint uppercase">Curriculum Progress</p>
+              <p className="text-sm font-bold text-foreground">{summary.completedCount} / {summary.totalModules} Modules ({summary.progressPercent}%)</p>
+            </div>
+          </div>
+        </div>
 
-      {/* Hero Spatial Deck - Primary Learning Action Hub */}
+        {/* Quick Academic Navigation */}
+        <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+          <button
+            onClick={() => navigate({ to: "/curriculum" })}
+            className="flex items-center gap-2 rounded-xl border border-border/60 bg-surface/50 p-2.5 hover:bg-surface-elevated transition text-left"
+          >
+            <GitBranch className="size-4 text-brand shrink-0" />
+            <div>
+              <p className="font-semibold text-foreground">My Academics</p>
+              <p className="text-[10px] text-faint">4 Active Subjects</p>
+            </div>
+          </button>
+          <button
+            onClick={() => navigate({ to: "/build" })}
+            className="flex items-center gap-2 rounded-xl border border-border/60 bg-surface/50 p-2.5 hover:bg-surface-elevated transition text-left"
+          >
+            <FolderKanban className="size-4 text-lilac shrink-0" />
+            <div>
+              <p className="font-semibold text-foreground">My Projects</p>
+              <p className="text-[10px] text-faint">1 Capstone Engine</p>
+            </div>
+          </button>
+          <button
+            onClick={() => navigate({ to: "/skills" })}
+            className="flex items-center gap-2 rounded-xl border border-border/60 bg-surface/50 p-2.5 hover:bg-surface-elevated transition text-left"
+          >
+            <BarChart3 className="size-4 text-mint shrink-0" />
+            <div>
+              <p className="font-semibold text-foreground">My Skills</p>
+              <p className="text-[10px] text-faint">Verified Evidence</p>
+            </div>
+          </button>
+          <button
+            onClick={() => navigate({ to: "/career" })}
+            className="flex items-center gap-2 rounded-xl border border-border/60 bg-surface/50 p-2.5 hover:bg-surface-elevated transition text-left"
+          >
+            <Target className="size-4 text-peach shrink-0" />
+            <div>
+              <p className="font-semibold text-foreground">Career Prep</p>
+              <p className="text-[10px] text-faint">Software Track</p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Primary Action: Continue Learning */}
       <SpatialCard depth={2} elevation="medium" className="mb-6 rounded-2xl overflow-hidden">
-        <section className="spatial-deck rounded-2xl p-4 sm:p-7 relative overflow-hidden">
+        <section className="spatial-deck rounded-2xl p-5 sm:p-7 relative overflow-hidden">
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
-              <div className="inline-flex items-center gap-2 rounded-full bg-brand-soft border border-brand/25 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-[11px] font-mono font-bold text-brand mb-2">
+              <div className="inline-flex items-center gap-2 rounded-full bg-brand-soft border border-brand/25 px-2.5 py-0.5 text-[11px] font-mono font-bold text-brand mb-2">
                 <span className="size-2 rounded-full bg-brand cp-pulse" />
-                STATE: {summary.moduleState}
+                CONTINUE LEARNING
               </div>
-              <h2 className="text-xl sm:text-3xl font-display font-bold tracking-tight text-foreground leading-snug">
-                Continue Learning
-              </h2>
-              <p className="mt-1 text-sm sm:text-base text-foreground/90 font-semibold break-words">
+              <h2 className="text-xl sm:text-2xl font-display font-bold tracking-tight text-foreground">
                 Module {summary.currentModule.code} — {summary.currentModule.title}
+              </h2>
+              <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-2xl">
+                {summary.currentModule.description}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground font-mono">
-                Next: {summary.currentConcept?.title ?? summary.currentStepTitle} · ~{summary.currentConcept?.estimatedMinutes ?? 12} min
+              <p className="mt-2 text-xs text-foreground/80 font-mono">
+                Next Concept: <span className="font-semibold text-brand">{summary.currentConcept?.title ?? summary.currentStepTitle}</span> (~{summary.currentConcept?.estimatedMinutes ?? 12} min)
               </p>
             </div>
             <div className="flex items-center w-full sm:w-auto">
@@ -619,325 +665,141 @@ function Dashboard() {
               </Button>
             </div>
           </div>
-
-          {/* Curriculum Mastery Evidence Metrics */}
-          <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 border-t border-border/60 pt-4">
-            <div className="rounded-xl bg-surface-elevated/80 border border-border/70 p-2.5 sm:p-3">
-              <p className="text-[10px] font-mono text-faint uppercase truncate">Curriculum</p>
-              <p className="mt-0.5 text-base sm:text-lg font-bold text-foreground">{summary.progressPercent}%</p>
-              <p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">{summary.completedCount}/{summary.totalModules} modules</p>
-            </div>
-            <div className="rounded-xl bg-surface-elevated/80 border border-border/70 p-2.5 sm:p-3">
-              <p className="text-[10px] font-mono text-faint uppercase truncate">Mastered</p>
-              <p className="mt-0.5 text-base sm:text-lg font-bold text-mint">{summary.masteredConceptsCount}</p>
-              <p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">concepts verified</p>
-            </div>
-            <div className="rounded-xl bg-surface-elevated/80 border border-border/70 p-2.5 sm:p-3">
-              <p className="text-[10px] font-mono text-faint uppercase truncate">Needs Review</p>
-              <p className="mt-0.5 text-base sm:text-lg font-bold text-peach">{summary.reviewConceptsCount}</p>
-              <p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">flagged revision</p>
-            </div>
-            <div className="rounded-xl bg-surface-elevated/80 border border-border/70 p-2.5 sm:p-3">
-              <p className="text-[10px] font-mono text-faint uppercase truncate">Next Up</p>
-              <p className="mt-0.5 text-base sm:text-lg font-bold text-lilac truncate">Mod {summary.nextModule.code}</p>
-              <p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">{summary.nextModule.title}</p>
-            </div>
-          </div>
-
-          {/* 3D Connected Waypoints Stream (30 Modules Spine) */}
-          <div className="relative mt-5 pt-2 pb-1">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 truncate">
-                <GitBranch className="size-3.5 text-brand shrink-0" /> 30-Module Spine
-              </p>
-              <span className="font-mono text-xs font-bold text-brand shrink-0">{summary.progressPercent}% Done</span>
-            </div>
-
-            {/* Dimensional Path Bar */}
-            <div className="relative h-2 rounded-full bg-foreground/10 p-[2px] border border-border/60 overflow-hidden mb-3.5">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-brand via-lilac to-mint shadow-[0_0_12px_rgba(20,184,166,0.6)] transition-all duration-700"
-                style={{ width: `${Math.max(4, summary.progressPercent)}%` }}
-              />
-            </div>
-
-            <div className="flex gap-2.5 overflow-x-auto pb-3 pt-1 no-scrollbar touch-scroller scroll-smooth">
-              {modulesTrack.map((mod) => (
-                <button
-                  key={mod.code}
-                  onClick={() =>
-                    navigate({
-                      to: "/learning-mode",
-                      search: { module: mod.code },
-                    })
-                  }
-                  className={`group relative flex-shrink-0 flex flex-col items-start justify-between p-3 rounded-xl border transition-all duration-150 text-left w-32 sm:w-40 min-h-[100px] ${
-                    mod.isCurrent
-                      ? "border-brand bg-surface-elevated shadow-sm ring-1 ring-brand/30"
-                      : mod.isCompleted
-                      ? "border-mint/30 bg-surface-elevated/90 shadow-xs"
-                      : mod.isNext
-                      ? "border-lilac/40 bg-surface-elevated/80"
-                      : "border-border/60 bg-surface/50 opacity-70 hover:opacity-100"
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full mb-1.5">
-                    <span className="font-mono text-[10px] font-semibold text-brand bg-brand-soft px-1.5 py-0.5 rounded">
-                      {mod.code}
-                    </span>
-                    {mod.isCompleted ? (
-                      <span className="grid size-4 place-items-center rounded-full bg-mint text-primary-foreground">
-                        <Check className="size-2.5" />
-                      </span>
-                    ) : mod.isCurrent ? (
-                      <span className="size-2 rounded-full bg-brand ring-2 ring-brand/20" />
-                    ) : mod.isNext ? (
-                      <span className="size-2 rounded-full bg-lilac" />
-                    ) : (
-                      <Lock className="size-2.5 text-faint" />
-                    )}
-                  </div>
-                  <p className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-2 leading-tight w-full">
-                    {mod.title}
-                  </p>
-                  <div className="mt-2 flex items-center justify-between w-full text-[9px] sm:text-[10px] text-faint">
-                    <span className="truncate">{mod.experienceStage}</span>
-                    <span className="font-medium text-brand">
-                      Open →
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
         </section>
       </SpatialCard>
 
-      {/* Grid of Telemetry & Next Steps */}
-      <section className="mb-6 grid gap-4 sm:gap-5 lg:grid-cols-2">
-        <SpatialCard depth={8} elevation="medium" className="rounded-2xl">
-          <Panel className="h-full p-4 sm:p-5">
+      {/* Two Column Command Grid: Today Activity & Academics Summary */}
+      <div className="grid gap-5 lg:grid-cols-2 mb-6">
+        {/* Today Activity */}
+        <SpatialCard depth={4} elevation="medium" className="rounded-2xl">
+          <Panel className="h-full p-5">
             <SectionTitle
-              eyebrow="Neural Mastery History"
-              title="Recently Mastered Concepts"
-              action={
-                <span className="font-mono text-xs text-mint font-semibold">
-                  {summary.completedCount} Complete
-                </span>
-              }
-            />
-            {summary.recentlyCompleted.length ? (
-              <div className="space-y-2 mt-3">
-                {summary.recentlyCompleted.map((module) => (
-                  <div
-                    key={module.code}
-                    className="flex items-center justify-between gap-2.5 rounded-xl border border-mint/25 bg-mint-soft/30 p-2.5 sm:p-3 text-xs sm:text-sm transition"
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="grid size-5.5 sm:size-6 place-items-center rounded-lg bg-mint text-primary-foreground shrink-0 shadow-xs">
-                        <Check className="size-3 sm:size-3.5" />
-                      </span>
-                      <span className="font-medium text-foreground truncate">
-                        Mod {module.code} — {module.title}
-                      </span>
-                    </div>
-                    <span className="rounded-full bg-mint/15 px-2 py-0.5 text-[9px] sm:text-[10px] font-mono font-bold text-mint uppercase shrink-0">
-                      Verified
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-xl border border-dashed border-border/70 p-5 text-center text-xs sm:text-sm text-muted-foreground">
-                <p>Complete your first module challenge to record verified evidence here.</p>
-                <Button className="mt-3 min-h-[44px] w-full sm:w-auto" size="sm" variant="outline" onClick={continueLearning}>
-                  Start First Module
-                </Button>
-              </div>
-            )}
-          </Panel>
-        </SpatialCard>
-
-        <SpatialCard depth={8} elevation="medium" className="rounded-2xl">
-          <Panel className="h-full p-4 sm:p-5">
-            <SectionTitle
-              eyebrow="Recommended Flight Node"
-              title="Next In Line"
+              eyebrow="TODAY"
+              title="Next Recommended Activity"
               action={<StatusPill status="available" />}
             />
-            <div className="rounded-xl border border-lilac/30 bg-lilac-soft/30 p-3.5 sm:p-4 mt-2">
-              <p className="font-mono text-[10px] sm:text-xs font-bold text-lilac">MODULE {summary.nextModule.code}</p>
-              <h4 className="font-bold text-sm sm:text-base mt-1 text-foreground">{summary.nextModule.title}</h4>
-              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+            <div className="rounded-xl border border-lilac/30 bg-lilac-soft/30 p-4 mt-2">
+              <p className="font-mono text-xs font-bold text-lilac">MODULE {summary.nextModule.code}</p>
+              <h3 className="font-bold text-base mt-1 text-foreground">{summary.nextModule.title}</h3>
+              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
                 {summary.nextModule.description}
               </p>
-              <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                <span className="rounded-lg bg-surface-elevated/90 border border-border/60 px-2.5 py-1 text-foreground font-medium text-[11px]">
+              <div className="mt-3 flex items-center gap-2 text-xs">
+                <span className="rounded-md bg-surface-elevated border border-border/60 px-2 py-0.5 text-foreground font-medium text-[11px]">
                   {summary.nextModule.experienceStage} Stage
                 </span>
-                <span className="rounded-lg bg-surface-elevated/90 border border-border/60 px-2.5 py-1 text-muted-foreground font-mono text-[11px]">
-                  {summary.nextModule.estimatedTime}
+                <span className="font-mono text-faint text-[11px]">
+                  Est. {summary.nextModule.estimatedTime}
                 </span>
               </div>
             </div>
-            <Button className="mt-4 w-full min-h-[44px] shadow-sm" variant="outline" onClick={startNextModule}>
-              Initialize Next Module <ArrowRight className="size-4 ml-1" />
+            <Button className="mt-4 w-full min-h-[40px]" variant="outline" onClick={startNextModule}>
+              Initialize Module {summary.nextModule.code} <ArrowRight className="size-4 ml-1" />
             </Button>
           </Panel>
         </SpatialCard>
-      </section>
 
-      {/* Explore Further Spatial Matrix */}
-      <section className="mb-6 border-t border-border/70 pt-6">
-        <Eyebrow>3D Laboratory Workspaces</Eyebrow>
-        <div className="mt-4 grid grid-cols-1 gap-5 lg:grid-cols-3">
-          <SpatialCard depth={8} elevation="low" className="rounded-2xl">
-            <Panel className="h-full">
-              <SectionTitle
-                eyebrow="Interactive Map"
-                title="Curriculum Topology"
-                action={
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => navigate({ to: "/curriculum-map" })}
-                  >
-                    Open <ArrowRight className="size-3.5 ml-1" />
-                  </Button>
-                }
-              />
-              <p className="text-xs text-muted-foreground mb-4">
-                Explore connected nodes across 5 phases of AI mastery with live prerequisite vectors.
+        {/* My Academics Progress */}
+        <SpatialCard depth={4} elevation="medium" className="rounded-2xl">
+          <Panel className="h-full p-5">
+            <SectionTitle
+              eyebrow="MY ACADEMICS"
+              title="Subject Progress"
+              action={
+                <Button size="sm" variant="ghost" onClick={() => navigate({ to: "/curriculum" })}>
+                  View All <ArrowRight className="size-3.5 ml-1" />
+                </Button>
+              }
+            />
+            <div className="space-y-3 mt-2">
+              {[
+                { name: "Foundations of AI Coding", progress: 85, modules: "Modules 3.1–3.5", tone: "brand" as const },
+                { name: "Data Engineering & Analytics", progress: 60, modules: "Modules 3.6–3.7", tone: "lilac" as const },
+                { name: "Machine Learning & Models", progress: 30, modules: "Modules 3.8–3.13", tone: "peach" as const },
+                { name: "LLM Engineering & RAG", progress: 10, modules: "Modules 3.14–3.20", tone: "mint" as const },
+              ].map((subject) => (
+                <div key={subject.name} className="rounded-xl border border-border/60 bg-surface/50 p-3">
+                  <div className="flex items-center justify-between text-xs mb-1.5">
+                    <span className="font-semibold text-foreground">{subject.name}</span>
+                    <span className="font-mono text-faint">{subject.progress}%</span>
+                  </div>
+                  <ProgressBar value={subject.progress} tone={subject.tone} />
+                  <p className="mt-1.5 text-[10px] text-faint">{subject.modules}</p>
+                </div>
+              ))}
+            </div>
+          </Panel>
+        </SpatialCard>
+      </div>
+
+      {/* Secondary Grid: Projects & Skills Evidence */}
+      <div className="grid gap-5 lg:grid-cols-2">
+        {/* My Projects */}
+        <SpatialCard depth={4} elevation="medium" className="rounded-2xl">
+          <Panel className="h-full p-5">
+            <SectionTitle
+              eyebrow="MY PROJECTS"
+              title="Applied Builds"
+              action={
+                <Button size="sm" variant="outline" onClick={() => navigate({ to: "/build" })}>
+                  Open Capstone <FolderKanban className="size-3.5 ml-1" />
+                </Button>
+              }
+            />
+            <div className="rounded-xl border border-brand/20 bg-brand-soft/30 p-4 mt-2">
+              <span className="rounded-full bg-brand-soft border border-brand/30 px-2 py-0.5 text-[10px] font-mono font-bold text-brand">
+                3rd Year Capstone
+              </span>
+              <h3 className="font-bold text-sm text-foreground mt-2">Document Intelligence & RAG Engine</h3>
+              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+                Applying vector indexing, hierarchical chunking, and grounded LLM generation.
               </p>
-              <MiniMap onNode={() => navigate({ to: "/curriculum-map" })} />
-            </Panel>
-          </SpatialCard>
+              <div className="mt-3 flex items-center justify-between text-xs border-t border-border/40 pt-2">
+                <span className="text-faint">2 of 5 Stages Completed</span>
+                <span className="font-semibold text-brand">40% Verified</span>
+              </div>
+            </div>
+          </Panel>
+        </SpatialCard>
 
-          <SpatialCard depth={8} elevation="low" className="rounded-2xl">
-            <Panel className="h-full">
-              <SectionTitle eyebrow="Engineering Lab" title="Target Challenge" />
-              <div className="rounded-xl bg-brand-soft/40 border border-brand/20 p-3.5 mt-2">
-                <p className="font-bold text-sm text-foreground">{summary.nextModule.title}</p>
-                <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
-                  {summary.nextModule.project || summary.nextModule.description}
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2 text-[10px]">
-                  <span className="rounded-md bg-brand-soft px-2 py-0.5 font-semibold text-brand">
-                    {summary.nextModule.experienceStage}
-                  </span>
-                  <span className="font-mono text-muted-foreground">{summary.nextModule.estimatedTime}</span>
+        {/* My Skills */}
+        <SpatialCard depth={4} elevation="medium" className="rounded-2xl">
+          <Panel className="h-full p-5">
+            <SectionTitle
+              eyebrow="MY SKILLS"
+              title="Evidence-Based Competencies"
+              action={
+                <Button size="sm" variant="ghost" onClick={() => navigate({ to: "/skills" })}>
+                  View Evidence <ArrowRight className="size-3.5 ml-1" />
+                </Button>
+              }
+            />
+            <div className="space-y-2.5 text-xs mt-2">
+              <div className="flex items-center justify-between rounded-xl bg-surface/60 border border-border/50 p-2.5">
+                <div>
+                  <p className="font-semibold text-foreground">Python & AI Scripting</p>
+                  <p className="text-[10px] text-faint">Verified by 5 completed modules & code lab</p>
                 </div>
+                <span className="font-mono text-xs font-bold text-mint">Mastered</span>
               </div>
-              <Button className="mt-4 w-full" size="sm" onClick={startNextModule}>
-                Launch Code Challenge <Code2 className="size-4 ml-1.5" />
-              </Button>
-            </Panel>
-          </SpatialCard>
-
-          <SpatialCard depth={8} elevation="low" className="rounded-2xl">
-            <Panel className="h-full">
-              <SectionTitle
-                eyebrow="Telemetry Evidence"
-                title="Capability Metrics"
-                action={
-                  <Button size="sm" variant="ghost" onClick={() => navigate({ to: "/skills" })}>
-                    Inspect
-                  </Button>
-                }
-              />
-              <div className="space-y-2.5 text-xs mt-2">
-                <div className="flex items-center justify-between rounded-lg bg-surface-elevated/60 border border-border/50 p-2.5">
-                  <span className="text-muted-foreground">Sections Finished</span>
-                  <span className="font-mono font-bold text-brand">{evidence.sectionsCompleted}</span>
+              <div className="flex items-center justify-between rounded-xl bg-surface/60 border border-border/50 p-2.5">
+                <div>
+                  <p className="font-semibold text-foreground">Data Cleaning & Pandas</p>
+                  <p className="text-[10px] text-faint">Verified by attendance cleaning challenge</p>
                 </div>
-                <div className="flex items-center justify-between rounded-lg bg-surface-elevated/60 border border-border/50 p-2.5">
-                  <span className="text-muted-foreground">Diagnostic Checks</span>
-                  <span className="font-mono font-bold text-lilac">{evidence.questionsPassed}</span>
+                <span className="font-mono text-xs font-bold text-brand">Demonstrated</span>
+              </div>
+              <div className="flex items-center justify-between rounded-xl bg-surface/60 border border-border/50 p-2.5">
+                <div>
+                  <p className="font-semibold text-foreground">Vector Retrieval & RAG</p>
+                  <p className="text-[10px] text-faint">In progress via Capstone Milestone 3</p>
                 </div>
-                <div className="flex items-center justify-between rounded-lg bg-surface-elevated/60 border border-border/50 p-2.5">
-                  <span className="text-muted-foreground">Challenges Solved</span>
-                  <span className="font-mono font-bold text-mint">{evidence.challengesPassed}</span>
-                </div>
+                <span className="font-mono text-xs font-bold text-lilac">In Progress</span>
               </div>
-              <ProgressBar value={summary.progressPercent} className="mt-4" tone="lilac" />
-            </Panel>
-          </SpatialCard>
-        </div>
-      </section>
-
-      {/* Activity & Radar Telemetry */}
-      <section className="border-t border-border/70 pt-6">
-        <Eyebrow>Real-Time Telemetry Stream</Eyebrow>
-        <div className="mt-4 grid grid-cols-1 gap-5 lg:grid-cols-12">
-          <SpatialCard depth={6} className="lg:col-span-4 rounded-2xl">
-            <Panel className="h-full">
-              <SectionTitle
-                eyebrow="Frequency"
-                title="Activity Density"
-                action={
-                  <span className="flex items-center gap-1 text-xs font-bold text-peach bg-peach-soft/60 px-2.5 py-0.5 rounded-full border border-peach/25">
-                    <Flame className="size-3.5" />
-                    {evidence.sectionsCompleted} units
-                  </span>
-                }
-              />
-              <div className="grid grid-cols-10 gap-1.5 mt-2">
-                {heatmap.slice(0, 50).map((item) => (
-                  <span
-                    key={item.id}
-                    className={`aspect-square rounded-[5px] transition-all ${
-                      item.intensity === 0
-                        ? "bg-foreground/8"
-                        : item.intensity === 1
-                        ? "bg-brand/35"
-                        : item.intensity === 2
-                        ? "bg-brand/60"
-                        : item.intensity === 3
-                        ? "bg-brand/85 shadow-[0_0_8px_rgba(20,184,166,0.5)]"
-                        : "bg-brand shadow-[0_0_12px_rgba(20,184,166,0.8)]"
-                    }`}
-                  />
-                ))}
-              </div>
-            </Panel>
-          </SpatialCard>
-
-          <SpatialCard depth={6} className="lg:col-span-4 rounded-2xl">
-            <Panel className="h-full">
-              <SectionTitle eyebrow="Milestones" title="Career Bridge Signal" />
-              <div className="pt-2">
-                <StageTracker current={Math.min(4, Math.floor(evidence.challengesPassed / 3))} />
-              </div>
-              <p className="mt-4 text-[11px] text-faint font-mono">
-                {evidence.challengesPassed} of {summary.totalModules} project challenges evidenced
-              </p>
-            </Panel>
-          </SpatialCard>
-
-          <SpatialCard depth={6} className="lg:col-span-4 rounded-2xl">
-            <Panel className="h-full">
-              <SectionTitle eyebrow="Mastery Profile" title="Competency Web" />
-              <div className="relative">
-                <ResponsiveContainer width="100%" height={140}>
-                  <RadarChart data={skillData}>
-                    <PolarGrid stroke="var(--color-border)" />
-                    <PolarAngleAxis
-                      dataKey="skill"
-                      tick={{ fill: "var(--color-faint)", fontSize: 9 }}
-                    />
-                    <Radar
-                      dataKey="mastery"
-                      stroke="var(--color-brand)"
-                      fill="var(--color-brand)"
-                      fillOpacity={0.25}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
-            </Panel>
-          </SpatialCard>
-        </div>
-      </section>
+            </div>
+          </Panel>
+        </SpatialCard>
+      </div>
     </>
   );
 }
@@ -1428,12 +1290,12 @@ function InteractiveCurriculumMap() {
   return (
     <>
       <PageHeader
-        eyebrow={`3D Topology Map · ${mastered} of ${curriculumModules.length} nodes integrated`}
-        title="Interactive Curriculum Constellation"
-        description="Navigate the spatial topology from Python foundations up to production-grade AI systems."
+        eyebrow="KLH University · B.Tech CSE Semester 3"
+        title="Academic Curriculum Structure"
+        description="Structured academic progression across 4 core subjects and 30 integrated learning modules."
         action={
           <Button
-            className="shadow-lg shadow-brand/20 border border-brand/30 transition-all"
+            className="shadow-sm border border-brand/30 transition-all font-semibold"
             onClick={() =>
               navigate({
                 to: "/learning-mode",
@@ -1441,7 +1303,7 @@ function InteractiveCurriculumMap() {
               })
             }
           >
-            <Play className="size-4 mr-1 fill-current" /> Continue Flight Path
+            <Play className="size-4 mr-1 fill-current" /> Continue Active Module
           </Button>
         }
       />
@@ -3293,16 +3155,12 @@ function CodingLabContent({
   return (
     <>
       <PageHeader
-        eyebrow={challenge ? "Challenge · attempt history" : "Coding Lab · build & prove"}
-        title={challenge ? primaryChallenge.title : "Turn concepts into runnable code."}
-        description={
-          challenge
-            ? "A focused challenge with examples, attempt history, progressive hints, and AI review."
-            : "A focused workspace for practicing Python, Java, C++, and JavaScript against realistic test cases."
-        }
+        eyebrow={`Practical Application Challenge · Module ${primaryChallenge.moduleId}`}
+        title={primaryChallenge.title}
+        description={`Concept: ${primaryChallenge.topic} · Est. Time: ~15 mins · Difficulty: ${primaryChallenge.difficulty}`}
         action={
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Button variant="outline" className="min-h-[44px] w-full sm:w-auto text-xs font-semibold" onClick={() => toast(`Hint 1: ${primaryChallenge.hints[0]}`)}>
+            <Button variant="outline" className="min-h-[44px] w-full sm:w-auto text-xs font-semibold" onClick={() => toast(`AI Hint: ${primaryChallenge.hints[0]}`)}>
               Get a hint
             </Button>
             <Button className="min-h-[44px] w-full sm:w-auto text-xs font-bold" onClick={() => setReview(true)}>
@@ -3430,11 +3288,11 @@ function Projects() {
   return (
     <>
       <PageHeader
-        eyebrow="🚀 Applied Capstone · 3D AI Lab"
+        eyebrow="Practical Creation · 3rd Year Capstone Project"
         title="Document Intelligence & Neural RAG Engine"
-        description="Apply vector indexing, semantic embeddings, hierarchical chunking, and grounded generation into an enterprise-grade AI system."
+        description="Apply vector indexing, semantic embeddings, hierarchical chunking, and grounded generation learned across Semester 3 modules into a practical system."
         action={
-          <div className="flex items-center gap-4 rounded-2xl border border-brand/20 bg-surface-elevated/80 px-4 py-2 shadow-lg backdrop-blur-md">
+          <div className="flex items-center gap-4 rounded-2xl border border-brand/20 bg-surface-elevated/80 px-4 py-2 shadow-sm">
             <div className="relative grid size-12 place-items-center">
               <svg className="size-12 -rotate-90" viewBox="0 0 36 36">
                 <path
@@ -3459,31 +3317,32 @@ function Projects() {
               </span>
             </div>
             <div>
-              <p className="text-xs font-semibold">4–6 Weeks Scope</p>
-              <p className="text-[11px] text-faint">{completed}/5 Stages Verified</p>
+              <p className="text-xs font-semibold">Semester Capstone</p>
+              <p className="text-[11px] text-faint">{completed}/5 Milestones Verified</p>
             </div>
           </div>
         }
       />
       <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
         <div className="space-y-5">
-          <SpatialCard depth={2} glowColor="rgba(37, 99, 235, 0.15)" className="rounded-2xl border border-border/80 bg-surface-elevated/85 p-6 shadow-xl backdrop-blur-xl">
-            <div className="flex flex-wrap gap-2">
+          <SpatialCard depth={2} className="rounded-2xl border border-border/80 bg-surface-elevated/85 p-6 shadow-sm">
+            <Eyebrow>ACADEMIC PURPOSE & SKILLS DEMONSTRATED</Eyebrow>
+            <div className="mt-2 flex flex-wrap gap-2">
               <span className="rounded-full border border-brand/30 bg-brand-soft/60 px-3 py-1 text-[11px] font-medium text-brand">
-                Python 3.12
+                Python 3.12 (Modules 3.1–3.4)
               </span>
               <span className="rounded-full border border-lilac/30 bg-lilac-soft/60 px-3 py-1 text-[11px] font-medium text-lilac">
-                Vector Retrieval (Qdrant)
+                Vector Search (Modules 3.20–3.25)
               </span>
               <span className="rounded-full border border-peach/30 bg-peach-soft/60 px-3 py-1 text-[11px] font-medium text-peach">
-                RAG Triad Evaluation
+                Model Evaluation (Modules 3.8–3.13)
               </span>
               <span className="rounded-full border border-mint/30 bg-mint-soft/60 px-3 py-1 text-[11px] font-medium text-mint">
-                LangGraph Agents
+                Agent Workflows (Modules 3.22–3.23)
               </span>
             </div>
             <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-              Engineer a production-ready document intelligence system. You will ingest unstructured corpora, configure hybrid dense-sparse vector search, build hallucination guardrails, and benchmark real-time retrieval accuracy with TruLens.
+              <strong className="text-foreground">What you are building & why:</strong> Engineer a production-ready document intelligence system to turn unstructured course materials into grounded, searchable knowledge with verified retrieval accuracy.
             </p>
           </SpatialCard>
 
@@ -3673,232 +3532,152 @@ function Analytics() {
   const progress = useLearningProgress();
   const summary = getLearningProgressSummary(progress);
   const evidence = useLearningEvidence();
-  const pie = [
-    { name: "Complete", value: summary.progressPercent },
-    { name: "Remaining", value: 100 - summary.progressPercent },
+
+  const skillsWithEvidence = [
+    {
+      skill: "Python & Scripting",
+      status: "Mastered",
+      evidence: [
+        "Completed Modules 3.1 & 3.2",
+        "Passed diagnostic checks",
+        "Built attendance cleaning script in Challenge 3.6",
+      ],
+      tone: "mint" as const,
+    },
+    {
+      skill: "Data Cleaning & Analytics",
+      status: "Demonstrated",
+      evidence: [
+        "Completed Module 3.6 (Data Basics)",
+        "Passed Pandas aggregation test cases",
+        "Applied to student dataset challenge",
+      ],
+      tone: "brand" as const,
+    },
+    {
+      skill: "Vector Search & Retrieval (RAG)",
+      status: "In Progress",
+      evidence: [
+        "Completed Module 3.4 (AI APIs)",
+        "Working on Capstone Milestone 3 (Context Retrieval)",
+      ],
+      tone: "lilac" as const,
+    },
+    {
+      skill: "Machine Learning & Evaluation",
+      status: "Available",
+      evidence: [
+        "Prerequisites met (Modules 3.1-3.6)",
+        "Ready for Module 3.8 (Intro to ML)",
+      ],
+      tone: "peach" as const,
+    },
   ];
+
   return (
     <>
       <PageHeader
-        eyebrow="Learning analytics"
-        title="See where effort becomes capability."
-        description={`${summary.completedCount} of ${summary.totalModules} curriculum modules completed.`}
+        eyebrow="KLH Academic Evidence · Skill Matrix"
+        title="Evidence-Based Skill Verification"
+        description="Every skill demonstrated on this platform is backed by completed modules, verified code challenges, and project milestones."
         action={
-          <Button variant="outline" onClick={() => toast("Weekly report exported")}>
-            Export report
+          <Button variant="outline" onClick={() => toast("Academic transcript exported")}>
+            Export Skill Transcript
           </Button>
         }
       />
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 mb-6">
         <StatCard
           className="md:col-span-6 lg:col-span-3"
           icon={Activity}
-          label="Sections completed"
+          label="Learning Sections"
           value={String(evidence.sectionsCompleted)}
-          note={`${summary.progressPercent}% curriculum`}
+          note="Completed & verified"
           tone="brand"
         />
         <StatCard
           className="md:col-span-6 lg:col-span-3"
           icon={Code2}
-          label="Questions passed"
+          label="Knowledge Checks"
           value={String(evidence.questionsPassed)}
-          note="Learning checks"
+          note="Passed diagnostic checks"
           tone="lilac"
         />
         <StatCard
           className="md:col-span-6 lg:col-span-3"
           icon={Target}
-          label="Modules completed"
+          label="Modules Completed"
           value={`${summary.completedCount}/${summary.totalModules}`}
-          note={`${summary.progressPercent}% complete`}
+          note={`${summary.progressPercent}% of curriculum`}
           tone="peach"
         />
         <StatCard
           className="md:col-span-6 lg:col-span-3"
           icon={Flame}
-          label="Challenges passed"
+          label="Challenges Solved"
           value={String(evidence.challengesPassed)}
-          note="Build evidence"
+          note="Build & debug evidence"
           tone="mint"
         />
-        <Panel className="lg:col-span-4">
-          <SectionTitle eyebrow="Curriculum completion" title="AI Curriculum · Year 3" />
-          <div className="relative">
-            <ResponsiveContainer width="100%" height={210}>
-              <PieChart>
-                <Pie
-                  data={pie}
-                  innerRadius={62}
-                  outerRadius={82}
-                  dataKey="value"
-                  startAngle={90}
-                  endAngle={-270}
-                >
-                  <Cell fill="var(--color-brand)" />
-                  <Cell fill="var(--color-foreground)" fillOpacity={0.08} />
-                </Pie>
-                <text
-                  x="50%"
-                  y="48%"
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fill="var(--color-foreground)"
-                  fontSize="28"
-                  fontWeight="600"
-                >
-                  {summary.progressPercent}%
-                </text>
-                <text
-                  x="50%"
-                  y="61%"
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fill="var(--color-faint)"
-                  fontSize="10"
-                >
-                  complete
-                </text>
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {summary.completedCount} of {summary.totalModules} modules mastered
-          </p>
-        </Panel>
-        <Panel className="lg:col-span-8">
-          <SectionTitle eyebrow="Skill mastery" title="Competencies across your path" />
-          <ResponsiveContainer width="100%" height={270}>
-            <BarChart data={skillData} layout="vertical" margin={{ left: 20, right: 15 }}>
-              <CartesianGrid stroke="var(--color-border)" horizontal={false} />
-              <XAxis
-                type="number"
-                domain={[0, 100]}
-                tick={{ fill: "var(--color-faint)", fontSize: 10 }}
-              />
-              <YAxis
-                type="category"
-                dataKey="skill"
-                tick={{ fill: "var(--color-faint)", fontSize: 10 }}
-                width={62}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: "var(--color-surface-elevated)",
-                  border: "1px solid var(--color-border)",
-                  borderRadius: 12,
-                }}
-              />
-              <Bar dataKey="mastery" fill="var(--color-brand)" radius={[0, 6, 6, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </Panel>
-        <Panel className="lg:col-span-7">
-          <SectionTitle eyebrow="Assessment trend" title="Performance over time" />
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={weekTrend}>
-              <CartesianGrid stroke="var(--color-border)" vertical={false} />
-              <XAxis dataKey="week" tick={{ fill: "var(--color-faint)", fontSize: 10 }} />
-              <YAxis domain={[0, 100]} tick={{ fill: "var(--color-faint)", fontSize: 10 }} />
-              <Tooltip
-                contentStyle={{
-                  background: "var(--color-surface-elevated)",
-                  border: "1px solid var(--color-border)",
-                  borderRadius: 12,
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="score"
-                stroke="var(--color-lilac)"
-                strokeWidth={3}
-                dot={{ fill: "var(--color-lilac)" }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </Panel>
-        <Panel className="lg:col-span-5">
-          <SectionTitle eyebrow="Consistency" title="Minutes studied" />
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={timeline}>
-              <CartesianGrid stroke="var(--color-border)" vertical={false} />
-              <XAxis dataKey="date" tick={{ fill: "var(--color-faint)", fontSize: 10 }} />
-              <YAxis tick={{ fill: "var(--color-faint)", fontSize: 10 }} />
-              <Bar dataKey="minutes" fill="var(--color-peach)" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </Panel>
-        <Panel className="lg:col-span-7">
-          <SectionTitle
-            eyebrow="Recovery queue"
-            title="Weak areas"
-            action={
-              <Button size="sm" onClick={() => navigate({ to: "/recovery" })}>
-                Start recovery plan <ArrowRight />
-              </Button>
-            }
-          />
-          <div className="space-y-3">
-            {gaps.map((gap) => (
-              <div
-                key={gap.title}
-                className="flex items-center gap-3 rounded-xl border border-border/60 p-3"
-              >
-                <span className="grid size-9 place-items-center rounded-xl bg-peach-soft text-peach">
-                  <Lightbulb className="size-4" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium">{gap.title}</p>
-                  <p className="text-[11px] text-faint">{gap.reason}</p>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Panel className="h-full">
+          <SectionTitle eyebrow="VERIFIED COMPETENCIES" title="Skills & Supporting Evidence" />
+          <div className="space-y-4 mt-3">
+            {skillsWithEvidence.map((item) => (
+              <div key={item.skill} className="rounded-xl border border-border/70 bg-surface/50 p-4">
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold text-sm text-foreground">{item.skill}</p>
+                  <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase ${softToneMap[item.tone]}`}>
+                    {item.status}
+                  </span>
                 </div>
-                <span className="hidden rounded-full bg-peach-soft px-2 py-1 text-[10px] font-semibold text-peach sm:inline-flex">
-                  {gap.score}
-                </span>
+                <div className="mt-2.5 space-y-1">
+                  <p className="text-[10px] font-mono text-faint uppercase">Verification Evidence:</p>
+                  {item.evidence.map((ev) => (
+                    <p key={ev} className="text-xs text-muted-foreground flex items-center gap-1.5">
+                      <Check className="size-3 text-mint shrink-0" /> {ev}
+                    </p>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
         </Panel>
-        <Panel className="lg:col-span-5">
-          <SectionTitle eyebrow="Readiness score" title="Career composite" />
-          <ResponsiveContainer width="100%" height={220}>
-            <RadialBarChart
-              innerRadius="70%"
-              outerRadius="100%"
-              data={[{ value: 58, fill: "var(--color-brand)" }]}
-              startAngle={90}
-              endAngle={-270}
-            >
-              <RadialBar
-                dataKey="value"
-                background={{ fill: "var(--color-foreground)", fillOpacity: 0.08 }}
-                cornerRadius={12}
-              />
-              <text
-                x="50%"
-                y="46%"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fill="var(--color-foreground)"
-                fontSize="32"
-                fontWeight="600"
-              >
-                58
-              </text>
-              <text
-                x="50%"
-                y="61%"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fill="var(--color-faint)"
-                fontSize="10"
-              >
-                out of 100
-              </text>
-            </RadialBarChart>
-          </ResponsiveContainer>
-          <p className="text-center text-xs text-muted-foreground">
-            Curriculum 78 · Skills 56 · Projects 42 · Interview 31
+
+        <Panel className="h-full">
+          <SectionTitle
+            eyebrow="ACADEMIC REMEDIATION"
+            title="Focus Areas for Improvement"
+            action={
+              <Button size="sm" onClick={() => navigate({ to: "/recovery" })}>
+                Start Revision Plan <ArrowRight className="size-3.5 ml-1" />
+              </Button>
+            }
+          />
+          <p className="text-xs text-muted-foreground mb-4">
+            AI analysis of your code challenge submissions highlights specific concepts that require review before advancing.
           </p>
+          <div className="space-y-3">
+            {gaps.map((gap) => (
+              <div
+                key={gap.title}
+                className="flex items-center gap-3 rounded-xl border border-border/60 p-3.5 bg-surface/40"
+              >
+                <span className="grid size-9 place-items-center rounded-xl bg-peach-soft text-peach shrink-0">
+                  <Lightbulb className="size-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-foreground">{gap.title}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">{gap.reason}</p>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => navigate({ to: gap.route })}>
+                  Review
+                </Button>
+              </div>
+            ))}
+          </div>
         </Panel>
       </div>
     </>
@@ -3918,14 +3697,14 @@ function Career() {
   return (
     <>
       <PageHeader
-        eyebrow="Career bridge · adaptive track"
-        title="Make your semester legible to employers."
-        description="AI Skills Track connects your curriculum to practical skills, verified projects, certification, and employability."
+        eyebrow="KLH Career Preparation · Academic & Skill Alignment"
+        title="Connect Academic Rigor to Technical Employment"
+        description="Bridge your Semester 3 B.Tech coursework and verified project artifacts directly to engineering interview readiness."
         action={
           <select
             value={track}
             onChange={(e) => setTrack(e.target.value)}
-            className="h-9 rounded-lg border border-border bg-surface-elevated px-3 text-sm"
+            className="h-9 rounded-lg border border-border bg-surface-elevated px-3 text-sm font-semibold"
           >
             <option>Software Engineer</option>
             <option>AI/ML Engineer</option>
@@ -3934,12 +3713,12 @@ function Career() {
         }
       />
       <Panel>
-        <SectionTitle eyebrow="Readiness path" title={`${track} · 58% overall`} />
+        <SectionTitle eyebrow="PLACEMENT PREPARATION PATH" title={`${track} · Verified Progress Scaffolding`} />
         <StageTracker current={2} large />
       </Panel>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <Panel>
-          <SectionTitle eyebrow="Gap analysis" title="Industry skills you don't yet have" />
+          <SectionTitle eyebrow="ACADEMIC SKILL GAPS" title="Targeted Remediation Areas" />
           <div className="space-y-3">
             {gaps.map((gap) => (
               <div
@@ -3959,35 +3738,35 @@ function Career() {
         </Panel>
         <Panel>
           <SectionTitle
-            eyebrow="Interview prep"
-            title="Practice the proof, not just the theory"
+            eyebrow="TECHNICAL INTERVIEW PREPARATION"
+            title="Evidence-Based Defense & Concepts"
             action={
-              <span className="rounded-full bg-lilac-soft px-2 py-1 text-[10px] font-semibold text-lilac">
-                31% ready
+              <span className="rounded-full bg-lilac-soft px-2.5 py-1 text-[10px] font-mono font-bold text-lilac border border-lilac/30">
+                3 Concepts Practice Ready
               </span>
             }
           />
           <div className="space-y-3">
             {[
-              "Explain why retrieval quality affects grounded answers",
-              "Design an evaluation plan for a production AI feature",
-              "When should a workflow use an agent instead of a fixed pipeline?",
+              "Explain why vector retrieval quality directly impacts grounded RAG generation.",
+              "Design a validation strategy to handle dirty data before feeding model pipelines.",
+              "When should a software system utilize an autonomous agent over a static pipeline?",
             ].map((question, index) => (
               <div
                 key={question}
-                className="flex items-center gap-3 rounded-xl bg-background/40 p-3"
+                className="flex items-center gap-3 rounded-xl bg-background/40 p-3 border border-border/50"
               >
-                <span className="font-mono text-[10px] text-faint">0{index + 1}</span>
-                <p className="flex-1 text-xs">{question}</p>
+                <span className="font-mono text-[10px] font-bold text-brand">0{index + 1}</span>
+                <p className="flex-1 text-xs text-foreground font-medium">{question}</p>
                 <ChevronRight className="size-4 text-faint" />
               </div>
             ))}
           </div>
           <Button
-            className="mt-4"
-            onClick={() => toast("Mock interview ready · first question loaded")}
+            className="mt-4 w-full shadow-md shadow-brand/20 font-bold"
+            onClick={() => toast("Mock interview session initialized with Semester 3 questions")}
           >
-            Start mock interview <ArrowRight />
+            Start Technical Interview Practice <ArrowRight />
           </Button>
         </Panel>
       </div>
@@ -4047,19 +3826,19 @@ function Profile() {
           <div className="grid gap-3 text-sm sm:grid-cols-2">
             <div>
               <Eyebrow>University</Eyebrow>
-              <p className="mt-1">PES University</p>
+              <p className="mt-1 font-semibold text-foreground">KLH University</p>
             </div>
             <div>
-              <Eyebrow>Branch</Eyebrow>
-              <p className="mt-1">Computer Science · Sem 3</p>
+              <Eyebrow>Program</Eyebrow>
+              <p className="mt-1 font-semibold text-foreground">B.Tech Computer Science & Eng. · Sem 3</p>
             </div>
             <div>
-              <Eyebrow>Career goal</Eyebrow>
-              <p className="mt-1">Software Engineer</p>
+              <Eyebrow>Career Track</Eyebrow>
+              <p className="mt-1 font-semibold text-foreground">Software Engineer (AI Systems)</p>
             </div>
             <div>
-              <Eyebrow>Baseline</Eyebrow>
-              <p className="mt-1">Intermediate · AI detected</p>
+              <Eyebrow>Evidence Status</Eyebrow>
+              <p className="mt-1 font-semibold text-mint">Verified Academic & Skill Portfolio</p>
             </div>
           </div>
         </Panel>

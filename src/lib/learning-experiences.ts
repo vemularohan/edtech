@@ -1,5 +1,6 @@
 import { allCurriculumChallenges } from "./codepath-data";
 import { curriculumModules, type CurriculumModule } from "./curriculum-data";
+import { module31Content } from "./module-3-1-content";
 
 export type LearningStepStage =
   | "HOOK"
@@ -125,6 +126,148 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
   if (!module) throw new Error(`Unknown curriculum module: ${moduleId}`);
   const challenge = allCurriculumChallenges.find((item) => item.moduleId === module.code);
   if (!challenge) throw new Error(`No challenge configured for curriculum module: ${module.code}`);
+
+  if (moduleId === "3.1") {
+    const c = module31Content;
+    const learningSections = module.topics.map((concept, index) => ({
+      id: `${module.code}-concept-${index + 1}`,
+      concept,
+      title: `Understand ${concept}`,
+      explanation: c.teach.pillars[index]?.explanation ?? `Learn how ${concept} works.`,
+      whyItMatters: c.teach.pillars[index]?.keyInsight ?? `${concept} is vital for code literacy.`,
+      example: c.teach.pillars[index]?.example ?? c.tryIt.code,
+      practicePrompt: `Apply ${concept} to verify AI output logic.`,
+    }));
+
+    return {
+      module,
+      learningSections,
+      challenge,
+      steps: [
+        {
+          id: "3.1-hook",
+          stage: "HOOK",
+          title: c.hook.title,
+          explanation: `${c.hook.incidentScenario.missionTitle}\n\nExpected: ${c.hook.incidentScenario.expectedBehavior}\nActual: ${c.hook.incidentScenario.actualBehavior}`,
+          whyItMatters: "Forming a testable hypothesis before looking at the fix primes your analytical intuition.",
+          example: c.hook.incidentScenario.code,
+          interaction: "choose",
+          prompt: c.hook.incidentScenario.prompt,
+          options: c.hook.incidentScenario.predictionOptions.map((o) => o.text),
+          answer: c.hook.incidentScenario.predictionOptions[0].text,
+          misconceptionExpl: c.hook.incidentScenario.predictionOptions[0].feedback,
+        },
+        {
+          id: "3.1-why",
+          stage: "WHY",
+          title: c.why.title,
+          explanation: c.why.practicalProblem,
+          whyItMatters: c.why.coreTakeaways.join("\n• "),
+          example: `# Core Philosophy:\n• ${c.why.coreTakeaways.join("\n• ")}`,
+          interaction: "inspect",
+          prompt: "Why is code understanding essential when AI can write code?",
+        },
+        {
+          id: "3.1-learn",
+          stage: "LEARN",
+          title: "TEACH: Why Code When You Can Vibe Code?",
+          explanation: c.teach.pillars.map((p) => `### ${p.title}\n${p.explanation}\n💡 Insight: ${p.keyInsight}`).join("\n\n"),
+          whyItMatters: "Connecting code reading to AI prompting turns vague guessing into deterministic engineering.",
+          example: c.teach.pillars.map((p) => `# ${p.title}\n${p.example}`).join("\n\n"),
+          interaction: "inspect",
+          prompt: "Review the 4 core pillars of Python code literacy for AI developers.",
+        },
+        {
+          id: "3.1-try",
+          stage: "TRY IT",
+          title: c.tryIt.title,
+          explanation: `${c.tryIt.revelation.predictionSummary}\n\nWhy: ${c.tryIt.revelation.why}\n\nTask: ${c.tryIt.revelation.modificationTask}`,
+          whyItMatters: "Tracing code line-by-line reveals boolean operator behavior before runtime execution.",
+          example: c.tryIt.code,
+          interaction: "choose",
+          prompt: c.tryIt.prompt,
+          options: c.tryIt.predictionOptions.map((o) => o.text),
+          answer: c.tryIt.predictionOptions[0].text,
+          misconceptionExpl: c.tryIt.predictionOptions[0].feedback,
+        },
+        {
+          id: "3.1-practice",
+          stage: "PRACTICE",
+          title: c.practice.activities[0].title,
+          explanation: "Practice activities to build code reading and defect identification habits.",
+          whyItMatters: "Scaffolded practice bridges active reading with independent code review.",
+          example: c.practice.activities[0].code,
+          interaction: "choose",
+          prompt: c.practice.activities[0].prompt,
+          options: c.practice.activities[0].options.map((o) => o.text),
+          answer: c.practice.activities[0].options.find((o) => o.isCorrect)?.text,
+          misconceptionExpl: c.practice.activities[0].options.find((o) => o.isCorrect)?.feedback,
+        },
+        {
+          id: "3.1-break",
+          stage: "BREAK IT",
+          title: c.breakIt.title,
+          explanation: `Subtle Failure: ${c.breakIt.subtleBugDescription}\n\nHints:\n• ${c.breakIt.progressiveHints.join("\n• ")}`,
+          whyItMatters: "Senior engineers are defined by their ability to spot inverted conditional logic in critical code path boundaries.",
+          example: c.breakIt.brokenCode,
+          interaction: "choose",
+          prompt: c.breakIt.question1.prompt,
+          options: c.breakIt.question1.options.map((o) => o.text),
+          answer: c.breakIt.question1.options.find((o) => o.isCorrect)?.text,
+          fixedCode: c.fixIt.fixedCode,
+          misconceptionExpl: `What Broke: ${c.fixIt.postFixExplanation.whatBroke}\nWhy It Broke: ${c.fixIt.postFixExplanation.whyItBroke}\nWhy Fix Works: ${c.fixIt.postFixExplanation.whyFixWorks}`,
+        },
+        {
+          id: "3.1-your-turn",
+          stage: "YOUR TURN",
+          title: c.yourTurn.title,
+          explanation: `${c.yourTurn.taskPrompt}\n\nExpected Goal: ${c.yourTurn.expectedGoal}\n\nIdentified Defect: ${c.yourTurn.bugSummary}`,
+          whyItMatters: "Independent AI code review evaluates your ability to spot flat discount vs percentage bugs in generated code.",
+          example: c.yourTurn.aiGeneratedCode,
+          interaction: "choose",
+          prompt: "Select the correct code modification to fix the e-commerce coupon bug:",
+          options: c.yourTurn.options.map((o) => o.text),
+          answer: c.yourTurn.options.find((o) => o.isCorrect)?.text,
+          fixedCode: c.yourTurn.fixedCode,
+          misconceptionExpl: c.yourTurn.options.find((o) => o.isCorrect)?.feedback,
+        },
+        {
+          id: "3.1-check",
+          stage: "KNOWLEDGE CHECK",
+          title: "Diagnostic Knowledge Check",
+          explanation: "Assess your conceptual understanding across output prediction, logic debugging, and engineering reasoning.",
+          whyItMatters: "Diagnostic checks confirm you have internalized why code reading improves vibe coding.",
+          example: c.knowledgeCheck.questions[0].code ?? c.yourTurn.fixedCode,
+          interaction: "choose",
+          prompt: c.knowledgeCheck.questions[0].question,
+          options: c.knowledgeCheck.questions[0].options.map((o) => o.text),
+          answer: c.knowledgeCheck.questions[0].options.find((o) => o.isCorrect)?.text,
+          misconceptionExpl: c.knowledgeCheck.questions[0].options.find((o) => o.isCorrect)?.explanation,
+        },
+        {
+          id: "3.1-mastery",
+          stage: "MASTERY",
+          title: "Mastery Assessment: Module 3.1",
+          explanation: "Mastery criteria checklist backed by evidence:\n• Completed Hook Prediction\n• Validated Try It & Practice\n• Repaired Inverted Rate Limiter Bug\n• Completed Independent Code Review\n• Passed Knowledge Check",
+          whyItMatters: "Mastery is granted only after evidence is produced.",
+          example: c.mastery.finalEvidencePrompt,
+          interaction: "inspect",
+          prompt: "Confirm your evidence readiness for Module 3.1 Mastery.",
+        },
+        {
+          id: "3.1-next",
+          stage: "NEXT",
+          title: "Next Module: Python Fundamentals for AI",
+          explanation: "You have completed Module 3.1! Transition to Module 3.2 to master variables, data structures, loops, and functions for AI workflows.",
+          whyItMatters: "Building strong foundational syntax empowers you to build full-stack AI applications.",
+          example: "Module 3.2 → Variables, Lists, Dicts, Functions & Control Flow",
+          interaction: "inspect",
+          prompt: "Proceed to Challenge Lab or Module 3.2.",
+        },
+      ],
+    };
+  }
+
   const focused = examples[module.code] ?? {
     explanation: `${module.description} Work through the concepts in order, then apply them to a small, observable AI system.`,
     example: `${module.topics.slice(0, 4).join(" → ")}\n\nUse the first concept to make the next one measurable.`,
