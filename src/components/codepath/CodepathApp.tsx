@@ -415,7 +415,7 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
                   <Bell className="size-4 text-faint" />
                 </Button>
                 <button
-                  className="flex min-h-10 items-center gap-2 rounded-xl bg-surface-elevated/90 px-2.5 py-1.5 text-left border border-border/60 shadow-sm transition hover:scale-105"
+                  className="flex min-h-10 items-center gap-2 rounded-xl bg-surface-elevated/90 px-2.5 py-1.5 text-left border border-border/60 shadow-sm transition"
                   onClick={() => navigate({ to: "/profile" })}
                 >
                   <span className="hidden text-xs font-semibold sm:inline">Aarav K.</span>
@@ -651,7 +651,7 @@ function Dashboard() {
                 {summary.recentlyCompleted.map((module) => (
                   <div
                     key={module.code}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-mint/25 bg-mint-soft/30 p-3 text-sm transition hover:scale-[1.01]"
+                    className="flex items-center justify-between gap-3 rounded-xl border border-mint/25 bg-mint-soft/30 p-3 text-sm transition"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <span className="grid size-6 place-items-center rounded-lg bg-mint text-primary-foreground shrink-0 shadow-sm">
@@ -805,7 +805,7 @@ function Dashboard() {
                 {heatmap.slice(0, 50).map((item) => (
                   <span
                     key={item.id}
-                    className={`aspect-square rounded-[5px] transition-all hover:scale-125 ${
+                    className={`aspect-square rounded-[5px] transition-all ${
                       item.intensity === 0
                         ? "bg-foreground/8"
                         : item.intensity === 1
@@ -1353,7 +1353,7 @@ function InteractiveCurriculumMap() {
         description="Navigate the spatial topology from Python foundations up to production-grade AI systems."
         action={
           <Button
-            className="shadow-lg shadow-brand/20 border border-brand/30 hover:scale-105 transition-all"
+            className="shadow-lg shadow-brand/20 border border-brand/30 transition-all"
             onClick={() =>
               navigate({
                 to: "/learning-mode",
@@ -4304,7 +4304,7 @@ export function Landing() {
             </div>
           </div>
           <div className="relative min-h-[450px]">
-            <div className="cp-float absolute left-3 top-10 w-56 rotate-[-6deg] rounded-2xl border border-border bg-surface-elevated/80 p-4 shadow-sm">
+            <div className="absolute left-3 top-10 w-56 rounded-2xl border border-border bg-surface-elevated/80 p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <span className="size-2 rounded-full bg-mint" />
                 <Eyebrow>Mastered</Eyebrow>
@@ -4313,8 +4313,7 @@ export function Landing() {
               <p className="mt-1 text-[11px] text-faint">12 concepts · 96% mastery</p>
             </div>
             <div
-              className="cp-float absolute right-0 top-2 w-60 rotate-6 rounded-2xl border border-brand/35 bg-brand-soft/60 p-4 shadow-sm"
-              style={{ animationDelay: "-2s" }}
+              className="absolute right-0 top-2 w-60 rounded-2xl border border-brand/35 bg-brand-soft/60 p-4 shadow-sm"
             >
               <div className="flex items-center justify-between">
                 <span className="cp-pulse size-2 rounded-full bg-brand" />
@@ -4324,8 +4323,7 @@ export function Landing() {
               <p className="mt-1 text-[11px] text-faint">Prediction · Module 3.8</p>
             </div>
             <div
-              className="cp-float absolute bottom-14 left-12 w-60 rotate-3 rounded-2xl border border-lilac/30 bg-lilac-soft/60 p-4 shadow-sm"
-              style={{ animationDelay: "-4s" }}
+              className="absolute bottom-14 left-12 w-60 rounded-2xl border border-lilac/30 bg-lilac-soft/60 p-4 shadow-sm"
             >
               <div className="flex items-center justify-between">
                 <span className="size-2 rounded-full bg-lilac" />
@@ -4337,7 +4335,7 @@ export function Landing() {
                 <ProgressBar value={64} tone="lilac" />
               </div>
             </div>
-            <div className="absolute bottom-2 right-4 w-48 rotate-[-3deg] rounded-2xl border border-border bg-muted/50 p-4">
+            <div className="absolute bottom-2 right-4 w-48 rounded-2xl border border-border bg-muted/50 p-4">
               <div className="flex items-center justify-between">
                 <span className="size-2 rounded-full bg-muted-foreground/40" />
                 <Eyebrow>Locked</Eyebrow>
