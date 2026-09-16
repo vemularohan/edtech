@@ -77,17 +77,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "AI Skills Track · Verified AI learning" },
+      { title: "GenAI Path · Generative AI + Agentic AI + Python" },
       {
         name: "description",
-        content: "An adaptive, project-driven learning operating system for engineering students.",
+        content: "A 16-week professional program covering LLM applications, retrieval systems, autonomous agents, and production AI.",
       },
-      { name: "author", content: "AI Skills Track" },
-      { property: "og:title", content: "AI Skills Track · Verified AI learning" },
+      { name: "author", content: "GenAI Path" },
+      { property: "og:title", content: "GenAI Path · Generative AI + Agentic AI + Python" },
       {
         property: "og:description",
         content:
-          "Learn practical AI skills, build verified projects, and demonstrate your capabilities to recruiters.",
+          "Twenty modules from Python foundations to RAG, agents, and a portfolio hiring managers can inspect.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

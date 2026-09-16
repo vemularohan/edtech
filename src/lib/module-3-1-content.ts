@@ -118,7 +118,7 @@ export interface Module31StageContent {
 
 export const module31Content: Module31StageContent = {
   hook: {
-    title: "Mission: The Silent Calculation Failure",
+    title: "Start here: Python that AI projects actually use",
     incidentScenario: {
       missionTitle: "INCIDENT REPORT #301 — E-Commerce Discount Calculator",
       code: `def calculate_final_price(cart_items, discount_code):
@@ -176,33 +176,37 @@ print(calculate_final_price(cart, "SAVE20"))`,
     pillars: [
       {
         id: "pillar-a",
-        title: "A. Why Code if Vibe Coding Works?",
-        explanation: "Vibe coding gets you from 0 to 80% rapidly. But the remaining 20% contains production edge cases, security validation, and logic correctness that AI often hallucinates or simplifies.",
-        example: "# Prompt: 'Parse user age from web form'\nage = request.form['age']\nif age > 18: # ❌ TypeError! AI forgot age is a string '18', not integer 18.",
-        keyInsight: "AI tools write syntactically clean code, but they do not understand your business invariants."
+        title: "Variables, types, and operators",
+        explanation:
+          "Work fluently with integers, floats, strings, booleans, and None. Python is dynamically typed, so type mistakes often show up when you call an API or parse model output — not at the moment you write the line.",
+        example: `name = "ticket-104"\nretries = 3\nready = True\n# None is not the same as "" or 0`,
+        keyInsight: "Readable names and knowing None vs empty string will save you when JSON from an LLM is missing a key.",
       },
       {
         id: "pillar-b",
-        title: "B. What Breaks When Vibe Coding Fails?",
-        explanation: "When AI fails, it fails silently. It doesn't scream with a red stack trace; instead, it returns $79 instead of $84 or leaks memory silently.",
-        example: "# Silent failure in AI code:\ndef is_admin(user):\n    return user.get('role') == 'admin' or user.get('is_superuser') # returns None instead of False if key missing",
-        keyInsight: "Without code reading skills, silent bugs reach your end users before you notice them."
+        title: "Control flow and functions",
+        explanation:
+          "If/elif/else, loops, and functions are how you retry failed requests, branch on status codes, and keep prompts, API clients, and utilities in separate files. That layout is the same one used in real AI apps.",
+        example: `def classify(status):\n    if status == 429:\n        return "retry"\n    if status >= 400:\n        return "fail"\n    return "ok"`,
+        keyInsight: "Do not write spaghetti around the model call. Put decisions in named functions you can test.",
       },
       {
         id: "pillar-c",
-        title: "C. How Understanding Code Supercharges Vibe Coding",
-        explanation: "When you understand code, you stop guessing prompts. You inspect the generated block, spot the invalid operator or missing parameter, and guide the AI with surgical precision.",
-        example: "Vibe coder prompt: 'Fix the bug where money is wrong'\nCode reader prompt: 'Line 14: subtotal - discount * 1.05 evaluates operator precedence incorrectly. Wrap (subtotal - discount) * 1.05.'",
-        keyInsight: "Precision prompts require code reading."
+        title: "Data structures, files, and JSON",
+        explanation:
+          "Lists, dicts, and nested dicts are the shape of chat messages and API payloads. You will persist conversation history, save retrieved chunks, and load prompt templates from disk. json.loads / json.dumps is the lingua franca of LLM APIs.",
+        example: `import json\nfrom pathlib import Path\n\nmessages = json.loads(Path("chat.json").read_text())\nlast = messages[-1].get("content", "")`,
+        keyInsight: "Parse model output defensively with .get() and fail with a clear error when the shape is wrong.",
       },
       {
         id: "pillar-d",
-        title: "D. What Python Adds Beyond Plain English",
-        explanation: "Plain English is ambiguous ('Apply 5% tax to the remaining amount'). Python is unambiguous mathematical specification (`(subtotal - discount) * 1.05`).",
-        example: "# English: 'Filter high priority active tickets'\n# Python:\ntickets = [t for t in data if t['priority'] == 'high' and t['status'] == 'active']",
-        keyInsight: "Python is the unambiguous specification language for AI instruction."
-      }
-    ]
+        title: "Virtual environments and pip",
+        explanation:
+          "Create a venv so LangChain, vector-store, and HTTP libraries never collide across experiments. Pin versions in requirements.txt. Unpinned stacks break RAG months later.",
+        example: `python -m venv .venv\n# activate, then:\npip install -r requirements.txt\npip freeze > requirements.txt`,
+        keyInsight: "An AI project that only runs on your laptop is not a project. Isolate and pin dependencies from day one.",
+      },
+    ],
   },
   tryIt: {
     title: "Inspect & Predict: The AI User Filter",
