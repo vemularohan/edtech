@@ -11,6 +11,7 @@ import {
   BrainCircuit,
   Check,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   CircleHelp,
   Clock,
@@ -18,8 +19,11 @@ import {
   Command,
   Compass,
   Database,
+  FileText,
   Flame,
+  Folder,
   FolderKanban,
+  FolderOpen,
   GitBranch,
   GraduationCap,
   Layers3,
@@ -84,7 +88,6 @@ import {
   PromptInputTextarea,
 } from "@/components/ai-elements/prompt-input";
 import { Shimmer } from "@/components/ai-elements/shimmer";
-import { Background3D } from "@/components/ui/Background3D";
 import { SpatialCard } from "@/components/ui/SpatialCard";
 import {
   codingStarter,
@@ -101,7 +104,7 @@ import {
   weekTrend,
 } from "@/lib/codepath-data";
 import type { CurriculumChallenge } from "@/lib/codepath-data";
-import { curriculumModules } from "@/lib/curriculum-data";
+import { curriculumModules, displayModuleLabel, PROGRAM, PROGRAM_PHASES, CAREER_ROLES } from "@/lib/curriculum-data";
 import { getLearningExperience } from "@/lib/learning-experiences";
 import {
   completeLearningModule,
@@ -130,14 +133,14 @@ type View =
   | "recovery";
 
 const navItems: { label: string; to: string; icon: typeof Activity }[] = [
-  { label: "Discover", to: "/dashboard", icon: Compass },
-  { label: "Curriculum", to: "/curriculum", icon: GitBranch },
-  { label: "Learning Mode", to: "/learning-mode", icon: BookOpen },
-  { label: "Challenges", to: "/challenges", icon: Zap },
-  { label: "Build", to: "/build", icon: FolderKanban },
+  { label: "Home", to: "/dashboard", icon: Compass },
+  { label: "Modules", to: "/curriculum", icon: GitBranch },
+  { label: "Learn", to: "/learning-mode", icon: BookOpen },
+  { label: "Practice", to: "/challenges", icon: Zap },
+  { label: "Projects", to: "/build", icon: FolderKanban },
   { label: "Skills", to: "/skills", icon: BarChart3 },
   { label: "Portfolio", to: "/portfolio", icon: UserRound },
-  { label: "Career", to: "/career", icon: Target },
+  { label: "Careers", to: "/career", icon: Target },
 ];
 
 const toneMap = { brand: "bg-brand", lilac: "bg-lilac", peach: "bg-peach", mint: "bg-mint" };
@@ -148,18 +151,22 @@ const softToneMap = {
   mint: "bg-mint-soft text-mint",
 };
 
-function Mark({ compact = false }: { compact?: boolean }) {
+function Mark({ compact = false, invert = false }: { compact?: boolean; invert?: boolean }) {
   return (
     <div className="flex items-center gap-2.5">
-      <div className="grid size-9 place-items-center rounded-xl bg-ink text-background font-bold text-xs tracking-tight">
-        KLH
+      <div
+        className={`grid size-10 place-items-center rounded-lg font-display text-sm font-bold tracking-tight ${
+          invert ? "bg-white/15 text-white" : "bg-primary text-primary-foreground"
+        }`}
+      >
+        GA
       </div>
       {!compact && (
         <div className="leading-tight">
-          <p className="font-display text-[15px] font-semibold text-foreground">KLH AI Platform</p>
-          <p className="text-[10px] uppercase tracking-[.18em] text-faint">
-            Academic & Skill Track
+          <p className={`font-display text-base font-semibold ${invert ? "text-white" : "text-foreground"}`}>
+            {PROGRAM.name}
           </p>
+          <p className={`text-[11px] ${invert ? "text-white/60" : "text-faint"}`}>16-week GenAI program</p>
         </div>
       )}
     </div>
@@ -185,7 +192,7 @@ function Panel({
 }
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <p className="font-mono text-[10px] uppercase tracking-[.2em] text-brand/90 font-medium">
+    <p className="text-xs font-semibold text-primary">
       {children}
     </p>
   );
@@ -215,12 +222,12 @@ function StatusPill({ status }: { status: string }) {
   const label = status.replace("-", " ");
   const style =
     status === "mastered"
-      ? "bg-mint-soft text-mint border border-mint/30 shadow-[0_0_12px_rgba(20,184,166,0.25)]"
+      ? "bg-mint-soft text-mint border border-mint/25"
       : status === "in-progress"
-        ? "bg-brand-soft text-brand border border-brand/35 cp-pulse shadow-[0_0_14px_rgba(0,180,180,0.3)]"
+        ? "bg-brand-soft text-brand border border-brand/25"
         : status === "available"
-          ? "bg-lilac-soft text-lilac border border-lilac/30 shadow-sm"
-          : "bg-muted/70 text-faint border border-border/50";
+          ? "bg-lilac-soft text-lilac border border-lilac/25"
+          : "bg-muted text-faint border border-border";
   return (
     <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-wide uppercase ${style}`}>
       {label}
@@ -261,19 +268,14 @@ function StatCard({
   className?: string;
 }) {
   return (
-    <SpatialCard depth={8} elevation="medium" className={`rounded-2xl ${className ?? ""}`}>
-      <Panel className="p-4.5">
-        <div className="flex items-start justify-between">
-          <span className={`grid size-10 place-items-center rounded-xl shadow-sm ${softToneMap[tone]}`}>
-            <Icon className="size-4.5" />
-          </span>
-          <span className="font-mono text-[10px] font-semibold text-brand bg-brand-soft/70 px-2 py-0.5 rounded-full border border-brand/20">
-            Active
-          </span>
-        </div>
-        <p className="mt-4 text-xs font-medium text-muted-foreground">{label}</p>
-        <p className="mt-1 font-display text-2xl font-bold tracking-tight text-foreground">{value}</p>
-        <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{note}</p>
+    <SpatialCard depth={2} elevation="low" interactive={false} className={`rounded-2xl ${className ?? ""}`}>
+      <Panel className="p-4">
+        <span className={`grid size-9 place-items-center rounded-lg ${softToneMap[tone]}`}>
+          <Icon className="size-4" />
+        </span>
+        <p className="mt-3 text-xs font-medium text-muted-foreground">{label}</p>
+        <p className="mt-1 font-display text-2xl font-semibold tracking-tight text-foreground">{value}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{note}</p>
       </Panel>
     </SpatialCard>
   );
@@ -282,11 +284,28 @@ function StatCard({
 function Shell({ active, children }: { active: View; children: React.ReactNode }) {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const evidence = useLearningEvidence();
+  const [navOpen, setNavOpen] = useState(false);
   const progress = useLearningProgress();
   const summary = getLearningProgressSummary(progress);
   const activeItem = navItems.find(({ to }) => activePath(active, to));
   const pageTitle = activeItem?.label ?? "AI Skills Track";
+
+  useEffect(() => {
+    try {
+      setNavOpen(localStorage.getItem("genai-sidebar-open") === "1");
+    } catch {
+      setNavOpen(false);
+    }
+  }, []);
+
+  const persistNav = (open: boolean) => {
+    setNavOpen(open);
+    try {
+      localStorage.setItem("genai-sidebar-open", open ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+  };
 
   // Close mobile drawer on route change or ESC
   useEffect(() => {
@@ -306,211 +325,175 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
   }, [mobileOpen]);
 
   return (
-    <div className="app-shell min-h-screen w-full overflow-x-clip bg-background text-foreground relative">
-      <Background3D />
-      <div aria-hidden className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="cp-float absolute -left-40 -top-48 size-[580px] rounded-full bg-brand-soft/25 blur-3xl opacity-70" />
-        <div className="absolute -right-40 top-1/4 size-[620px] rounded-full bg-lilac-soft/20 blur-3xl opacity-60" />
-        <div className="absolute bottom-0 left-1/3 size-[480px] rounded-full bg-peach-soft/20 blur-3xl opacity-50" />
-      </div>
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1540px]">
-        {/* Desktop Sidebar */}
-        <aside className="app-sidebar sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border/70 bg-surface/60 px-4 py-5 backdrop-blur-2xl md:flex">
-          <div className="mb-7 px-2">
-            <Mark />
+    <div className="app-shell min-h-screen w-full overflow-x-clip bg-background text-foreground">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full">
+        <aside
+          className={`app-sidebar fixed inset-y-0 left-0 z-40 hidden h-screen flex-col overflow-hidden bg-ink py-5 text-white md:flex ${
+            navOpen ? "w-72 px-4" : "w-16 px-2"
+          }`}
+        >
+          <div className={`mb-6 flex items-center ${navOpen ? "justify-between px-2" : "flex-col gap-2"}`}>
+            {navOpen ? <Mark invert /> : <Mark compact invert />}
+            <button
+              type="button"
+              className="grid size-9 place-items-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white"
+              aria-label={navOpen ? "Close sidebar" : "Open sidebar"}
+              onClick={() => persistNav(!navOpen)}
+            >
+              {navOpen ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}
+            </button>
           </div>
-          <div className="px-2">
-            <Eyebrow>Academic Navigation</Eyebrow>
-          </div>
-          <nav className="mt-2.5 flex flex-col gap-1.5">
-            {navItems.map(({ label, to, icon: Icon }) => (
-              <Link
-                key={to}
-                to={to}
-                className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
-                  activePath(active, to)
-                    ? "bg-surface-elevated/95 text-foreground shadow-md ring-1 ring-border/80 translate-x-1"
-                    : "text-muted-foreground hover:bg-surface-elevated/60 hover:text-foreground hover:translate-x-0.5"
-                }`}
-              >
-                <Icon
-                  className={`size-4 transition-colors ${activePath(active, to) ? "text-brand" : "text-faint"}`}
-                />
-                {label}
-              </Link>
-            ))}
+          <nav className="flex flex-col gap-1">
+            {navItems.map(({ label, to, icon: Icon }) => {
+              const isActive = activePath(active, to);
+              return (
+                <Link
+                  key={to}
+                  to={to}
+                  title={label}
+                  className={`flex items-center rounded-lg py-2.5 text-sm font-medium transition ${
+                    navOpen ? "gap-3 px-3" : "justify-center px-0"
+                  } ${
+                    isActive
+                      ? "bg-white/15 text-white"
+                      : "text-white/70 hover:bg-white/8 hover:text-white"
+                  }`}
+                >
+                  <Icon className="size-4 shrink-0" />
+                  {navOpen ? label : null}
+                </Link>
+              );
+            })}
           </nav>
-          <div className="mt-auto rounded-2xl border border-border/80 bg-surface-elevated/85 p-3.5 shadow-sm backdrop-blur-md">
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-xs font-semibold">Spine Progress</p>
-              <span className="rounded-full bg-lilac-soft px-2 py-0.5 text-[10px] font-semibold text-lilac border border-lilac/30">
-                {summary.completedCount}/{summary.totalModules}
-              </span>
-            </div>
-            <ProgressBar value={summary.progressPercent} />
-            <p className="mt-2 text-[11px] text-faint truncate">
-              Module {summary.currentModule.code} · {summary.currentStepTitle || "Ready to start"}
-            </p>
-          </div>
-          <button
-            className="mt-3 flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground transition hover:bg-surface-elevated hover:text-foreground"
-            onClick={() => navigate({ to: "/profile" })}
-          >
-            <Settings2 className="size-4 text-faint" />
-            Settings & Lab Config
-          </button>
+          {navOpen ? (
+            <>
+              <div className="mt-auto rounded-xl bg-white/8 p-4">
+                <div className="mb-2 flex items-center justify-between text-xs">
+                  <p className="font-medium text-white/80">Progress</p>
+                  <span className="font-semibold text-white">
+                    {summary.completedCount}/{summary.totalModules}
+                  </span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-white/15">
+                  <div
+                    className="h-full rounded-full bg-primary"
+                    style={{ width: `${Math.max(4, summary.progressPercent)}%` }}
+                  />
+                </div>
+                <p className="mt-2 truncate text-[11px] text-white/55">
+                  Module {displayModuleLabel(summary.currentModule.code)} · {summary.currentModule.title}
+                </p>
+              </div>
+              <button
+                className="mt-3 flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/65 transition hover:bg-white/8 hover:text-white"
+                onClick={() => navigate({ to: "/profile" })}
+              >
+                <Settings2 className="size-4" />
+                Settings
+              </button>
+            </>
+          ) : (
+            <button
+              className="mt-auto grid size-10 place-items-center self-center rounded-lg text-white/65 hover:bg-white/8 hover:text-white"
+              title="Settings"
+              onClick={() => navigate({ to: "/profile" })}
+            >
+              <Settings2 className="size-4" />
+            </button>
+          )}
         </aside>
 
-        {/* Mobile Navigation Drawer */}
         {mobileOpen && (
           <div
-            className="fixed inset-0 z-50 bg-foreground/30 backdrop-blur-sm md:hidden transition-opacity"
+            className="fixed inset-0 z-50 bg-ink/50 md:hidden"
             onClick={() => setMobileOpen(false)}
             role="dialog"
             aria-modal="true"
             aria-label="Navigation Menu"
           >
             <aside
-              className="h-full w-[min(20rem,calc(100vw-2.5rem))] flex flex-col justify-between overflow-y-auto bg-background/95 p-5 shadow-2xl backdrop-blur-2xl border-r border-border touch-scroller"
+              className="flex h-full w-[min(20rem,calc(100vw-2rem))] flex-col overflow-y-auto bg-ink p-5 text-white touch-scroller"
               onClick={(event) => event.stopPropagation()}
             >
-              <div>
-                <div className="mb-6 flex items-center justify-between">
-                  <Mark />
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="min-h-[44px] min-w-[44px] rounded-xl hover:bg-surface"
-                    aria-label="Close navigation"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    <X className="size-5" />
-                  </Button>
-                </div>
-
-                {/* Mobile Active Module Banner */}
-                <div className="mb-5 rounded-xl border border-brand/25 bg-brand-soft/50 p-3">
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="font-mono font-bold text-brand">ACTIVE MISSION</span>
-                    <span className="font-mono font-semibold text-brand">Mod {summary.currentModule.code}</span>
-                  </div>
-                  <p className="mt-1 text-xs font-semibold text-foreground truncate">{summary.currentModule.title}</p>
-                  <div className="mt-2.5">
-                    <ProgressBar value={summary.progressPercent} />
-                  </div>
-                </div>
-
-                <nav className="flex flex-col gap-1.5" aria-label="Mobile Main Navigation">
-                  {navItems.map(({ label, to, icon: Icon }) => {
-                    const isActive = activePath(active, to);
-                    return (
-                      <Link
-                        key={to}
-                        to={to}
-                        onClick={() => setMobileOpen(false)}
-                        className={`flex min-h-[48px] items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
-                          isActive
-                            ? "bg-brand text-primary-foreground font-semibold shadow-md shadow-brand/20"
-                            : "text-muted-foreground hover:bg-surface-elevated hover:text-foreground"
-                        }`}
-                      >
-                        <Icon className={`size-4.5 shrink-0 ${isActive ? "text-primary-foreground" : "text-brand"}`} />
-                        <span>{label}</span>
-                        {isActive && <span className="ml-auto size-2 rounded-full bg-primary-foreground animate-pulse" />}
-                      </Link>
-                    );
-                  })}
-                </nav>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-border/70 space-y-2">
-                <button
-                  className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-medium text-muted-foreground hover:bg-surface-elevated hover:text-foreground transition"
-                  onClick={() => {
-                    setMobileOpen(false);
-                    navigate({ to: "/profile" });
-                  }}
+              <div className="mb-6 flex items-center justify-between">
+                <Mark invert />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="min-h-[44px] min-w-[44px] rounded-lg text-white hover:bg-white/10"
+                  aria-label="Close navigation"
+                  onClick={() => setMobileOpen(false)}
                 >
-                  <Settings2 className="size-4 text-faint" />
-                  <span>Profile & Learning Config</span>
-                </button>
+                  <X className="size-5" />
+                </Button>
               </div>
+              <nav className="flex flex-col gap-1" aria-label="Mobile Main Navigation">
+                {navItems.map(({ label, to, icon: Icon }) => {
+                  const isActive = activePath(active, to);
+                  return (
+                    <Link
+                      key={to}
+                      to={to}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex min-h-[48px] items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium ${
+                        isActive ? "bg-white/15 text-white" : "text-white/75 hover:bg-white/8"
+                      }`}
+                    >
+                      <Icon className="size-4" />
+                      {label}
+                    </Link>
+                  );
+                })}
+              </nav>
             </aside>
           </div>
         )}
 
-        {/* Main Content Viewport */}
+        <div className={`hidden shrink-0 md:block ${navOpen ? "w-72" : "w-16"}`} aria-hidden="true" />
         <div className="min-w-0 flex-1 flex flex-col">
-          {/* Mobile & Desktop Header */}
-          <header className="sticky top-0 z-30 w-full border-b border-border/70 bg-background/90 backdrop-blur-2xl">
-            <div className="flex min-h-14 sm:min-h-16 items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6">
-              {/* Mobile Left: Menu Toggle + Brand Icon + Page Title */}
-              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
+          <header className="sticky top-0 z-30 w-full border-b border-border bg-background/95 backdrop-blur">
+            <div className="flex min-h-16 items-center justify-between gap-3 px-4 sm:px-8">
+              <div className="flex min-w-0 items-center gap-3">
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="md:hidden min-h-[44px] min-w-[44px] rounded-xl text-foreground hover:bg-surface"
-                  aria-label="Open navigation menu"
-                  onClick={() => setMobileOpen(true)}
+                  className="min-h-[44px] min-w-[44px] rounded-lg"
+                  aria-label={navOpen ? "Close sidebar" : "Open sidebar"}
+                  onClick={() => {
+                    if (typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches) {
+                      persistNav(!navOpen);
+                    } else {
+                      setMobileOpen(true);
+                    }
+                  }}
                 >
                   <Menu className="size-5" />
                 </Button>
-                <div className="flex items-center gap-2 min-w-0 truncate">
-                  <div className="md:hidden grid size-7 place-items-center rounded-lg bg-ink text-background shrink-0">
-                    <GitBranch className="size-3.5" />
-                  </div>
-                  <p className="min-w-0 truncate font-display text-sm font-semibold text-foreground">
-                    {pageTitle}
+                <div className="min-w-0">
+                  <p className="truncate font-display text-lg font-semibold">{pageTitle}</p>
+                  <p className="hidden text-xs text-muted-foreground sm:block">
+                    Generative AI + Agentic AI + Python
                   </p>
                 </div>
               </div>
-
-              {/* Desktop Search Bar */}
-              <div className="hidden flex-1 items-center gap-2 rounded-xl border border-border/80 bg-surface-elevated/80 px-3.5 py-2 shadow-inner backdrop-blur-md sm:flex sm:max-w-md mx-2">
-                <Search className="size-4 text-faint" />
-                <input
-                  className="w-full bg-transparent text-sm outline-none placeholder:text-faint"
-                  placeholder="Search subjects, modules, projects, skills…"
-                />
-                <span className="hidden rounded-md bg-foreground/10 px-1.5 py-0.5 font-mono text-[10px] text-faint sm:inline">
-                  ⌘K
-                </span>
-              </div>
-
-              {/* Right User & Actions */}
-              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                <div className="hidden sm:flex items-center gap-2 rounded-full border border-brand/30 bg-brand-soft/50 px-3 py-1 text-[11px] font-mono text-brand font-medium">
-                  <span className="size-2 rounded-full bg-brand cp-pulse" />
-                  KLH University Student
+              <button
+                className="flex min-h-[40px] items-center gap-2 rounded-full border border-border bg-card px-2 py-1 text-left hover:border-primary/40"
+                onClick={() => navigate({ to: "/profile" })}
+                aria-label="User Profile"
+              >
+                <div className="hidden sm:flex flex-col text-right leading-tight pr-1">
+                  <span className="text-xs font-semibold">Aarav Kulkarni</span>
+                  <span className="text-[10px] text-muted-foreground">GenAI Engineer</span>
                 </div>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="hidden sm:inline-flex rounded-xl"
-                  aria-label="Notifications"
-                  onClick={() => toast("Academic progress synced with KLH LMS")}
-                >
-                  <Bell className="size-4 text-faint" />
-                </Button>
-                <button
-                  className="flex min-h-[40px] items-center gap-2 rounded-xl bg-surface-elevated/90 px-2.5 py-1 text-left border border-border/60 shadow-xs hover:border-brand/40 transition"
-                  onClick={() => navigate({ to: "/profile" })}
-                  aria-label="User Profile"
-                >
-                  <div className="hidden sm:flex flex-col text-right leading-tight">
-                    <span className="text-xs font-semibold">Aarav Kulkarni</span>
-                    <span className="text-[10px] text-muted-foreground">B.Tech CSE · Sem 3</span>
-                  </div>
-                  <span className="grid size-7 place-items-center rounded-lg bg-lilac-soft text-xs font-bold text-lilac">
-                    AK
-                  </span>
-                </button>
-              </div>
+                <span className="grid size-8 place-items-center rounded-full bg-brand-soft text-xs font-bold text-primary">
+                  AK
+                </span>
+              </button>
             </div>
           </header>
 
-          <main className="app-main w-full min-w-0 flex-1 px-3.5 pb-20 pt-4 sm:px-6 sm:pt-6 lg:px-10">
-            {children}
+          <main className="app-main w-full min-w-0 flex-1 px-4 pb-16 pt-6 sm:px-8">
+            <div className="page-canvas">{children}</div>
           </main>
         </div>
       </div>
@@ -542,265 +525,117 @@ function PageHeader({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="cp-rise mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:flex-wrap sm:items-end">
-      <div className="min-w-0">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="min-w-0 flex-1">
         <Eyebrow>{eyebrow}</Eyebrow>
-        <h1 className="mt-2 max-w-3xl break-words font-display text-[clamp(1.75rem,7vw,2.25rem)] font-semibold leading-tight tracking-tight text-foreground">
+        <h1 className="mt-1 max-w-3xl font-display text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-[1.75rem]">
           {title}
         </h1>
-        <p className="mt-2 max-w-2xl text-[15px] leading-6 text-muted-foreground">{description}</p>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
       </div>
-      {action}
+      {action ? <div className="shrink-0">{action}</div> : null}
     </div>
   );
 }
 
 function Dashboard() {
   const navigate = useNavigate();
-  const evidence = useLearningEvidence();
   const progress = useLearningProgress();
   const summary = getLearningProgressSummary(progress);
   const continueLearning = () => navigate({ to: "/learning-mode", search: summary.continueSearch });
-  const startNextModule = () =>
-    navigate({ to: "/learning-mode", search: { module: summary.nextModule.code } });
 
   return (
-    <>
-      {/* Student Academic Context Bar */}
-      <div className="mb-6 rounded-2xl border border-border/80 bg-surface-elevated/90 p-5 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-4">
+    <div className="space-y-6">
+      <section className="rounded-2xl border border-border bg-card p-6 sm:p-8">
+        <p className="text-sm font-medium text-primary">You are here</p>
+        <h1 className="mt-2 max-w-2xl font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          Module {displayModuleLabel(summary.currentModule.code)}: {summary.currentModule.title}
+        </h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+          {summary.currentModule.description}
+        </p>
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <Button
+            size="lg"
+            className="h-12 min-h-12 px-6 text-base font-semibold"
+            onClick={continueLearning}
+          >
+            <Play className="mr-2 size-4 fill-current" />
+            Continue lesson
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            className="h-12"
+            onClick={() => navigate({ to: "/curriculum" })}
+          >
+            See all 20 modules
+          </Button>
+        </div>
+        <p className="mt-4 text-xs text-faint">
+          {summary.completedCount} of {summary.totalModules} modules done · next topic:{" "}
+          {summary.currentConcept?.title ?? "Start Module 01"}
+        </p>
+      </section>
+
+      <section>
+        <div className="mb-4 flex items-end justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[11px] font-bold text-brand bg-brand-soft px-2.5 py-0.5 rounded-full border border-brand/25">
-                KLH UNIVERSITY
-              </span>
-              <span className="text-xs text-muted-foreground font-medium">Academic Command Center</span>
-            </div>
-            <h1 className="mt-1.5 font-display text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-              Good morning, Aarav.
-            </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              B.Tech Computer Science & Engineering · 3rd Year · Semester 3
+            <h2 className="font-display text-xl font-semibold">The path, in order</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Do not skip ahead. RAG needs Python and APIs first.
             </p>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="rounded-xl border border-border/60 bg-surface/70 px-3 py-2 text-right">
-              <p className="text-[10px] font-mono text-faint uppercase">Curriculum Progress</p>
-              <p className="text-sm font-bold text-foreground">{summary.completedCount} / {summary.totalModules} Modules ({summary.progressPercent}%)</p>
-            </div>
-          </div>
+          <Button variant="ghost" onClick={() => navigate({ to: "/curriculum" })}>
+            Open modules <ArrowRight className="ml-1 size-4" />
+          </Button>
         </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {PROGRAM_PHASES.map((phase, index) => (
+            <button
+              key={phase.name}
+              onClick={() => navigate({ to: "/curriculum" })}
+              className="rounded-xl border border-border bg-card p-4 text-left hover:border-primary/40"
+            >
+              <p className="text-xs font-semibold text-primary">Phase {index + 1}</p>
+              <p className="mt-1 font-semibold">{phase.name}</p>
+              <p className="mt-1 text-xs text-muted-foreground">Modules {phase.modules}</p>
+              <p className="mt-2 text-xs leading-5 text-faint">{phase.leaveAble}</p>
+            </button>
+          ))}
+        </div>
+      </section>
 
-        {/* Quick Academic Navigation */}
-        <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+      <section className="grid gap-4 lg:grid-cols-3">
+        {[
+          {
+            title: "LLM Chatbot",
+            detail: "Streaming chat with history and token logging.",
+            maps: "Modules 01–05",
+          },
+          {
+            title: "PDF RAG Q&A",
+            detail: "Cited answers from your documents, plus an eval sheet.",
+            maps: "Modules 07–09",
+          },
+          {
+            title: "Tool-using agent",
+            detail: "Bounded steps, traces, and confirmation before side effects.",
+            maps: "Modules 10–11",
+          },
+        ].map((project) => (
           <button
-            onClick={() => navigate({ to: "/curriculum" })}
-            className="flex items-center gap-2 rounded-xl border border-border/60 bg-surface/50 p-2.5 hover:bg-surface-elevated transition text-left"
-          >
-            <GitBranch className="size-4 text-brand shrink-0" />
-            <div>
-              <p className="font-semibold text-foreground">My Academics</p>
-              <p className="text-[10px] text-faint">4 Active Subjects</p>
-            </div>
-          </button>
-          <button
+            key={project.title}
             onClick={() => navigate({ to: "/build" })}
-            className="flex items-center gap-2 rounded-xl border border-border/60 bg-surface/50 p-2.5 hover:bg-surface-elevated transition text-left"
+            className="rounded-xl border border-border bg-card p-5 text-left hover:border-primary/40"
           >
-            <FolderKanban className="size-4 text-lilac shrink-0" />
-            <div>
-              <p className="font-semibold text-foreground">My Projects</p>
-              <p className="text-[10px] text-faint">1 Capstone Engine</p>
-            </div>
+            <p className="text-xs font-semibold text-primary">{project.maps}</p>
+            <h3 className="mt-2 font-display text-lg font-semibold">{project.title}</h3>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{project.detail}</p>
           </button>
-          <button
-            onClick={() => navigate({ to: "/skills" })}
-            className="flex items-center gap-2 rounded-xl border border-border/60 bg-surface/50 p-2.5 hover:bg-surface-elevated transition text-left"
-          >
-            <BarChart3 className="size-4 text-mint shrink-0" />
-            <div>
-              <p className="font-semibold text-foreground">My Skills</p>
-              <p className="text-[10px] text-faint">Verified Evidence</p>
-            </div>
-          </button>
-          <button
-            onClick={() => navigate({ to: "/career" })}
-            className="flex items-center gap-2 rounded-xl border border-border/60 bg-surface/50 p-2.5 hover:bg-surface-elevated transition text-left"
-          >
-            <Target className="size-4 text-peach shrink-0" />
-            <div>
-              <p className="font-semibold text-foreground">Career Prep</p>
-              <p className="text-[10px] text-faint">Software Track</p>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      {/* Primary Action: Continue Learning */}
-      <SpatialCard depth={2} elevation="medium" className="mb-6 rounded-2xl overflow-hidden">
-        <section className="spatial-deck rounded-2xl p-5 sm:p-7 relative overflow-hidden">
-          <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-            <div className="min-w-0 flex-1">
-              <div className="inline-flex items-center gap-2 rounded-full bg-brand-soft border border-brand/25 px-2.5 py-0.5 text-[11px] font-mono font-bold text-brand mb-2">
-                <span className="size-2 rounded-full bg-brand cp-pulse" />
-                CONTINUE LEARNING
-              </div>
-              <h2 className="text-xl sm:text-2xl font-display font-bold tracking-tight text-foreground">
-                Module {summary.currentModule.code} — {summary.currentModule.title}
-              </h2>
-              <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-2xl">
-                {summary.currentModule.description}
-              </p>
-              <p className="mt-2 text-xs text-foreground/80 font-mono">
-                Next Concept: <span className="font-semibold text-brand">{summary.currentConcept?.title ?? summary.currentStepTitle}</span> (~{summary.currentConcept?.estimatedMinutes ?? 12} min)
-              </p>
-            </div>
-            <div className="flex items-center w-full sm:w-auto">
-              <Button
-                size="lg"
-                className="w-full sm:w-auto min-h-[44px] shadow-lg shadow-brand/20 hover:shadow-xl transition-all text-sm font-bold"
-                onClick={continueLearning}
-              >
-                <Play className="size-4 mr-2 fill-current" /> Resume Studio
-              </Button>
-            </div>
-          </div>
-        </section>
-      </SpatialCard>
-
-      {/* Two Column Command Grid: Today Activity & Academics Summary */}
-      <div className="grid gap-5 lg:grid-cols-2 mb-6">
-        {/* Today Activity */}
-        <SpatialCard depth={4} elevation="medium" className="rounded-2xl">
-          <Panel className="h-full p-5">
-            <SectionTitle
-              eyebrow="TODAY"
-              title="Next Recommended Activity"
-              action={<StatusPill status="available" />}
-            />
-            <div className="rounded-xl border border-lilac/30 bg-lilac-soft/30 p-4 mt-2">
-              <p className="font-mono text-xs font-bold text-lilac">MODULE {summary.nextModule.code}</p>
-              <h3 className="font-bold text-base mt-1 text-foreground">{summary.nextModule.title}</h3>
-              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                {summary.nextModule.description}
-              </p>
-              <div className="mt-3 flex items-center gap-2 text-xs">
-                <span className="rounded-md bg-surface-elevated border border-border/60 px-2 py-0.5 text-foreground font-medium text-[11px]">
-                  {summary.nextModule.experienceStage} Stage
-                </span>
-                <span className="font-mono text-faint text-[11px]">
-                  Est. {summary.nextModule.estimatedTime}
-                </span>
-              </div>
-            </div>
-            <Button className="mt-4 w-full min-h-[40px]" variant="outline" onClick={startNextModule}>
-              Initialize Module {summary.nextModule.code} <ArrowRight className="size-4 ml-1" />
-            </Button>
-          </Panel>
-        </SpatialCard>
-
-        {/* My Academics Progress */}
-        <SpatialCard depth={4} elevation="medium" className="rounded-2xl">
-          <Panel className="h-full p-5">
-            <SectionTitle
-              eyebrow="MY ACADEMICS"
-              title="Subject Progress"
-              action={
-                <Button size="sm" variant="ghost" onClick={() => navigate({ to: "/curriculum" })}>
-                  View All <ArrowRight className="size-3.5 ml-1" />
-                </Button>
-              }
-            />
-            <div className="space-y-3 mt-2">
-              {[
-                { name: "Foundations of AI Coding", progress: 85, modules: "Modules 3.1–3.5", tone: "brand" as const },
-                { name: "Data Engineering & Analytics", progress: 60, modules: "Modules 3.6–3.7", tone: "lilac" as const },
-                { name: "Machine Learning & Models", progress: 30, modules: "Modules 3.8–3.13", tone: "peach" as const },
-                { name: "LLM Engineering & RAG", progress: 10, modules: "Modules 3.14–3.20", tone: "mint" as const },
-              ].map((subject) => (
-                <div key={subject.name} className="rounded-xl border border-border/60 bg-surface/50 p-3">
-                  <div className="flex items-center justify-between text-xs mb-1.5">
-                    <span className="font-semibold text-foreground">{subject.name}</span>
-                    <span className="font-mono text-faint">{subject.progress}%</span>
-                  </div>
-                  <ProgressBar value={subject.progress} tone={subject.tone} />
-                  <p className="mt-1.5 text-[10px] text-faint">{subject.modules}</p>
-                </div>
-              ))}
-            </div>
-          </Panel>
-        </SpatialCard>
-      </div>
-
-      {/* Secondary Grid: Projects & Skills Evidence */}
-      <div className="grid gap-5 lg:grid-cols-2">
-        {/* My Projects */}
-        <SpatialCard depth={4} elevation="medium" className="rounded-2xl">
-          <Panel className="h-full p-5">
-            <SectionTitle
-              eyebrow="MY PROJECTS"
-              title="Applied Builds"
-              action={
-                <Button size="sm" variant="outline" onClick={() => navigate({ to: "/build" })}>
-                  Open Capstone <FolderKanban className="size-3.5 ml-1" />
-                </Button>
-              }
-            />
-            <div className="rounded-xl border border-brand/20 bg-brand-soft/30 p-4 mt-2">
-              <span className="rounded-full bg-brand-soft border border-brand/30 px-2 py-0.5 text-[10px] font-mono font-bold text-brand">
-                3rd Year Capstone
-              </span>
-              <h3 className="font-bold text-sm text-foreground mt-2">Document Intelligence & RAG Engine</h3>
-              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                Applying vector indexing, hierarchical chunking, and grounded LLM generation.
-              </p>
-              <div className="mt-3 flex items-center justify-between text-xs border-t border-border/40 pt-2">
-                <span className="text-faint">2 of 5 Stages Completed</span>
-                <span className="font-semibold text-brand">40% Verified</span>
-              </div>
-            </div>
-          </Panel>
-        </SpatialCard>
-
-        {/* My Skills */}
-        <SpatialCard depth={4} elevation="medium" className="rounded-2xl">
-          <Panel className="h-full p-5">
-            <SectionTitle
-              eyebrow="MY SKILLS"
-              title="Evidence-Based Competencies"
-              action={
-                <Button size="sm" variant="ghost" onClick={() => navigate({ to: "/skills" })}>
-                  View Evidence <ArrowRight className="size-3.5 ml-1" />
-                </Button>
-              }
-            />
-            <div className="space-y-2.5 text-xs mt-2">
-              <div className="flex items-center justify-between rounded-xl bg-surface/60 border border-border/50 p-2.5">
-                <div>
-                  <p className="font-semibold text-foreground">Python & AI Scripting</p>
-                  <p className="text-[10px] text-faint">Verified by 5 completed modules & code lab</p>
-                </div>
-                <span className="font-mono text-xs font-bold text-mint">Mastered</span>
-              </div>
-              <div className="flex items-center justify-between rounded-xl bg-surface/60 border border-border/50 p-2.5">
-                <div>
-                  <p className="font-semibold text-foreground">Data Cleaning & Pandas</p>
-                  <p className="text-[10px] text-faint">Verified by attendance cleaning challenge</p>
-                </div>
-                <span className="font-mono text-xs font-bold text-brand">Demonstrated</span>
-              </div>
-              <div className="flex items-center justify-between rounded-xl bg-surface/60 border border-border/50 p-2.5">
-                <div>
-                  <p className="font-semibold text-foreground">Vector Retrieval & RAG</p>
-                  <p className="text-[10px] text-faint">In progress via Capstone Milestone 3</p>
-                </div>
-                <span className="font-mono text-xs font-bold text-lilac">In Progress</span>
-              </div>
-            </div>
-          </Panel>
-        </SpatialCard>
-      </div>
-    </>
+        ))}
+      </section>
+    </div>
   );
 }
 
@@ -983,7 +818,7 @@ function LegacyCurriculumMap() {
       <PageHeader
         eyebrow={`Your curriculum · ${masteredModules} of ${curriculumModules.length} modules mastered`}
         title="Curriculum journey"
-        description="Follow the capabilities that turn your degree into practical AI skills. Academic concepts stay connected underneath."
+        description="Twenty modules in one sequence: Python and prompts, then RAG, then agents, then production and portfolio."
         action={
           <div className="flex rounded-xl border border-border bg-surface-elevated p-1">
             <button
@@ -1144,9 +979,9 @@ function LegacyCurriculumMap() {
             <div>
               <Eyebrow>Prerequisites</Eyebrow>
               <p className="mt-1 text-sm">
-                {selected.id === "3.13"
-                  ? "Python, data cleaning, model evaluation"
-                  : "Programming Fundamentals"}
+                {Number(selected.id.split(".")[1]) > 8
+                  ? "Complete earlier modules in order. Agents assume you already understand RAG."
+                  : "Start with Python, APIs, and prompts. Do not skip Module 01."}
               </p>
             </div>
             <div>
@@ -1184,7 +1019,7 @@ function LegacyCurriculumMap() {
       <Panel className="mt-5">
         <SectionTitle
           eyebrow="Applied AI curriculum"
-          title="All 30 modules"
+          title="All 20 modules"
           action={
             <span className="text-xs text-faint">
               {curriculumModules.filter((module) => module.status === "mastered").length} mastered
@@ -1199,7 +1034,7 @@ function LegacyCurriculumMap() {
             >
               <div className="flex items-start justify-between gap-2">
                 <span className="font-mono text-[10px] font-semibold text-brand">
-                  {module.code}
+                  {displayModuleLabel(module.code)}
                 </span>
                 <StatusPill status={module.status} />
               </div>
@@ -1231,17 +1066,15 @@ function InteractiveCurriculumMap() {
   const progress = useLearningProgress();
   const summary = getLearningProgressSummary(progress);
   const [phase, setPhase] = useState(0);
-  const [lens, setLens] = useState<"journey" | "skills" | "projects" | "list">("journey");
-  const [filter, setFilter] = useState("All");
   const [query, setQuery] = useState("");
   const [selectedCode, setSelectedCode] = useState<ModuleId>("3.1");
-  const [concept, setConcept] = useState<string | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
   const phases = [
-    ["FOUNDATION", 0, 6],
-    ["MACHINE LEARNING", 7, 12],
-    ["DEEP LEARNING & APPLIED AI", 13, 19],
-    ["ADVANCED AI ENGINEERING", 20, 27],
-    ["CAREER & CAPSTONE", 28, 29],
+    ["FOUNDATIONS", 0, 3],
+    ["KNOWLEDGE APPS", 4, 7],
+    ["AGENTS", 8, 12],
+    ["DOMAIN & PRODUCTION", 13, 16],
+    ["PORTFOLIO & CAREER", 17, 19],
   ] as const;
   const mastered = summary.completedCount;
   const statusFor = (index: number) =>
@@ -1255,44 +1088,26 @@ function InteractiveCurriculumMap() {
   const selectedIndex = curriculumModules.findIndex((module) => module.code === selectedCode);
   const selectedModule = curriculumModules[selectedIndex] ?? curriculumModules[0]!;
   const selectedStatus = statusFor(selectedIndex);
-  const relatedBefore = curriculumModules.slice(Math.max(0, selectedIndex - 2), selectedIndex);
-  const relatedAfter = curriculumModules.slice(selectedIndex + 1, selectedIndex + 3);
-  const allTopics = Array.from(new Set(curriculumModules.flatMap((module) => module.topics)));
   const modules = curriculumModules
     .map((module, index) => ({ module, index, status: statusFor(index) }))
-    .filter(({ module, index, status }) => {
-      const text =
-        `${module.code} ${module.title} ${module.description} ${module.topics.join(" ")}`.toLowerCase();
-      const phaseMatch = index >= phases[phase]![1] && index <= phases[phase]![2];
-      const filterMatch =
-        filter === "All" ||
-        filter.toLowerCase() === status ||
-        (filter === "Projects" && module.experienceStage === "Ship") ||
-        (filter === "Challenges" && module.experienceStage !== "Understand");
-      const lensMatch =
-        lens === "projects"
-          ? module.experienceStage === "Ship"
-          : lens === "skills"
-            ? module.topics.some((topic) => topic.toLowerCase() === query.toLowerCase())
-            : true;
-      return (
-        text.includes(query.toLowerCase()) &&
-        filterMatch &&
-        lensMatch &&
-        (query.trim() ? true : phaseMatch)
-      );
+    .filter(({ module, index }) => {
+      const haystack =
+        `${displayModuleLabel(module.code)} ${module.title} ${module.description} ${module.topics.join(" ")}`.toLowerCase();
+      const matchesSearch = !query.trim() || haystack.includes(query.trim().toLowerCase());
+      const matchesPhase = index >= phases[phase]![1] && index <= phases[phase]![2];
+      return matchesSearch && (query.trim() ? true : matchesPhase);
     });
   const selectModule = (code: ModuleId) => {
     setSelectedCode(code);
-    setConcept(null);
+    setDetailOpen(true);
   };
 
   return (
     <>
       <PageHeader
-        eyebrow="KLH University · B.Tech CSE Semester 3"
-        title="Academic Curriculum Structure"
-        description="Structured academic progression across 4 core subjects and 30 integrated learning modules."
+        eyebrow={PROGRAM.edition}
+        title="Generative AI + Agentic AI + Python"
+        description="Twenty modules, five phases, one sequence. Foundations make you fluent in Python and prompts; knowledge apps teach search and RAG; agents add tools and graphs; production adds judgment; portfolio turns the work into evidence."
         action={
           <Button
             className="shadow-sm border border-brand/30 transition-all font-semibold"
@@ -1308,322 +1123,213 @@ function InteractiveCurriculumMap() {
         }
       />
 
-      {/* 3D Spatial Deck Filter Hub */}
-      <SpatialCard depth={10} elevation="medium" className="mb-6 rounded-2xl overflow-hidden">
-        <Panel className="border-brand/25 bg-surface-elevated/90 p-4 sm:p-5">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-            <div className="flex items-center gap-2.5">
-              <span className="size-2.5 rounded-full bg-brand cp-pulse shrink-0" />
-              <div>
-                <Eyebrow>ACTIVE HIGHWAY</Eyebrow>
-                <p className="text-xs sm:text-sm font-bold text-foreground">
-                  {mastered} of {curriculumModules.length} Nodes Mastered
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[11px] sm:text-xs font-bold text-brand bg-brand-soft px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-brand/25">
-                {Math.round((mastered / curriculumModules.length) * 100)}% Synchronized
-              </span>
-            </div>
-          </div>
-
-          <div className="h-2 overflow-hidden rounded-full bg-foreground/10 p-[2px] border border-border/60">
+      <Panel className="p-4 sm:p-5">
+          <p className="text-sm text-muted-foreground">
+            {mastered} of {curriculumModules.length} modules done
+          </p>
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-brand via-lilac to-mint transition-all duration-700 shadow-[0_0_12px_rgba(20,184,166,0.6)]"
-              style={{ width: `${Math.max(3, (mastered / curriculumModules.length) * 100)}%` }}
+              className="h-full rounded-full bg-primary"
+              style={{ width: `${Math.max(4, (mastered / curriculumModules.length) * 100)}%` }}
             />
           </div>
-
-          {/* Phase Switchers */}
-          <div className="mt-4 flex gap-2 overflow-x-auto pb-1.5 no-scrollbar touch-scroller">
-            {phases.map(([label], index) => (
+          <p className="mt-4 text-sm font-medium text-foreground">Choose a phase</p>
+          <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+            {PROGRAM_PHASES.map((item, index) => (
               <button
-                key={label}
-                onClick={() => {
-                  setPhase(index);
-                  document
-                    .getElementById(`phase-${index}`)
-                    ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-                }}
-                className={`shrink-0 rounded-xl px-3 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-[11px] font-bold tracking-wide transition-all ${
+                key={item.name}
+                type="button"
+                onClick={() => setPhase(index)}
+                className={`h-10 shrink-0 rounded-full px-4 text-sm ${
                   phase === index
-                    ? "bg-ink text-background shadow-md"
-                    : "bg-surface text-muted-foreground hover:bg-surface-elevated hover:text-foreground border border-border/60"
+                    ? "bg-ink text-background"
+                    : "border border-border bg-background text-foreground hover:border-primary/40"
                 }`}
               >
-                PHASE 0{index + 1} · {label}
+                {index + 1}. {item.name}
               </button>
             ))}
           </div>
-
-          {/* Search, Filter & Spatial Lens Controls */}
-          <div className="mt-4 grid gap-2.5 sm:grid-cols-[1fr_auto_auto]">
-            <label className="flex min-w-0 items-center gap-2 rounded-xl border border-border/80 bg-surface/80 px-3.5 shadow-inner">
-              <Search className="size-4 text-faint shrink-0" />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                className="min-h-11 w-full bg-transparent text-xs sm:text-sm outline-none placeholder:text-faint"
-                placeholder="Filter nodes, embeddings, RAG, agents…"
-              />
-            </label>
-            <div className="flex gap-2">
-              <select
-                value={filter}
-                onChange={(event) => setFilter(event.target.value)}
-                className="min-h-11 flex-1 sm:flex-initial rounded-xl border border-border/80 bg-surface-elevated px-3 text-xs sm:text-sm font-medium shadow-xs"
-                aria-label="Filter curriculum"
-              >
-                {[
-                  "All",
-                  "In-progress",
-                  "Available",
-                  "Mastered",
-                  "Locked",
-                  "Challenges",
-                  "Projects",
-                ].map((item) => (
-                  <option key={item}>{item}</option>
-                ))}
-              </select>
-              <div className="flex overflow-x-auto rounded-xl border border-border/80 bg-surface/60 p-1 no-scrollbar">
-                {(["journey", "skills", "projects", "list"] as const).map((item) => (
-                  <button
-                    key={item}
-                    onClick={() => setLens(item)}
-                    className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold capitalize transition-all ${
-                      lens === item ? "bg-background text-foreground shadow-xs" : "text-faint hover:text-foreground"
-                    }`}
-                  >
-                    {item}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {PROGRAM_PHASES[phase]?.focus}
+          </p>
         </Panel>
-      </SpatialCard>
 
-      {/* Main Spatial Constellation & Inspector Grid */}
-      <div className="grid gap-5 xl:grid-cols-[1fr_370px]">
-        <SpatialCard depth={8} elevation="medium" className="rounded-2xl">
-          <Panel className="overflow-hidden p-4 sm:p-5">
-            <SectionTitle
-              eyebrow={`PHASE 0${phase + 1} · ${phases[phase]![0]}`}
-              title={
-                lens === "journey"
-                  ? "Connected Spatial Learning Nodes"
-                  : lens === "skills"
-                    ? "Interactive Skills Lattice"
-                    : lens === "projects"
-                      ? "Milestone Engineering Builds"
-                      : "Knowledge Registry Index"
-              }
-              action={
-                <span className="font-mono text-xs text-brand font-semibold shrink-0">
-                  {modules.length} Nodes
-                </span>
-              }
+        <Panel className="p-4 sm:p-5">
+          <p className="text-sm font-medium text-foreground">Search</p>
+          <label className="relative mt-2 block">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              className="h-12 w-full rounded-xl border border-border bg-background pl-10 pr-10 text-base outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15"
+              placeholder="Try “Python”, “RAG”, or “agents”"
+              aria-label="Search modules"
             />
+            {query ? (
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+                onClick={() => setQuery("")}
+                aria-label="Clear search"
+              >
+                <X className="size-4" />
+              </button>
+            ) : null}
+          </label>
+          {query.trim() ? (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Showing matches across all phases.
+            </p>
+          ) : null}
+        </Panel>
 
-            {lens === "skills" && (
-              <div className="mb-4 flex flex-wrap gap-1.5 border-b border-border/70 pb-3">
-                {allTopics.map((topic) => (
-                  <button
-                    key={topic}
-                    onClick={() => setQuery(query === topic ? "" : topic)}
-                    className={`rounded-xl px-2.5 py-1 text-[10px] sm:text-[11px] font-medium transition-all ${
-                      query === topic
-                        ? "bg-brand text-primary-foreground shadow-sm scale-105"
-                        : "bg-lilac-soft/60 text-lilac border border-lilac/30 hover:bg-lilac-soft"
-                    }`}
-                  >
-                    {topic}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Dimensional Learning Roadmap View */}
-            <div
-              className={
-                lens === "journey"
-                  ? "relative space-y-3 pl-4 sm:pl-6 before:absolute before:bottom-4 before:left-1.5 sm:before:left-3 before:top-4 before:w-[2px] before:bg-gradient-to-b before:from-brand/60 via-lilac/50 to-border"
-                  : lens === "list"
-                    ? "grid gap-3 md:grid-cols-2"
-                    : "grid gap-3"
-              }
-            >
-              {modules.map(({ module, index, status }) => (
-                <button
-                  key={module.code}
-                  id={index === phases[phase]![1] ? `phase-${phase}` : undefined}
-                  onClick={() => {
-                    selectModule(module.code);
-                    if (window.innerWidth < 1280) {
-                      document.getElementById("module-inspector")?.scrollIntoView({ behavior: "smooth" });
-                    }
-                  }}
-                  className={`group relative w-full rounded-xl border p-3.5 sm:p-4 text-left transition-all duration-150 ${
-                    selectedCode === module.code
-                      ? "border-brand bg-brand-soft/40 shadow-xs ring-1 ring-brand/40"
-                      : "border-border/70 bg-surface-elevated hover:border-brand/40"
-                  }`}
-                >
-                  {lens === "journey" && (
-                    <span
-                      className={`absolute -left-[23px] sm:-left-[29px] top-5 size-3 sm:size-3.5 rounded-full border-2 border-background transition-all ${
-                        status === "mastered"
-                          ? "bg-mint shadow-xs"
-                          : status === "in-progress"
-                          ? "bg-brand ring-2 ring-brand/20"
-                          : "bg-border"
-                      }`}
-                    />
-                  )}
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <span className="font-mono text-[9px] sm:text-[10px] font-semibold text-brand bg-brand-soft px-1.5 py-0.5 rounded border border-brand/20">
-                        Module {module.code}
-                      </span>
-                      <h3 className="mt-1 text-xs sm:text-sm font-semibold text-foreground group-hover:text-brand transition-colors truncate">
-                        {module.title}
-                      </h3>
-                    </div>
-                    <StatusPill status={status} />
-                  </div>
-                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground line-clamp-2">{module.description}</p>
-                  <div className="mt-2.5 flex flex-wrap gap-1.5">
-                    {module.topics.slice(0, 3).map((topic) => (
-                      <span
-                        key={topic}
-                        className="rounded-md bg-lilac-soft/60 px-2 py-0.5 text-[9px] sm:text-[10px] font-medium text-lilac border border-lilac/20"
-                      >
-                        {topic}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="mt-3 flex items-center justify-between gap-2 text-[10px] text-faint font-mono border-t border-border/40 pt-2">
-                    <span>
-                      {module.estimatedTime} · {module.experienceStage}
-                    </span>
-                    <span className="text-brand font-medium flex items-center gap-1">
-                      Inspect →
-                    </span>
-                  </div>
-                </button>
-              ))}
-              {!modules.length && (
-                <div className="rounded-2xl border border-dashed border-border p-8 text-center text-xs sm:text-sm text-muted-foreground">
-                  No modules match the active spatial lens. Switch phase or clear search filter.
-                </div>
-              )}
-            </div>
-          </Panel>
-        </SpatialCard>
-
-        {/* 3D Floating Node Telemetry Inspector */}
-        <div id="module-inspector">
-          <SpatialCard depth={12} elevation="high" className="h-fit rounded-2xl xl:sticky xl:top-20">
-            <Panel className="border-brand/35 bg-surface-elevated/95 p-4 sm:p-5 shadow-lg">
-              <div className="flex items-center justify-between gap-2 border-b border-border/70 pb-3 mb-3">
-                <span className="font-mono text-xs font-bold text-brand bg-brand-soft px-2.5 py-0.5 rounded-md">
-                  NODE {selectedModule.code}
-                </span>
-                <StatusPill status={selectedStatus} />
-              </div>
-
-              <h3 className="font-display text-base sm:text-lg font-bold tracking-tight text-foreground">
-                {selectedModule.title}
-              </h3>
-              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-                {selectedModule.description}
-              </p>
-
-              {/* Prerequisite & Dependent Vector HUD */}
-              <div className="mt-3.5 rounded-xl border border-brand/25 bg-brand-soft/40 p-3 text-xs">
-                <Eyebrow>PREREQUISITE VECTOR STREAM</Eyebrow>
-                <p className="mt-1 text-muted-foreground leading-relaxed text-[11px] sm:text-xs">
-                  {relatedBefore.length
-                    ? `Ascends directly from ${relatedBefore.map((mod) => `Module ${mod.code}`).join(" and ")}.`
-                    : "Foundation entry point of your AI engineering path."}{" "}
-                  {relatedAfter.length
-                    ? `Prerequisite for ${relatedAfter.map((mod) => `Module ${mod.code}`).join(" and ")}.`
-                    : "Capstone terminal of the curriculum."}
-                </p>
-              </div>
-
-              <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                <div className="rounded-xl border border-border/60 bg-surface/70 p-2.5">
-                  <Eyebrow>Stage Level</Eyebrow>
-                  <p className="mt-0.5 font-bold text-foreground text-xs">{selectedModule.experienceStage}</p>
-                </div>
-                <div className="rounded-xl border border-border/60 bg-surface/70 p-2.5">
-                  <Eyebrow>Time Velocity</Eyebrow>
-                  <p className="mt-0.5 font-bold text-foreground text-xs">{selectedModule.estimatedTime}</p>
-                </div>
-              </div>
-
-              <div className="mt-3.5">
-                <Eyebrow>Concept Sub-Nodes</Eyebrow>
-                <div className="mt-2 space-y-1.5">
-                  {selectedModule.topics.map((topic) => (
-                    <button
-                      key={topic}
-                      onClick={() => setConcept(topic)}
-                      className={`flex min-h-[40px] w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-medium transition-all ${
-                        concept === topic
-                          ? "bg-lilac-soft text-lilac border border-lilac/35 shadow-xs"
-                          : "bg-surface/60 hover:bg-lilac-soft/40 text-muted-foreground hover:text-foreground border border-border/40"
-                      }`}
-                    >
-                      <span className="truncate">{topic}</span>
-                      <ChevronRight className="size-3 text-faint shrink-0 ml-1" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {concept && (
-                <div className="mt-3 rounded-xl border border-brand/35 bg-brand-soft/40 p-3 text-xs">
-                  <p className="font-bold text-brand">{concept}</p>
-                  <p className="mt-1 text-muted-foreground leading-relaxed text-[11px]">
-                    Launch the interactive studio to build, break, and master {concept} with guided diagnostic loops.
+      <div className={`grid items-start gap-5 ${detailOpen ? "xl:grid-cols-[minmax(0,1fr)_280px]" : ""}`}>
+        {detailOpen ? (
+          <Panel className="min-w-0 p-5" id="module-inspector">
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold text-primary">
+                    Module {displayModuleLabel(selectedModule.code)} · {selectedModule.phase}
                   </p>
+                  <h3 className="mt-1 font-display text-xl font-semibold tracking-tight text-foreground">
+                    {selectedModule.title}
+                  </h3>
                 </div>
-              )}
-
-              <div className="mt-3.5 rounded-xl border border-border/70 bg-surface/50 p-3 text-xs">
-                <Eyebrow>Associated Milestone Build</Eyebrow>
-                <p className="mt-1 text-xs font-semibold text-foreground">{selectedModule.project}</p>
+                <div className="flex items-center gap-2">
+                  <StatusPill status={selectedStatus} />
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    aria-label="Close module details"
+                    onClick={() => setDetailOpen(false)}
+                  >
+                    <X className="size-4" />
+                  </Button>
+                </div>
+              </div>
+              <p className="text-sm leading-6 text-muted-foreground">{selectedModule.description}</p>
+              <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+                <div className="rounded-xl border border-border bg-surface p-3">
+                  <p className="text-xs text-muted-foreground">When</p>
+                  <p className="mt-0.5 font-semibold">{selectedModule.week}</p>
+                </div>
+                <div className="rounded-xl border border-border bg-surface p-3">
+                  <p className="text-xs text-muted-foreground">Guided time</p>
+                  <p className="mt-0.5 font-semibold">{selectedModule.estimatedTime}</p>
+                </div>
+              </div>
+              <div className="mt-5">
+                <Eyebrow>You should be able to</Eyebrow>
+                <ul className="mt-2 space-y-1.5 text-sm leading-6 text-muted-foreground">
+                  {selectedModule.learningObjectives.map((item) => (
+                    <li key={item} className="flex gap-2">
+                      <Check className="mt-0.5 size-4 shrink-0 text-primary" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="mt-5">
+                <Eyebrow>Topics from the curriculum</Eyebrow>
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  {selectedModule.tools.slice(0, 3).map((tool) => (
+                  {selectedModule.topics.map((topic) => (
                     <span
-                      key={tool}
-                      className="rounded-md bg-peach-soft px-2 py-0.5 text-[9px] sm:text-[10px] font-medium text-peach border border-peach/25"
+                      key={topic}
+                      className="rounded-md border border-border bg-surface px-2 py-1 text-xs text-foreground"
                     >
-                      {tool}
+                      {topic}
                     </span>
                   ))}
                 </div>
               </div>
-
+              <div className="mt-5 rounded-xl border border-border bg-surface p-4 text-sm">
+                <Eyebrow>Suggested practice</Eyebrow>
+                <p className="mt-2 leading-6 text-muted-foreground">{selectedModule.project}</p>
+              </div>
               <Button
-                className="mt-4 w-full min-h-[44px] shadow-md shadow-brand/20 text-xs sm:text-sm font-semibold"
+                className="mt-5 min-h-11 w-full font-semibold"
                 onClick={() =>
                   navigate({
                     to: "/learning-mode",
-                    search: { module: selectedModule.code, concept: concept ?? undefined },
+                    search: { module: selectedModule.code },
                   })
                 }
               >
-                {selectedStatus === "in-progress" ? "Resume Active Mission" : "Engage Learning Studio"}{" "}
-                <ArrowRight className="size-4 ml-1.5" />
+                {selectedStatus === "in-progress" ? "Continue this module" : "Open this module"}{" "}
+                <ArrowRight className="ml-1.5 size-4" />
               </Button>
-            </Panel>
-          </SpatialCard>
-        </div>
+          </Panel>
+        ) : null}
+
+        <Panel className="h-fit min-w-0 p-4">
+            <p className="px-1 pb-2 text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground">
+              Folders
+            </p>
+            {PROGRAM_PHASES.map((item, phaseIndex) => {
+              const isOpen = phase === phaseIndex;
+              const phaseModules = curriculumModules
+                .map((module, index) => ({ module, index, status: statusFor(index) }))
+                .filter(({ index, module }) => {
+                  const inPhase = index >= phases[phaseIndex]![1] && index <= phases[phaseIndex]![2];
+                  if (!inPhase) return false;
+                  if (!query.trim()) return true;
+                  const haystack =
+                    `${displayModuleLabel(module.code)} ${module.title} ${module.topics.join(" ")}`.toLowerCase();
+                  return haystack.includes(query.trim().toLowerCase());
+                });
+              if (query.trim() && phaseModules.length === 0) return null;
+              return (
+                <div key={item.name} className="py-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setPhase(phaseIndex)}
+                    className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm ${
+                      isOpen ? "bg-mint-soft text-foreground" : "text-muted-foreground hover:bg-surface hover:text-foreground"
+                    }`}
+                  >
+                    {isOpen ? (
+                      <FolderOpen className="size-4 shrink-0 text-mint" />
+                    ) : (
+                      <Folder className="size-4 shrink-0 text-faint" />
+                    )}
+                    <span className="min-w-0 flex-1 truncate font-medium">{item.name}</span>
+                    <span className="text-[11px] text-faint">{phaseModules.length}</span>
+                  </button>
+                  {isOpen ? (
+                    <div className="ml-3 border-l border-border pl-2">
+                      {phaseModules.map(({ module, status }) => (
+                        <button
+                          key={module.code}
+                          type="button"
+                          onClick={() => selectModule(module.code)}
+                          className={`mt-0.5 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm ${
+                            detailOpen && selectedCode === module.code
+                              ? "bg-ink text-background"
+                              : "text-foreground hover:bg-surface"
+                          }`}
+                        >
+                          <Folder className={`size-3.5 shrink-0 ${detailOpen && selectedCode === module.code ? "text-background" : "text-faint"}`} />
+                          <span className="min-w-0 flex-1 truncate">
+                            {displayModuleLabel(module.code)} · {module.title}
+                          </span>
+                          <span className={`text-[10px] ${detailOpen && selectedCode === module.code ? "text-background/70" : "text-muted-foreground"}`}>
+                            {status === "mastered"
+                              ? "Done"
+                              : status === "in-progress"
+                                ? "Here"
+                                : status === "available"
+                                  ? "Ready"
+                                  : "Later"}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+        </Panel>
       </div>
     </>
   );
@@ -1639,11 +1345,11 @@ function CurriculumMap() {
   const [selectedCode, setSelectedCode] = useState<ModuleId>("3.1");
   const [concept, setConcept] = useState<string | null>(null);
   const phases = [
-    ["Foundations", 0, 6],
-    ["Machine Learning", 7, 12],
-    ["Deep Learning & Applied AI", 13, 19],
-    ["Advanced AI Engineering", 20, 27],
-    ["Career & Capstone", 28, 29],
+    ["Foundations", 0, 3],
+    ["Knowledge apps", 4, 7],
+    ["Agents", 8, 12],
+    ["Domain & production", 13, 16],
+    ["Portfolio & career", 17, 19],
   ] as const;
   const mastered = Math.min(curriculumModules.length, Math.floor(evidence.sectionsCompleted / 4));
   const statusFor = (index: number) =>
@@ -1679,60 +1385,56 @@ function CurriculumMap() {
         title="Your AI Engineering Journey"
         description="Learn the foundations, build real AI systems, and progress toward production-level engineering."
       />
-      <Panel className="mb-5">
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {phases.map(([label], index) => (
-            <button
-              key={label}
-              onClick={() => setPhase(index)}
-              className={`shrink-0 rounded-full px-3 py-2 text-xs ${phase === index ? "bg-ink text-background" : "bg-muted text-faint"}`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
-          <label className="flex items-center gap-2 rounded-xl border border-border/70 px-3">
-            <Search className="size-4 text-faint" />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              className="min-h-11 w-full bg-transparent text-sm outline-none"
-              placeholder="Search modules, topics, or skills"
-            />
-          </label>
-          <select
-            value={filter}
-            onChange={(event) => setFilter(event.target.value)}
-            className="rounded-xl border border-border/70 bg-surface-elevated px-3 text-sm"
-            aria-label="Filter curriculum"
-          >
-            {[
-              "All",
-              "In-progress",
-              "Available",
-              "Mastered",
-              "Locked",
-              "Challenges",
-              "Projects",
-            ].map((item) => (
-              <option key={item}>{item}</option>
-            ))}
-          </select>
-          <div className="flex rounded-xl border border-border/70 p-1">
-            {(["journey", "list"] as const).map((item) => (
+      <Panel>
+        <div className="flex flex-col gap-3">
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {phases.map(([label], index) => (
               <button
-                key={item}
-                onClick={() => setView(item)}
-                className={`rounded-lg px-3 py-2 text-xs capitalize ${view === item ? "bg-background shadow-sm" : "text-faint"}`}
+                key={label}
+                onClick={() => setPhase(index)}
+                className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium ${phase === index ? "bg-ink text-background" : "bg-muted text-muted-foreground"}`}
               >
-                {item}
+                {label}
               </button>
             ))}
           </div>
+          <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+            <label className="flex min-h-11 items-center gap-2 rounded-xl border border-border px-3">
+              <Search className="size-4 text-faint" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                className="min-h-11 w-full bg-transparent text-sm outline-none"
+                placeholder="Search modules or topics"
+              />
+            </label>
+            <div className="flex gap-2">
+              <select
+                value={filter}
+                onChange={(event) => setFilter(event.target.value)}
+                className="min-h-11 rounded-xl border border-border bg-card px-3 text-sm"
+                aria-label="Filter curriculum"
+              >
+                {["All", "In-progress", "Available", "Mastered", "Locked"].map((item) => (
+                  <option key={item}>{item}</option>
+                ))}
+              </select>
+              <div className="flex rounded-xl border border-border p-1">
+                {(["journey", "list"] as const).map((item) => (
+                  <button
+                    key={item}
+                    onClick={() => setView(item)}
+                    className={`rounded-lg px-3 py-1.5 text-xs capitalize ${view === item ? "bg-background shadow-sm" : "text-faint"}`}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </Panel>
-      <div className="grid gap-4 xl:grid-cols-[1fr_360px]">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
         <Panel>
           <SectionTitle
             eyebrow={`${phases[phase]![0]} · ${modules.length} modules`}
@@ -1741,7 +1443,7 @@ function CurriculumMap() {
           <div
             className={
               view === "journey"
-                ? "space-y-3 border-l-2 border-border pl-4"
+                ? "space-y-2 border-l-2 border-border pl-4"
                 : "grid gap-3 md:grid-cols-2"
             }
           >
@@ -1752,30 +1454,20 @@ function CurriculumMap() {
                   setSelectedCode(module.code);
                   setConcept(null);
                 }}
-                className={`relative w-full rounded-xl border p-4 text-left ${selectedCode === module.code ? "border-brand bg-brand-soft/40" : "border-border/70 bg-background/35"}`}
+                className={`relative w-full rounded-xl border p-4 text-left ${selectedCode === module.code ? "border-brand bg-brand-soft/40" : "border-border bg-card"}`}
               >
                 {view === "journey" && (
                   <span className="absolute -left-[25px] top-5 size-3 rounded-full border-2 border-background bg-brand" />
                 )}
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="font-mono text-[10px] text-brand">{module.code}</p>
+                  <div className="min-w-0">
+                    <p className="font-mono text-[10px] text-brand">{displayModuleLabel(module.code)}</p>
                     <h3 className="mt-1 text-sm font-semibold">{module.title}</h3>
                   </div>
                   <StatusPill status={status} />
                 </div>
-                <p className="mt-2 text-xs leading-5 text-muted-foreground">{module.description}</p>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {module.topics.slice(0, 4).map((topic) => (
-                    <span
-                      key={topic}
-                      className="rounded-full bg-lilac-soft px-2 py-1 text-[10px] text-lilac"
-                    >
-                      {topic}
-                    </span>
-                  ))}
-                </div>
-                <p className="mt-3 text-[10px] text-faint">
+                <p className="mt-2 line-clamp-2 text-xs leading-5 text-muted-foreground">{module.description}</p>
+                <p className="mt-3 text-[11px] text-faint">
                   {module.estimatedTime} · {module.experienceStage}
                 </p>
               </button>
@@ -1784,44 +1476,29 @@ function CurriculumMap() {
         </Panel>
         <Panel className="h-fit">
           <SectionTitle
-            eyebrow={`${selectedModule.code} · ${statusFor(selectedIndex)}`}
+            eyebrow={`Module ${displayModuleLabel(selectedModule.code)}`}
             title={selectedModule.title}
           />
           <p className="text-sm leading-6 text-muted-foreground">{selectedModule.description}</p>
-          <div className="mt-4 rounded-xl bg-brand-soft/40 p-3 text-xs">
-            <Eyebrow>Path</Eyebrow>
-            <p className="mt-1 text-muted-foreground">
-              {selectedIndex
-                ? `Prerequisite: ${selectedModule.prerequisites.join(", ")}`
-                : "Start here and build your first evidence."}{" "}
-              · Next: {curriculumModules[selectedIndex + 1]?.code ?? "Complete"}
+          <div className="mt-4 space-y-1.5">
+            <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground">
+              Concept folders
             </p>
-          </div>
-          <Eyebrow>Concepts and activities</Eyebrow>
-          <div className="mt-2 space-y-2">
             {experience.learningSections.map((section) => (
               <button
                 key={section.id}
                 onClick={() => setConcept(section.concept)}
-                className={`w-full rounded-lg p-2 text-left text-xs ${concept === section.concept ? "bg-lilac-soft text-lilac" : "bg-background/50"}`}
+                className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs ${concept === section.concept ? "bg-brand-soft text-foreground" : "bg-surface text-muted-foreground hover:bg-muted"}`}
               >
-                {section.concept}
+                <Folder className="size-3.5 shrink-0" />
+                <span className="truncate">{section.concept}</span>
               </button>
             ))}
-            <p className="rounded-lg bg-background/50 p-2 text-xs">
-              Practice → Break it → Challenge → Mastery evidence
-            </p>
           </div>
           {concept && (
-            <div className="mt-3 rounded-xl border border-brand/30 p-3 text-xs">
-              <strong>{concept}</strong>
-              <p className="mt-1 text-muted-foreground">
-                {
-                  experience.learningSections.find((section) => section.concept === concept)
-                    ?.explanation
-                }
-              </p>
-            </div>
+            <p className="mt-3 rounded-xl border border-border bg-surface p-3 text-xs leading-5 text-muted-foreground">
+              {experience.learningSections.find((section) => section.concept === concept)?.explanation}
+            </p>
           )}
           <Button
             className="mt-5 w-full"
@@ -1829,7 +1506,7 @@ function CurriculumMap() {
               navigate({ to: "/learning-mode", search: { module: selectedModule.code } })
             }
           >
-            {statusFor(selectedIndex) === "in-progress" ? "Continue learning" : "Explore learning"}{" "}
+            {statusFor(selectedIndex) === "in-progress" ? "Continue learning" : "Open module"}{" "}
             <ArrowRight />
           </Button>
         </Panel>
@@ -1918,10 +1595,13 @@ function LearningModeContent({
   const [recordedSteps, setRecordedSteps] = useState<Set<string>>(() => new Set());
   const step = experience.steps[stepIndex] ?? experience.steps[0]!;
 
-  const currentConceptItem =
+  const fallbackConcept =
     experience.module.concepts[
       Math.min(conceptIndex >= 0 ? conceptIndex : 0, experience.module.concepts.length - 1)
     ] ?? experience.module.concepts[0]!;
+  const [activeConceptId, setActiveConceptId] = useState(fallbackConcept.id);
+  const currentConceptItem =
+    experience.module.concepts.find((item) => item.id === activeConceptId) ?? fallbackConcept;
 
   useEffect(() => {
     updateLearningPosition({
@@ -2005,102 +1685,147 @@ function LearningModeContent({
   return (
     <>
       <PageHeader
-        eyebrow={`AI Classroom Studio · Module ${experience.module.code}`}
+        eyebrow={`Module ${displayModuleLabel(experience.module.code)} · ${experience.module.phase ?? "Learn"}`}
         title={experience.module.title}
-        description="A comprehensive pedagogical progression: Hook → Why → Learn → Try It → Practice → Break It → Your Turn → Knowledge Check → Mastery → Next."
+        description={experience.module.description}
         action={
           <div className="flex items-center gap-2">
             <StatusPill status={experience.module.status} />
-            <span className="rounded-full bg-brand-soft border border-brand/30 px-3 py-1 text-[11px] font-mono font-bold text-brand">
-              Stage {stepIndex + 1}/{experience.steps.length}: {step.stage}
+            <span className="rounded-full border border-border bg-surface px-3 py-1 text-[11px] font-medium text-muted-foreground">
+              {experience.module.estimatedTime}
             </span>
           </div>
         }
       />
 
-      {/* Concept Progress Hierarchy Bar */}
-      <SpatialCard depth={4} elevation="low" className="mb-4 rounded-2xl p-3.5 sm:p-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <GitBranch className="size-3.5 sm:size-4 text-brand shrink-0" />
-            <span className="text-xs font-bold text-foreground">Mod {experience.module.code} Concepts:</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs">
-            <span className="text-muted-foreground text-[11px]">Est:</span>
-            <span className="font-mono font-bold text-brand text-[11px]">{experience.module.estimatedTime}</span>
-          </div>
-        </div>
-        <div className="mt-2.5 grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {experience.module.concepts.map((c, i) => (
-            <div
-              key={c.id}
-              className={`rounded-xl border p-2 text-xs transition ${
-                c.id === currentConceptItem?.id
-                  ? "border-brand bg-brand-soft/50 font-bold text-brand"
-                  : "border-border/60 bg-surface/40 text-muted-foreground"
-              }`}
-            >
-              <div className="flex items-center justify-between text-[10px]">
-                <span>Concept {i + 1}</span>
-                <span className="font-mono text-[9px]">{c.estimatedMinutes}m</span>
-              </div>
-              <p className="mt-0.5 font-semibold text-foreground truncate text-[11px] sm:text-xs">{c.title}</p>
+      <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)]">
+        <aside className="h-fit rounded-2xl border border-border bg-card p-3">
+          <p className="px-2 pb-2 text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground">
+            Folders
+          </p>
+          <div className="flex items-center gap-2 rounded-lg bg-mint-soft px-2.5 py-2">
+            <FolderOpen className="size-4 shrink-0 text-mint" />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-foreground">
+                Module {displayModuleLabel(experience.module.code)}
+              </p>
+              <p className="truncate text-[11px] text-muted-foreground">{experience.module.concepts.length} concept folders</p>
             </div>
-          ))}
-        </div>
-      </SpatialCard>
-
-      {/* 3D Stepper Tabs */}
-      <SpatialCard depth={8} elevation="medium" className="mb-5 rounded-2xl overflow-hidden">
-        <Panel className="border-brand/30 bg-surface-elevated/95 p-4 sm:p-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="size-2 rounded-full bg-brand cp-pulse" />
-                <Eyebrow>{step.stage} STAGE · {currentConceptItem.title.toUpperCase()}</Eyebrow>
-              </div>
-              <h2 className="mt-1 font-display text-lg sm:text-2xl font-bold tracking-tight text-foreground">
-                {step.title}
-              </h2>
-            </div>
-            <span className="font-mono text-[11px] sm:text-xs font-bold text-brand bg-brand-soft px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-brand/25 self-start sm:self-auto shrink-0">
-              {Math.round(((stepIndex + 1) / experience.steps.length) * 100)}% Complete
-            </span>
           </div>
-
-          {/* Touch-Friendly Horizontal Step Selector */}
-          <div className="mt-4 flex gap-1.5 overflow-x-auto pb-2 no-scrollbar touch-scroller">
-            {experience.steps.map((item, index) => (
-              <button
-                key={item.id}
-                className={`flex min-h-[40px] items-center gap-1.5 shrink-0 rounded-xl px-2.5 py-1.5 text-[11px] font-bold tracking-wide transition-all ${
-                  index === stepIndex
-                    ? "bg-ink text-background shadow-md shadow-ink/20 scale-102"
-                    : index < stepIndex
-                      ? "bg-mint-soft text-mint border border-mint/35 hover:bg-mint-soft/80"
-                      : "bg-surface text-faint hover:bg-surface-elevated hover:text-foreground border border-border/60"
-                }`}
-                onClick={() => index <= stepIndex && setStepIndex(index)}
-              >
-                <span className={`grid size-4.5 place-items-center rounded-md text-[9px] font-mono ${
-                  index === stepIndex ? "bg-background/25 text-background" : index < stepIndex ? "bg-mint text-primary-foreground" : "bg-muted"
-                }`}>
-                  {index < stepIndex ? <Check className="size-2.5" /> : index + 1}
-                </span>
-                <span>{item.stage}</span>
-              </button>
-            ))}
+          <div className="mt-1 ml-3 border-l border-border/80 pl-2">
+            {experience.module.concepts.map((item, conceptPos) => {
+              const isOpen = item.id === currentConceptItem.id;
+              return (
+                <div key={item.id} className="py-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setActiveConceptId(item.id)}
+                    className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm ${
+                      isOpen ? "bg-brand-soft/80 text-foreground" : "text-muted-foreground hover:bg-surface hover:text-foreground"
+                    }`}
+                  >
+                    {isOpen ? (
+                      <FolderOpen className="size-3.5 shrink-0 text-brand" />
+                    ) : (
+                      <Folder className="size-3.5 shrink-0 text-faint" />
+                    )}
+                    <span className="min-w-0 flex-1 truncate font-medium">{item.title}</span>
+                    <span className="font-mono text-[10px] text-faint">{String(conceptPos + 1).padStart(2, "0")}</span>
+                  </button>
+                  {isOpen ? (
+                    <div className="ml-3 border-l border-border/70 pl-1.5">
+                      {experience.steps.map((lesson, index) => {
+                        const isFile = index === stepIndex;
+                        const unlocked = index <= stepIndex;
+                        return (
+                          <button
+                            key={lesson.id}
+                            type="button"
+                            disabled={!unlocked}
+                            onClick={() => setStepIndex(index)}
+                            className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[12px] ${
+                              isFile
+                                ? "bg-ink text-background"
+                                : unlocked
+                                  ? "text-foreground hover:bg-surface"
+                                  : "cursor-not-allowed text-faint"
+                            }`}
+                          >
+                            {index < stepIndex ? (
+                              <Check className="size-3 shrink-0 text-mint" />
+                            ) : (
+                              <FileText className={`size-3 shrink-0 ${isFile ? "text-background" : "text-faint"}`} />
+                            )}
+                            <span className="truncate">{lesson.stage}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
           </div>
-        </Panel>
-      </SpatialCard>
-
-      {/* Main Studio 3D Interactive Workbench */}
-      <div className="grid gap-5 xl:grid-cols-[1fr_340px]">
-        <SpatialCard depth={10} elevation="high" className="rounded-2xl">
-          <Panel className="cp-rise p-4 sm:p-6">
-            <p className="max-w-3xl text-sm sm:text-base leading-relaxed text-foreground/90 font-medium">
-              {step.explanation}
+          <div className="mt-3 space-y-2 border-t border-border pt-3">
+            <p className="px-2 text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground">
+              Objective
             </p>
+            <p className="px-2 text-xs leading-5 text-muted-foreground">
+              {experience.module.learningObjectives[0] ?? experience.module.description}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => navigate({ to: "/tutor" })}
+            >
+              <Bot className="mr-1.5 size-4 text-brand" /> Ask tutor
+            </Button>
+          </div>
+        </aside>
+
+        <Panel className="p-4 sm:p-6">
+            <div className="mb-5 flex flex-wrap items-start justify-between gap-3 border-b border-border/70 pb-4">
+              <div className="min-w-0">
+                <p className="text-[11px] text-muted-foreground">
+                  {currentConceptItem.title} / {step.stage}
+                </p>
+                <h2 className="mt-1 font-display text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+                  {step.title}
+                </h2>
+              </div>
+              <span className="rounded-full border border-brand/25 bg-brand-soft px-3 py-1 font-mono text-[11px] font-bold text-brand">
+                {stepIndex + 1}/{experience.steps.length}
+              </span>
+            </div>
+            {step.blocks && step.blocks.length > 0 ? (
+              <div className="space-y-4">
+                <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">{step.explanation}</p>
+                {step.blocks.map((block) => (
+                  <article key={block.title} className="rounded-xl border border-border bg-card p-4 sm:p-5">
+                    <h3 className="font-display text-base font-semibold text-foreground">{block.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{block.body}</p>
+                    {block.insight ? (
+                      <p className="mt-3 rounded-lg bg-brand-soft/70 px-3 py-2 text-sm text-foreground">
+                        <span className="font-semibold text-primary">Takeaway. </span>
+                        {block.insight}
+                      </p>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="max-w-3xl space-y-3">
+                {step.explanation
+                  .split(/\n\n+/)
+                  .filter(Boolean)
+                  .map((paragraph) => (
+                    <p key={paragraph.slice(0, 40)} className="text-sm leading-6 text-foreground/90">
+                      {paragraph.replace(/^#{1,3}\s+/, "")}
+                    </p>
+                  ))}
+              </div>
+            )}
 
             {/* Why It Matters Callout */}
             <div className="mt-4 rounded-2xl border border-lilac/30 bg-lilac-soft/40 p-3.5 sm:p-4 shadow-xs">
@@ -2108,7 +1833,7 @@ function LearningModeContent({
                 <Lightbulb className="size-4 text-lilac shrink-0" />
                 <Eyebrow>WHY THIS MATTERS</Eyebrow>
               </div>
-              <p className="text-xs sm:text-sm leading-relaxed text-foreground/85 font-medium">{step.whyItMatters}</p>
+              <p className="text-sm leading-6 text-foreground/85 whitespace-pre-line">{step.whyItMatters}</p>
             </div>
 
             {/* Stage-specific Interactive Environments */}
@@ -2292,48 +2017,7 @@ function LearningModeContent({
                 <ArrowRight className="size-4 ml-1.5" />
               </Button>
             </div>
-          </Panel>
-        </SpatialCard>
-
-        {/* 3D Context Telemetry & Mentor Sidebar */}
-        <SpatialCard depth={10} elevation="medium" className="h-fit rounded-2xl xl:sticky xl:top-20">
-          <Panel className="border-brand/35 bg-surface-elevated/95 p-4 sm:p-5 shadow-lg">
-            <SectionTitle
-              eyebrow={`Telemetry · Module ${experience.module.code}`}
-              title={experience.challenge.title}
-            />
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              {experience.challenge.description}
-            </p>
-
-            <div className="mt-3.5 space-y-2.5 text-xs">
-              <FeedbackCard
-                label="Concept Sequence"
-                body={`${experience.learningSections.length} concepts · ${experience.learningSections.map((sec) => sec.concept).join(" · ")}`}
-                tone="brand"
-              />
-              <FeedbackCard label="Target Topics" body={experience.module.topics.join(" · ")} tone="lilac" />
-              <FeedbackCard
-                label="Learning Objective"
-                body={experience.module.learningObjectives[0] ?? experience.module.description}
-                tone="mint"
-              />
-              <FeedbackCard
-                label="AI Mentor Guidance"
-                body={experience.challenge.hints[0] ?? experience.challenge.problem}
-                tone="peach"
-              />
-            </div>
-
-            <Button
-              variant="outline"
-              className="mt-4 w-full min-h-[44px] border-border/80"
-              onClick={() => navigate({ to: "/tutor" })}
-            >
-              <Bot className="size-4 mr-1.5 text-brand" /> Ask AI Studio Tutor
-            </Button>
-          </Panel>
-        </SpatialCard>
+        </Panel>
       </div>
     </>
   );
@@ -3155,7 +2839,7 @@ function CodingLabContent({
   return (
     <>
       <PageHeader
-        eyebrow={`Practical Application Challenge · Module ${primaryChallenge.moduleId}`}
+        eyebrow={`Practice · Module ${displayModuleLabel(primaryChallenge.moduleId)}`}
         title={primaryChallenge.title}
         description={`Concept: ${primaryChallenge.topic} · Est. Time: ~15 mins · Difficulty: ${primaryChallenge.difficulty}`}
         action={
@@ -3248,25 +2932,22 @@ function CodingLabContent({
         </Panel>
       </div>
       {challenge && (
-        <Panel className="mt-5 p-4 sm:p-5">
+        <Panel className="p-4 sm:p-5">
           <SectionTitle
-            eyebrow="Curriculum challenge library"
-            title="One distinct build for every module"
+            eyebrow="Challenge library"
+            title="One build per module"
           />
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             {allCurriculumChallenges.map((item) => (
-              <div key={item.id} className="rounded-xl border border-border/60 p-3.5">
+              <div key={item.id} className="rounded-xl border border-border p-4">
                 <div className="flex items-center justify-between gap-2">
-                  <Eyebrow>Module {item.moduleId}</Eyebrow>
+                  <Eyebrow>Module {displayModuleLabel(item.moduleId)}</Eyebrow>
                   <span className="rounded-full bg-brand-soft px-2 py-0.5 text-[10px] font-semibold text-brand">
                     {item.type}
                   </span>
                 </div>
                 <p className="mt-2 text-sm font-semibold text-foreground">{item.title}</p>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground line-clamp-2">{item.description}</p>
-                <p className="mt-2.5 text-[10px] text-faint font-mono">
-                  {item.topic} · {item.difficulty}
-                </p>
+                <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{item.description}</p>
               </div>
             ))}
           </div>
@@ -3288,9 +2969,9 @@ function Projects() {
   return (
     <>
       <PageHeader
-        eyebrow="Practical Creation · 3rd Year Capstone Project"
-        title="Document Intelligence & Neural RAG Engine"
-        description="Apply vector indexing, semantic embeddings, hierarchical chunking, and grounded generation learned across Semester 3 modules into a practical system."
+        eyebrow="Portfolio projects · Module 18"
+        title="Six builds hiring managers can inspect"
+        description="Complete three to five of these with a README, pinned dependencies, and no committed secrets. RAG and agent projects should include traces, citations, and honest limits."
         action={
           <div className="flex items-center gap-4 rounded-2xl border border-brand/20 bg-surface-elevated/80 px-4 py-2 shadow-sm">
             <div className="relative grid size-12 place-items-center">
@@ -3317,39 +2998,48 @@ function Projects() {
               </span>
             </div>
             <div>
-              <p className="text-xs font-semibold">Semester Capstone</p>
-              <p className="text-[11px] text-faint">{completed}/5 Milestones Verified</p>
+              <p className="text-xs font-semibold">Portfolio</p>
+              <p className="text-[11px] text-faint">{completed}/{projectMilestones.length} projects underway</p>
             </div>
           </div>
         }
       />
-      <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
-        <div className="space-y-5">
-          <SpatialCard depth={2} className="rounded-2xl border border-border/80 bg-surface-elevated/85 p-6 shadow-sm">
-            <Eyebrow>ACADEMIC PURPOSE & SKILLS DEMONSTRATED</Eyebrow>
-            <div className="mt-2 flex flex-wrap gap-2">
-              <span className="rounded-full border border-brand/30 bg-brand-soft/60 px-3 py-1 text-[11px] font-medium text-brand">
-                Python 3.12 (Modules 3.1–3.4)
-              </span>
-              <span className="rounded-full border border-lilac/30 bg-lilac-soft/60 px-3 py-1 text-[11px] font-medium text-lilac">
-                Vector Search (Modules 3.20–3.25)
-              </span>
-              <span className="rounded-full border border-peach/30 bg-peach-soft/60 px-3 py-1 text-[11px] font-medium text-peach">
-                Model Evaluation (Modules 3.8–3.13)
-              </span>
-              <span className="rounded-full border border-mint/30 bg-mint-soft/60 px-3 py-1 text-[11px] font-medium text-mint">
-                Agent Workflows (Modules 3.22–3.23)
-              </span>
-            </div>
-            <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-              <strong className="text-foreground">What you are building & why:</strong> Engineer a production-ready document intelligence system to turn unstructured course materials into grounded, searchable knowledge with verified retrieval accuracy.
+      <Panel className="p-4 sm:p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0 flex-1">
+            <Eyebrow>Next step</Eyebrow>
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">
+              You have the Python and API foundations. Next proof of work is cited PDF Q&amp;A (Gate B) and a bounded agent with traces (Gate C).
             </p>
-          </SpatialCard>
+          </div>
+          <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground lg:justify-end">
+            <p className="flex items-center gap-2">
+              <Clock className="size-4 text-brand" />
+              4–6 weeks
+            </p>
+            <p className="flex items-center gap-2">
+              <Code2 className="size-4 text-lilac" />
+              6 portfolio projects
+            </p>
+            <p className="flex items-center gap-2">
+              <ShieldCheck className="size-4 text-mint" />
+              Interview-ready artifacts
+            </p>
+          </div>
+        </div>
+      </Panel>
 
-          <Panel elevation="medium">
+      <Panel className="p-4 sm:p-5">
+            <Eyebrow>What to ship</Eyebrow>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Chatbot, semantic search, PDF RAG Q&amp;A, a tool-using agent, an automation flow, and optionally a multi-agent system — each with a README, pinned dependencies, and no secrets.
+            </p>
+          </Panel>
+
+          <Panel className="p-4 sm:p-5">
             <SectionTitle
               eyebrow="Architectural Timeline"
-              title={`${completed} of 5 Milestones Completed`}
+              title={`${completed} of ${projectMilestones.length} projects started`}
             />
             <div className="mt-4 space-y-3">
               {projectMilestones.map((milestone, index) => (
@@ -3497,32 +3187,6 @@ function Projects() {
               </div>
             </SpatialCard>
           )}
-        </div>
-
-        <SpatialCard depth={1} className="h-fit rounded-2xl border border-border/80 bg-surface-elevated/85 p-6 shadow-xl backdrop-blur-xl">
-          <SectionTitle eyebrow="AI Mentor Telemetry" title="Readiness Status" />
-          <div className="rounded-xl border border-brand/20 bg-brand-soft/40 p-4">
-            <p className="text-xs font-semibold text-foreground">Strategic Recommendation</p>
-            <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
-              You have mastered the prerequisite chain for high-dimensional vector search. This project completes your full-stack AI engineer portfolio.
-            </p>
-          </div>
-          <div className="mt-5 space-y-3.5 text-xs text-muted-foreground">
-            <p className="flex items-center gap-2.5">
-              <Clock className="size-4 text-brand" />
-              <span>Estimated 4–6 weeks</span>
-            </p>
-            <p className="flex items-center gap-2.5">
-              <Code2 className="size-4 text-lilac" />
-              <span>5 Verified Architecture Milestones</span>
-            </p>
-            <p className="flex items-center gap-2.5">
-              <ShieldCheck className="size-4 text-mint" />
-              <span>Production Interview Portfolio Asset</span>
-            </p>
-          </div>
-        </SpatialCard>
-      </div>
     </>
   );
 }
@@ -3535,40 +3199,38 @@ function Analytics() {
 
   const skillsWithEvidence = [
     {
-      skill: "Python & Scripting",
-      status: "Mastered",
+      skill: "Python for AI",
+      status: "In progress",
       evidence: [
-        "Completed Modules 3.1 & 3.2",
-        "Passed diagnostic checks",
-        "Built attendance cleaning script in Challenge 3.6",
+        "Module 01: functions, JSON, venv, pip",
+        "Practice: CLI that filters JSON and writes a report",
       ],
       tone: "mint" as const,
     },
     {
-      skill: "Data Cleaning & Analytics",
-      status: "Demonstrated",
+      skill: "LLM APIs & prompts",
+      status: "Available",
       evidence: [
-        "Completed Module 3.6 (Data Basics)",
-        "Passed Pandas aggregation test cases",
-        "Applied to student dataset challenge",
+        "Modules 03–04: streaming chat and JSON templates",
+        "Gate A: working API chat + validated JSON output",
       ],
       tone: "brand" as const,
     },
     {
-      skill: "Vector Search & Retrieval (RAG)",
-      status: "In Progress",
+      skill: "RAG systems",
+      status: "Locked until Module 07",
       evidence: [
-        "Completed Module 3.4 (AI APIs)",
-        "Working on Capstone Milestone 3 (Context Retrieval)",
+        "Modules 06–09: embeddings, RAG, hybrid search, LangChain",
+        "Gate B: citations plus a 15-question eval sheet",
       ],
       tone: "lilac" as const,
     },
     {
-      skill: "Machine Learning & Evaluation",
-      status: "Available",
+      skill: "Agents & production",
+      status: "Locked until Module 10",
       evidence: [
-        "Prerequisites met (Modules 3.1-3.6)",
-        "Ready for Module 3.8 (Intro to ML)",
+        "Modules 10–13 and 17: tools, graphs, guardrails, cost",
+        "Gate C: bounded agent with traces",
       ],
       tone: "peach" as const,
     },
@@ -3577,18 +3239,17 @@ function Analytics() {
   return (
     <>
       <PageHeader
-        eyebrow="KLH Academic Evidence · Skill Matrix"
-        title="Evidence-Based Skill Verification"
-        description="Every skill demonstrated on this platform is backed by completed modules, verified code challenges, and project milestones."
+        eyebrow="Skills you can prove"
+        title="Evidence from modules, practice, and projects"
+        description="Competence is shown with artifacts: working chat, cited RAG, traces, and a production checklist — the same evidence used in junior GenAI interviews."
         action={
-          <Button variant="outline" onClick={() => toast("Academic transcript exported")}>
-            Export Skill Transcript
+          <Button variant="outline" onClick={() => toast("Skill summary copied")}>
+            Export skill summary
           </Button>
         }
       />
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 mb-6">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          className="md:col-span-6 lg:col-span-3"
           icon={Activity}
           label="Learning Sections"
           value={String(evidence.sectionsCompleted)}
@@ -3596,7 +3257,6 @@ function Analytics() {
           tone="brand"
         />
         <StatCard
-          className="md:col-span-6 lg:col-span-3"
           icon={Code2}
           label="Knowledge Checks"
           value={String(evidence.questionsPassed)}
@@ -3604,7 +3264,6 @@ function Analytics() {
           tone="lilac"
         />
         <StatCard
-          className="md:col-span-6 lg:col-span-3"
           icon={Target}
           label="Modules Completed"
           value={`${summary.completedCount}/${summary.totalModules}`}
@@ -3612,7 +3271,6 @@ function Analytics() {
           tone="peach"
         />
         <StatCard
-          className="md:col-span-6 lg:col-span-3"
           icon={Flame}
           label="Challenges Solved"
           value={String(evidence.challengesPassed)}
@@ -3684,41 +3342,70 @@ function Analytics() {
   );
 }
 
+const INTERVIEW_PROMPTS = [
+  {
+    question: "Explain tokens, context windows, and why they drive cost and latency.",
+    coach: [
+      "A token is a chunk of text the model bills and processes — not always a full word.",
+      "The context window is the max tokens the model can see at once (prompt + history + output).",
+      "Cost scales with tokens in and out; latency grows with output length and with stuffing unused context.",
+    ],
+  },
+  {
+    question: "If the source document has the answer but RAG misses it, where do you debug first?",
+    coach: [
+      "Start at retrieval, not generation: chunking, overlap, embedding model, and top-k.",
+      "Check whether the right chunk was retrieved, then whether the prompt used citations vs. ignored context.",
+      "Then hybrid search, metadata filters, and eval questions that prove the chunk should have ranked.",
+    ],
+  },
+  {
+    question: "When should you use a chatbot, RAG, or a bounded tool-using agent?",
+    coach: [
+      "Chatbot: knowledge already in the model or a short conversation with no fresh docs.",
+      "RAG: answers must come from your files, with citations and an eval sheet.",
+      "Bounded agent: the task needs tools (search, APIs) with a max-step limit, traces, and a human stop.",
+    ],
+  },
+] as const;
+
 function Career() {
   const navigate = useNavigate();
-  const [track, setTrack] = useState("Software Engineer");
-  const stages = [
-    "B.Tech Curriculum",
-    "Core Skills",
-    "Industry Skills",
-    "Projects",
-    "Interview Prep",
-  ];
+  const [track, setTrack] = useState(CAREER_ROLES[0]!.name);
+  const [practiceIndex, setPracticeIndex] = useState<number | null>(null);
+  const [answerDraft, setAnswerDraft] = useState("");
+  const [showCoach, setShowCoach] = useState(false);
+  const activePrompt = practiceIndex !== null ? INTERVIEW_PROMPTS[practiceIndex] : null;
+
+  const openPractice = (index: number) => {
+    setPracticeIndex(index);
+    setAnswerDraft("");
+    setShowCoach(false);
+  };
   return (
     <>
       <PageHeader
-        eyebrow="KLH Career Preparation · Academic & Skill Alignment"
-        title="Connect Academic Rigor to Technical Employment"
-        description="Bridge your Semester 3 B.Tech coursework and verified project artifacts directly to engineering interview readiness."
-        action={
-          <select
-            value={track}
-            onChange={(e) => setTrack(e.target.value)}
-            className="h-9 rounded-lg border border-border bg-surface-elevated px-3 text-sm font-semibold"
-          >
-            <option>Software Engineer</option>
-            <option>AI/ML Engineer</option>
-            <option>Data Scientist</option>
-          </select>
-        }
+        eyebrow="From the curriculum · career roles"
+        title="Map yourself to one primary role"
+        description="Completing this program does not confer a job by itself. It gives you the stack, vocabulary, and artifacts those jobs use every week."
       />
-      <Panel>
-        <SectionTitle eyebrow="PLACEMENT PREPARATION PATH" title={`${track} · Verified Progress Scaffolding`} />
-        <StageTracker current={2} large />
-      </Panel>
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2">
+          {CAREER_ROLES.map((role) => (
+            <button
+              key={role.name}
+              onClick={() => setTrack(role.name)}
+              className={`rounded-xl border p-4 text-left ${
+                track === role.name ? "border-primary bg-brand-soft/50" : "border-border bg-card"
+              }`}
+            >
+              <p className="text-sm font-semibold">{role.name}</p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">{role.summary}</p>
+            </button>
+          ))}
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
         <Panel>
-          <SectionTitle eyebrow="ACADEMIC SKILL GAPS" title="Targeted Remediation Areas" />
+          <SectionTitle eyebrow="GAPS TO CLOSE" title="What hiring managers will ask" />
           <div className="space-y-3">
             {gaps.map((gap) => (
               <div
@@ -3738,36 +3425,98 @@ function Career() {
         </Panel>
         <Panel>
           <SectionTitle
-            eyebrow="TECHNICAL INTERVIEW PREPARATION"
-            title="Evidence-Based Defense & Concepts"
+            eyebrow="INTERVIEW PRACTICE"
+            title="Explain these out loud"
             action={
               <span className="rounded-full bg-lilac-soft px-2.5 py-1 text-[10px] font-mono font-bold text-lilac border border-lilac/30">
                 3 Concepts Practice Ready
               </span>
             }
           />
-          <div className="space-y-3">
-            {[
-              "Explain why vector retrieval quality directly impacts grounded RAG generation.",
-              "Design a validation strategy to handle dirty data before feeding model pipelines.",
-              "When should a software system utilize an autonomous agent over a static pipeline?",
-            ].map((question, index) => (
-              <div
-                key={question}
-                className="flex items-center gap-3 rounded-xl bg-background/40 p-3 border border-border/50"
-              >
-                <span className="font-mono text-[10px] font-bold text-brand">0{index + 1}</span>
-                <p className="flex-1 text-xs text-foreground font-medium">{question}</p>
-                <ChevronRight className="size-4 text-faint" />
+          {activePrompt ? (
+            <div className="space-y-3">
+              <div className="rounded-xl border border-brand/25 bg-brand-soft/40 p-4">
+                <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-brand">
+                  Question 0{(practiceIndex ?? 0) + 1} of {INTERVIEW_PROMPTS.length}
+                </p>
+                <p className="mt-2 text-sm font-semibold leading-6 text-foreground">{activePrompt.question}</p>
               </div>
-            ))}
-          </div>
-          <Button
-            className="mt-4 w-full shadow-md shadow-brand/20 font-bold"
-            onClick={() => toast("Mock interview session initialized with Semester 3 questions")}
-          >
-            Start Technical Interview Practice <ArrowRight />
-          </Button>
+              <Textarea
+                value={answerDraft}
+                onChange={(event) => setAnswerDraft(event.target.value)}
+                placeholder="Say it out loud, then type the outline you would use in the interview…"
+                className="min-h-28 text-sm"
+              />
+              {showCoach ? (
+                <div className="rounded-xl border border-mint/25 bg-mint-soft/70 p-4">
+                  <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-mint">Coach notes</p>
+                  <ul className="mt-2 space-y-1.5 text-xs leading-5 text-foreground/80">
+                    {activePrompt.coach.map((point) => (
+                      <li key={point} className="flex gap-2">
+                        <Check className="mt-0.5 size-3.5 shrink-0 text-mint" />
+                        <span>{point}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button
+                  className="flex-1 font-bold"
+                  onClick={() => {
+                    if (!answerDraft.trim()) {
+                      toast("Draft a short spoken outline first, then reveal the coach notes.");
+                      return;
+                    }
+                    setShowCoach(true);
+                    toast.success("Answer captured. Compare it with the coach notes.");
+                  }}
+                >
+                  Check my outline
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    const next = ((practiceIndex ?? 0) + 1) % INTERVIEW_PROMPTS.length;
+                    openPractice(next);
+                  }}
+                >
+                  Next question <ArrowRight />
+                </Button>
+              </div>
+              <button
+                type="button"
+                className="text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                onClick={() => setPracticeIndex(null)}
+              >
+                Back to question list
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-3">
+                {INTERVIEW_PROMPTS.map((item, index) => (
+                  <button
+                    key={item.question}
+                    type="button"
+                    onClick={() => openPractice(index)}
+                    className="flex w-full items-center gap-3 rounded-xl border border-border/50 bg-background/40 p-3 text-left transition hover:border-brand/40 hover:bg-brand-soft/30"
+                  >
+                    <span className="font-mono text-[10px] font-bold text-brand">0{index + 1}</span>
+                    <p className="flex-1 text-xs font-medium text-foreground">{item.question}</p>
+                    <ChevronRight className="size-4 text-faint" />
+                  </button>
+                ))}
+              </div>
+              <Button
+                className="mt-4 w-full font-bold shadow-md shadow-brand/20"
+                onClick={() => openPractice(0)}
+              >
+                Start Technical Interview Practice <ArrowRight />
+              </Button>
+            </>
+          )}
         </Panel>
       </div>
     </>
@@ -3809,8 +3558,8 @@ function Profile() {
     <>
       <PageHeader
         eyebrow="Profile & settings"
-        title="Make AI Skills Track fit your semester."
-        description="Your preferences shape the learning plan, pace, and AI explanations you receive."
+        title="Make the 16-week plan fit your week."
+        description="Your pace, study hours, and target role shape which module and project come next."
       />
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel>
@@ -3825,20 +3574,20 @@ function Profile() {
           />
           <div className="grid gap-3 text-sm sm:grid-cols-2">
             <div>
-              <Eyebrow>University</Eyebrow>
-              <p className="mt-1 font-semibold text-foreground">KLH University</p>
-            </div>
-            <div>
               <Eyebrow>Program</Eyebrow>
-              <p className="mt-1 font-semibold text-foreground">B.Tech Computer Science & Eng. · Sem 3</p>
+              <p className="mt-1 font-semibold text-foreground">{PROGRAM.fullName}</p>
             </div>
             <div>
-              <Eyebrow>Career Track</Eyebrow>
-              <p className="mt-1 font-semibold text-foreground">Software Engineer (AI Systems)</p>
+              <Eyebrow>Pace</Eyebrow>
+              <p className="mt-1 font-semibold text-foreground">16 weeks part-time · 8–12 hrs/week</p>
             </div>
             <div>
-              <Eyebrow>Evidence Status</Eyebrow>
-              <p className="mt-1 font-semibold text-mint">Verified Academic & Skill Portfolio</p>
+              <Eyebrow>Career track</Eyebrow>
+              <p className="mt-1 font-semibold text-foreground">GenAI Engineer</p>
+            </div>
+            <div>
+              <Eyebrow>Target roles</Eyebrow>
+              <p className="mt-1 font-semibold text-mint">GenAI · AI Engineer · Prompt · Product</p>
             </div>
           </div>
         </Panel>
@@ -4338,7 +4087,7 @@ export function CertificateVerification({ certificateId }: { certificateId: stri
             </div>
             <div>
               <dt className="text-xs text-muted-foreground">Cohort</dt>
-              <dd className="mt-1 font-medium">3rd year CSE 2026</dd>
+              <dd className="mt-1 font-medium">GenAI Path 2026</dd>
             </div>
             <div>
               <dt className="text-xs text-muted-foreground">Certificate ID</dt>
@@ -4351,14 +4100,14 @@ export function CertificateVerification({ certificateId }: { certificateId: stri
           </dl>
           <div className="py-8">
             <p className="text-sm text-muted-foreground">Completion summary</p>
-            <p className="mt-1 text-2xl font-semibold">30 of 30 modules completed</p>
+            <p className="mt-1 text-2xl font-semibold">20 of 20 modules completed</p>
           </div>
           <div className="divide-y divide-border border-y border-border">
             {[
-              "Python Fundamentals for AI",
-              "Build an ML Project",
-              "Working with LLMs Professionally",
-              "AI System Design",
+              "Python Foundations for AI",
+              "Retrieval-Augmented Generation (RAG)",
+              "Agents with Tools",
+              "Production AI Systems",
             ].map((module) => (
               <div key={module} className="flex items-center justify-between gap-4 py-4">
                 <span className="text-sm font-medium">{module}</span>
@@ -4428,7 +4177,7 @@ export function PlacementAdmin() {
           />
           <div className="divide-y divide-border">
             {[
-              ["Meera Nair", "12 of 30 modules mastered", "Needs a guided learning plan"],
+              ["Meera Nair", "12 of 20 modules completed", "Needs a guided learning plan"],
               ["Rohan Das", "1 project awaiting review", "Verification pending"],
               ["Ishita Shah", "58% assessment average", "Revision recommended"],
             ].map(([name, status, note]) => (
@@ -4456,13 +4205,12 @@ export function Auth() {
           <div className="w-full max-w-md">
             <Mark />
             <div className="mt-12">
-              <Eyebrow>Start your personalized path</Eyebrow>
+              <Eyebrow>Start the 16-week path</Eyebrow>
               <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight">
-                Your syllabus is the starting point.
+                From Python to production agents.
               </h1>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                Create your AI Skills Track account. We’ll use your curriculum, goals, and available
-                time to shape your first two weeks.
+                Create your account. The program follows one sequence: APIs and prompts, then RAG, then bounded agents, then a portfolio hiring managers can inspect.
               </p>
               <div className="mt-8 space-y-4">
                 <Input placeholder="Email address" type="email" />
@@ -4480,7 +4228,7 @@ export function Auth() {
                 </Button>
               </div>
               <p className="mt-6 text-center text-[11px] text-faint">
-                By continuing, you agree to AI Skills Track’s demo terms.
+                By continuing, you agree to the demo terms for this training workspace.
               </p>
             </div>
           </div>
@@ -4490,13 +4238,13 @@ export function Auth() {
           <div className="relative mx-auto max-w-lg">
             <Eyebrow>Inside your workspace</Eyebrow>
             <h2 className="mt-3 font-display text-4xl font-semibold">
-              A learning map that knows what comes next.
+              A map that always shows what comes next.
             </h2>
             <div className="mt-10 space-y-3">
               {[
-                "Semester-aware planning",
-                "AI reasoning on every recommendation",
-                "Projects mapped to your career goal",
+                "20 modules in five clear phases",
+                "Six portfolio projects with evals and traces",
+                "Roles: GenAI Engineer, AI Engineer, Prompt, Product",
               ].map((item, index) => (
                 <div
                   key={item}
@@ -4553,10 +4301,10 @@ export function Onboarding() {
           </h1>
           <div className="mx-auto mt-6 max-w-sm space-y-3 text-left">
             {[
-              "Analyzing your semester 3 syllabus…",
-              "Mapping prerequisites…",
-              "Aligning with Software Engineer skill graph…",
-              "Building your first 2 weeks…",
+              "Reading your Python and API baseline…",
+              "Sequencing modules 01–20…",
+              "Aligning with the GenAI Engineer hiring bar…",
+              "Planning your first two weeks…",
             ].map((item, index) => (
               <div key={item} className="flex items-center gap-3 text-sm text-muted-foreground">
                 <span
@@ -4605,21 +4353,21 @@ export function Onboarding() {
             {step === 0
               ? "Tell us where you are so the first recommendation feels like yours."
               : step === 1
-                ? "We found a strong match for your semester. You can edit it before continuing."
-                : step === 2
-                  ? "A quick baseline helps AI Skills Track choose the right amount of scaffolding."
-                  : step === 3
-                    ? "Your goal changes which skills and projects appear next."
-                    : "How much time can you realistically protect each week?"}
+                ? "This program is a single sequenced curriculum. You can confirm the phase list before continuing."
+                  : step === 2
+                    ? "A quick baseline helps choose how much scaffolding you get in Module 01."
+                    : step === 3
+                    ? "Your target role changes which projects you pin first."
+                    : "Plan on about 8–12 hours per week for 16 weeks, or 8–10 weeks full-time."}
           </p>
           <div className="mt-8 space-y-4">
             {step === 0 && (
               <>
                 <Input placeholder="Your name" defaultValue="Aarav Kulkarni" />
-                <Input placeholder="College / University" defaultValue="PES University" />
+                <Input placeholder="Current role or background" defaultValue="Student / career switcher" />
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <Input placeholder="Branch" defaultValue="Computer Science" />
-                  <Input placeholder="Year & semester" defaultValue="2nd year · Semester 3" />
+                  <Input placeholder="Programming comfort" defaultValue="Beginner-friendly Python" />
+                  <Input placeholder="Weekly hours" defaultValue="8–12 hours · 16 weeks" />
                 </div>
               </>
             )}
@@ -4635,7 +4383,7 @@ export function Onboarding() {
                     </TabsTrigger>
                   </TabsList>
                   <TabsContent value="database">
-                    <Input placeholder="Search university…" defaultValue="PES University" />
+                    <Input placeholder="Search program…" defaultValue="Generative AI + Agentic AI + Python" />
                     <div className="mt-4 grid gap-2 sm:grid-cols-2">
                       {subjects.map((subject) => (
                         <div
@@ -4708,10 +4456,10 @@ export function Onboarding() {
               <div className="grid gap-3 sm:grid-cols-2">
                 {(
                   [
-                    ["AI Engineer", "Strong Python, ML, and project proof", Code2],
-                    ["Full-Stack Developer", "Products, APIs, and frontend fluency", Layers3],
-                    ["AI/ML Engineer", "Models, data, and applied experimentation", BrainCircuit],
-                    ["Data Scientist", "SQL, statistics, and analytical thinking", BarChart3],
+                    ["GenAI Engineer", "Prompts, RAG, evaluation, product backends", Code2],
+                    ["AI Engineer", "Python, APIs, data pipelines, production sense", Layers3],
+                    ["Prompt Engineer", "Templates, eval sets, structured outputs", BrainCircuit],
+                    ["AI Product Developer", "User journeys, conversation design, MVPs", BarChart3],
                   ] as const
                 ).map(([label, body, IconComp], index) => (
                   <button
