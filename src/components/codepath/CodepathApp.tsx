@@ -1915,6 +1915,7 @@ function LearningModeContent({
   const [experimentState, setExperimentState] = useState<"idle" | "running" | "unavailable">(
     "idle",
   );
+  const [mentorLevel, setMentorLevel] = useState(1);
   const [recordedSteps, setRecordedSteps] = useState<Set<string>>(() => new Set());
   const step = experience.steps[stepIndex] ?? experience.steps[0]!;
 
@@ -2306,23 +2307,55 @@ function LearningModeContent({
               {experience.challenge.description}
             </p>
 
-            <div className="mt-3.5 space-y-2.5 text-xs">
+            <div className="mt-3.5 space-y-2 text-xs">
               <FeedbackCard
-                label="Concept Sequence"
-                body={`${experience.learningSections.length} concepts · ${experience.learningSections.map((sec) => sec.concept).join(" · ")}`}
+                label="Target Topics"
+                body={experience.module.topics.slice(0, 4).join(" · ")}
                 tone="brand"
               />
-              <FeedbackCard label="Target Topics" body={experience.module.topics.join(" · ")} tone="lilac" />
               <FeedbackCard
                 label="Learning Objective"
                 body={experience.module.learningObjectives[0] ?? experience.module.description}
                 tone="mint"
               />
-              <FeedbackCard
-                label="AI Mentor Guidance"
-                body={experience.challenge.hints[0] ?? experience.challenge.problem}
-                tone="peach"
-              />
+            </div>
+
+            {/* AI Mentor 5-Level Progressive Assistance Widget */}
+            <div className="mt-4 rounded-xl border border-brand/35 bg-brand-soft/20 p-3.5 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 font-bold text-xs text-foreground">
+                  <Bot className="size-4 text-brand" />
+                  <span>AI Mentor</span>
+                </div>
+                <span className="text-[10px] font-mono font-bold text-brand bg-brand-soft px-2 py-0.5 rounded-full border border-brand/30">
+                  Level {mentorLevel} / 5
+                </span>
+              </div>
+              
+              <div className="rounded-lg bg-surface p-2.5 text-xs leading-relaxed text-foreground border border-border/60 min-h-[50px]">
+                {mentorLevel === 1 && "💡 Level 1: Look at the variable types and operator boundaries in this step. What input condition breaks the assumption?"}
+                {mentorLevel === 2 && `🔍 Level 2 Hint: ${experience.challenge.hints[0] ?? "Inspect string vs float types or missing dictionary keys."}`}
+                {mentorLevel === 3 && `📚 Level 3 Concept: ${currentConceptItem.description}`}
+                {mentorLevel === 4 && `🧩 Level 4 Example: ${step.example.slice(0, 90)}...`}
+                {mentorLevel === 5 && `✅ Level 5 Full Solution:\n${step.fixedCode ?? experience.challenge.solution}`}
+              </div>
+
+              <div className="flex items-center justify-between gap-2 pt-1">
+                <button
+                  disabled={mentorLevel <= 1}
+                  onClick={() => setMentorLevel((l) => Math.max(1, l - 1))}
+                  className="text-[11px] font-bold text-muted-foreground hover:text-foreground disabled:opacity-40"
+                >
+                  ← Less Help
+                </button>
+                <button
+                  disabled={mentorLevel >= 5}
+                  onClick={() => setMentorLevel((l) => Math.min(5, l + 1))}
+                  className="text-[11px] font-bold text-brand hover:underline disabled:opacity-40"
+                >
+                  Need More Help →
+                </button>
+              </div>
             </div>
 
             <Button

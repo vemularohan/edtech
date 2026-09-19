@@ -36,10 +36,10 @@ const rawModuleData: [string, string, string[], string[], ExperienceStage][] = [
     "Understand",
   ],
   [
-    "Python Fundamentals for AI",
-    "Use Python fundamentals to make a first useful AI script.",
-    ["variables", "lists", "loops", "functions"],
-    ["Python", "Google Colab"],
+    "Python Foundations for AI",
+    "Build the programming discipline required for AI development: clean syntax, structured programs, reliable data handling, and professional Python workflow.",
+    ["Python basics", "control flow", "functions", "data structures", "file handling", "JSON handling", "virtual environments", "package management"],
+    ["Python 3", "venv", "pip", "json", "pathlib"],
     "Apply",
   ],
   [

@@ -138,26 +138,67 @@ export const primaryChallenge = curriculumChallenges[0];
 const moduleSpecificChallenges: Array<Omit<CurriculumChallenge, "id">> = [
   {
     moduleId: "3.1",
-    topic: "AI-generated code review",
-    title: "AI Code Detective",
-    description: "Find and repair a subtle mistake in generated Python.",
-    type: "DEBUG",
+    topic: "Module 01 Final Project: Reliable Data CLI",
+    title: "Reliable Data CLI Utility",
+    description: "Build a miniature data pipeline that parses JSON, validates records, filters active items above a score threshold, formats results, and handles errors gracefully.",
+    type: "BUILD",
     difficulty: "Beginner",
     problem:
-      "The generated function should return the number of non-empty messages, but it counts blank strings too. Fix the condition and explain the failure.",
-    starterCode: `def count_messages(messages):\n    return sum(1 for message in messages if message)`,
+      "Write process_ai_data_pipeline(raw_json_str, min_score=80.0). Parse raw_json_str containing a list of item dicts. Keep items with status == 'active' and float(score) >= min_score. Return a dict with 'processed' (total input items), 'passed' (count of filtered items), and 'results' (list of filtered dicts with float scores rounded to 2 decimals). Handle string scores like '85.5' cleanly and skip items with missing fields or invalid score strings without crashing.",
+    starterCode: `import json
+
+def process_ai_data_pipeline(raw_json_str, min_score=80.0):
+    # Parse JSON, validate keys ('id', 'status', 'score'), filter, transform score to float, and return summary dict.
+    return {"processed": 0, "passed": 0, "results": []}`,
     tests: [
-      { id: "01", input: '["hello", "", "help"]', expected: "2" },
-      { id: "02", input: '["", "ok"]', expected: "1" },
+      {
+        id: "01",
+        input: '\'[{"id":"d1","status":"active","score":92.5},{"id":"d2","status":"inactive","score":88.0},{"id":"d3","status":"active","score":"85.0"}]\', 80.0',
+        expected: '{"processed":3,"passed":2,"results":[{"id":"d1","status":"active","score":92.5},{"id":"d3","status":"active","score":85.0}]}',
+      },
+      {
+        id: "02",
+        input: '\'[{"id":"d4","status":"active","score":"INVALID"},{"id":"d5","status":"active","score":75.0}]\', 80.0',
+        expected: '{"processed":2,"passed":0,"results":[]}',
+      },
     ],
     hints: [
-      "Read the generated condition literally.",
-      "An empty string is falsy in Python.",
-      "Keep the item only when it contains non-whitespace text.",
+      "Use json.loads(raw_json_str) inside a try/except JSONDecodeError block.",
+      "Iterate over items and defensively inspect item.get('status') and item.get('score').",
+      "Convert scores using try float(score) except (ValueError, TypeError).",
+      "Return {'processed': total_len, 'passed': len(results), 'results': results}.",
     ],
-    solution: `def count_messages(messages):\n    return sum(1 for message in messages if message.strip())`,
+    solution: `import json
+
+def process_ai_data_pipeline(raw_json_str, min_score=80.0):
+    try:
+        items = json.loads(raw_json_str)
+    except Exception:
+        return {"processed": 0, "passed": 0, "results": []}
+        
+    if not isinstance(items, list):
+        return {"processed": 0, "passed": 0, "results": []}
+        
+    passed_items = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        status = item.get("status")
+        raw_score = item.get("score")
+        if status != "active" or raw_score is None:
+            continue
+        try:
+            score = float(raw_score)
+        except (ValueError, TypeError):
+            continue
+        if score >= min_score:
+            rec = dict(item)
+            rec["score"] = round(score, 2)
+            passed_items.append(rec)
+            
+    return {"processed": len(items), "passed": len(passed_items), "results": passed_items}`,
     explanation:
-      "AI-generated code can look plausible while missing an edge case. Reading, reproducing, and testing the behavior is the engineering skill this module develops.",
+      "A production data pipeline must handle unclean real-world data: string numbers, missing keys, and malformed JSON payloads without throwing unhandled exceptions.",
   },
   {
     moduleId: "3.2",
