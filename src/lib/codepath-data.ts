@@ -202,34 +202,74 @@ def process_ai_data_pipeline(raw_json_str, min_score=80.0):
   },
   {
     moduleId: "3.2",
-    topic: "Python functions and dictionaries",
-    title: "Format a Prompt Payload",
-    description: "Use Python fundamentals to turn a conversation into a predictable prompt.",
+    topic: "Defensive Python & Reliable Data Pipelines",
+    title: "Reliable Data CLI: Clean, Validate & Export",
+    description: "Build a defensive data processor that validates records, coerces string scores, filters thresholds, and handles missing files and malformed payloads.",
     type: "BUILD",
     difficulty: "Beginner",
     problem:
-      "Build format_prompt that returns a dictionary with system, user, and message_count keys. Count only non-empty messages.",
-    starterCode: `def format_prompt(system, messages):\n    # Return a payload for an AI request.\n    return {}`,
+      "Implement process_ai_data_pipeline(raw_json_str, min_score=80.0). Defensively parse raw_json_str, filter records where status == 'active' and score >= min_score, convert string scores to float, round to 2 decimals, and return {'processed': N, 'passed': M, 'results': [...]}. Return empty error structure if JSON is malformed.",
+    starterCode: `import json
+
+def process_ai_data_pipeline(raw_json_str, min_score=80.0):
+    # Defensively parse, validate, and filter records
+    return {"processed": 0, "passed": 0, "results": []}`,
     tests: [
       {
         id: "01",
-        input: '("Be concise", ["Hi", "Explain this"])',
-        expected: '{"system":"Be concise","user":"Explain this","message_count":2}',
+        input: '\'[{"id":"d1","status":"active","score":92.5},{"id":"d2","status":"inactive","score":88.0},{"id":"d3","status":"active","score":"85.0"}]\', 80.0',
+        expected: '{"processed":3,"passed":2,"results":[{"id":"d1","status":"active","score":92.5,"passed":true},{"id":"d3","status":"active","score":85.0,"passed":true}]}',
       },
       {
         id: "02",
-        input: '("Help", ["", "Status"])',
-        expected: '{"system":"Help","user":"Status","message_count":1}',
+        input: '\'[{"id":"d4","status":"active","score":"INVALID"},{"id":"d5","status":"active","score":75.0}]\', 80.0',
+        expected: '{"processed":2,"passed":0,"results":[]}',
+      },
+      {
+        id: "03",
+        input: '\'MALFORMED_JSON_STRING\', 80.0',
+        expected: '{"processed":0,"passed":0,"results":[]}',
       },
     ],
     hints: [
-      "Use a dictionary with named keys.",
-      "The latest non-empty message is the user message.",
-      "Loop through messages or use a filtered list.",
+      "Wrap json.loads(raw_json_str) inside a try/except block to catch parsing errors.",
+      "Check that the parsed data is a list using isinstance(items, list).",
+      "Defensively retrieve 'status' and 'score' using item.get() instead of bracket indexing.",
+      "Convert score using try float(raw_score) except (ValueError, TypeError).",
+      "Return {'processed': len(items), 'passed': len(passed_items), 'results': passed_items}.",
     ],
-    solution: `def format_prompt(system, messages):\n    clean = [message for message in messages if message]\n    return {"system": system, "user": clean[-1], "message_count": len(clean)}`,
+    solution: `import json
+
+def process_ai_data_pipeline(raw_json_str, min_score=80.0):
+    try:
+        items = json.loads(raw_json_str)
+    except Exception:
+        return {"processed": 0, "passed": 0, "results": []}
+        
+    if not isinstance(items, list):
+        return {"processed": 0, "passed": 0, "results": []}
+        
+    passed_items = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        status = item.get("status")
+        raw_score = item.get("score")
+        if status != "active" or raw_score is None:
+            continue
+        try:
+            score = float(raw_score)
+        except (ValueError, TypeError):
+            continue
+        if score >= min_score:
+            rec = dict(item)
+            rec["score"] = round(score, 2)
+            rec["passed"] = True
+            passed_items.append(rec)
+            
+    return {"processed": len(items), "passed": len(passed_items), "results": passed_items}`,
     explanation:
-      "Variables, lists, loops, functions, and dictionaries become useful when they shape data for an AI workflow.",
+      "A production data pipeline must handle real-world payloads: string numbers, missing keys, and malformed JSON payloads without crashing.",
   },
   {
     moduleId: "3.3",

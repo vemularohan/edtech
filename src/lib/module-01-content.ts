@@ -1,3 +1,23 @@
+export interface ConceptStageContent {
+  title: string;
+  explanation: string;
+  skillId?: string;
+  difficultyLevel?: number;
+  xpReward?: number;
+  mentorHints?: string[];
+  yourTurnPrompt?: string;
+  yourTurnStarterCode?: string;
+  yourTurnSolution?: string;
+  rubricCriteria?: string[];
+  predictCode: string;
+  predictPrompt: string;
+  predictOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
+  breakItCode: string;
+  breakItPrompt: string;
+  breakItOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
+  fixCode: string;
+}
+
 export interface Module01StageContent {
   mission01: {
     title: string;
@@ -17,107 +37,19 @@ export interface Module01StageContent {
     predictPrompt: string;
     predictCode: string;
     predictOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
+    mentorHints?: string[];
   };
-  typesAndVariables: {
-    title: string;
-    explanation: string;
+  typesAndVariables: ConceptStageContent & {
     types: { name: string; example: string; pitfall: string }[];
-    predictCode: string;
-    predictPrompt: string;
-    predictOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
-    breakItCode: string;
-    breakItPrompt: string;
-    breakItOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
-    fixCode: string;
   };
-  operators: {
-    title: string;
-    explanation: string;
-    predictCode: string;
-    predictPrompt: string;
-    predictOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
-    breakItCode: string;
-    breakItPrompt: string;
-    breakItOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
-    fixCode: string;
-  };
-  decisions: {
-    title: string;
-    explanation: string;
-    predictCode: string;
-    predictPrompt: string;
-    predictOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
-    breakItCode: string;
-    breakItPrompt: string;
-    breakItOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
-    fixCode: string;
-  };
-  loops: {
-    title: string;
-    explanation: string;
-    predictCode: string;
-    predictPrompt: string;
-    predictOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
-    breakItCode: string;
-    breakItPrompt: string;
-    breakItOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
-    fixCode: string;
-  };
-  functions: {
-    title: string;
-    explanation: string;
-    predictCode: string;
-    predictPrompt: string;
-    predictOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
-    breakItCode: string;
-    breakItPrompt: string;
-    breakItOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
-    fixCode: string;
-  };
-  dataStructures: {
-    title: string;
-    explanation: string;
-    predictCode: string;
-    predictPrompt: string;
-    predictOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
-    breakItCode: string;
-    breakItPrompt: string;
-    breakItOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
-    fixCode: string;
-  };
-  filesAndPaths: {
-    title: string;
-    explanation: string;
-    predictCode: string;
-    predictPrompt: string;
-    predictOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
-    breakItCode: string;
-    breakItPrompt: string;
-    breakItOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
-    fixCode: string;
-  };
-  jsonHandling: {
-    title: string;
-    explanation: string;
-    predictCode: string;
-    predictPrompt: string;
-    predictOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
-    breakItCode: string;
-    breakItPrompt: string;
-    breakItOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
-    fixCode: string;
-  };
-  envAndDependencies: {
-    title: string;
-    explanation: string;
-    predictCode: string;
-    predictPrompt: string;
-    predictOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
-    breakItCode: string;
-    breakItPrompt: string;
-    breakItOptions: { id: string; text: string; isCorrect: boolean; feedback: string }[];
-    fixCode: string;
-  };
+  operators: ConceptStageContent;
+  decisions: ConceptStageContent;
+  loops: ConceptStageContent;
+  functions: ConceptStageContent;
+  dataStructures: ConceptStageContent;
+  filesAndPaths: ConceptStageContent;
+  jsonHandling: ConceptStageContent;
+  envAndDependencies: ConceptStageContent;
   debuggingLab: {
     title: string;
     explanation: string;
@@ -140,6 +72,13 @@ export interface Module01StageContent {
     sampleJSON: string;
     tests: { id: string; inputName: string; expectedStatus: string; description: string }[];
     solutionCode: string;
+    rubric?: {
+      id: string;
+      title: string;
+      criterion: string;
+      hint: string;
+      maxPoints: number;
+    }[];
   };
 }
 
@@ -221,7 +160,30 @@ print(data_a["temperature"])`,
   },
   typesAndVariables: {
     title: "03 — Values, Types & Variables",
+    skillId: "python-types",
+    difficultyLevel: 2,
+    xpReward: 30,
     explanation: "AI applications process 6 core primitive types: int, float, str, bool, None, and collections. Knowing immutability and conversion prevents API payload crashes.",
+    mentorHints: [
+      "Conceptual Check: What type does Python assign when a number is surrounded by quotes, like '1500'?",
+      "Mental Model Rule: Python is strongly typed. It refuses implicit type conversion during arithmetic operations.",
+      "Inspection: Look at `(token_count / 1000) * rate_per_k`. The division operator `/` fails when the left operand is a string.",
+      "Scaffold: Cast `token_count` to an integer using `int()` before performing mathematical division.",
+      "Full Solution: `clean_tokens = int(token_count); return (clean_tokens / 1000) * rate_per_k`."
+    ],
+    yourTurnPrompt: "Write `format_token_budget(model_name, total_tokens, cost_per_1k)`. Safely cast string tokens to int, calculate cost, and return an f-string: f'{model_name}: {total_tokens} tokens (${cost:.4f})'.",
+    yourTurnStarterCode: `def format_token_budget(model_name, total_tokens, cost_per_1k):
+    # Safely convert total_tokens and return formatted string
+    pass`,
+    yourTurnSolution: `def format_token_budget(model_name, total_tokens, cost_per_1k):
+    tokens = int(total_tokens)
+    cost = (tokens / 1000.0) * float(cost_per_1k)
+    return f"{model_name}: {tokens} tokens (\${cost:.4f})"`,
+    rubricCriteria: [
+      "Safely casts total_tokens to integer or float",
+      "Calculates dollar cost per 1,000 tokens",
+      "Returns valid f-string formatted to 4 decimal places"
+    ],
     types: [
       { name: "int", example: "tokens = 4096", pitfall: "Overflow is not an issue in Python, but int('4.5') crashes." },
       { name: "float", example: "temperature = 0.7", pitfall: "Floating point precision errors: 0.1 + 0.2 != 0.3 (evaluates to 0.30000000000000004)." },
@@ -258,7 +220,28 @@ print("Cost:", cost)`,
   },
   operators: {
     title: "04 — Operators & Expressions",
+    skillId: "control-flow",
+    difficultyLevel: 2,
+    xpReward: 30,
     explanation: "Operators allow Python to evaluate relationships. In AI applications, comparison (==, !=), logical (and, or, not), and membership (in, not in) operators steer pipeline execution.",
+    mentorHints: [
+      "Conceptual Check: What is the relative precedence of `and` vs `or` in Python expressions?",
+      "Mental Model Rule: `not` evaluates first, then `and`, then `or`. `and` binds more tightly than `or`.",
+      "Inspection: Look at `user_role == 'admin' or user_role == 'developer' and total_spent > 100`. Python treats this as `user_role == 'admin' or (user_role == 'developer' and total_spent > 100)`.",
+      "Scaffold: Enclose the role choices `(user_role == 'admin' or user_role == 'developer')` in parentheses.",
+      "Full Solution: `return (user_role == 'admin' or user_role == 'developer') and total_spent > 100`."
+    ],
+    yourTurnPrompt: "Write `is_eligible_for_tier(account_age_days, verified, strikes)`. A user is eligible if they are verified AND account age is at least 30 days, OR if they have 0 strikes and account age is at least 90 days. Group conditions with parentheses.",
+    yourTurnStarterCode: `def is_eligible_for_tier(account_age_days, verified, strikes):
+    # Return boolean result with explicit precedence
+    pass`,
+    yourTurnSolution: `def is_eligible_for_tier(account_age_days, verified, strikes):
+    return (verified and account_age_days >= 30) or (strikes == 0 and account_age_days >= 90)`,
+    rubricCriteria: [
+      "Uses explicit parentheses to group logical conditions",
+      "Correctly checks account_age_days thresholds",
+      "Handles boolean combinations without precedence ambiguity"
+    ],
     predictPrompt: "What will print(result) display?",
     predictCode: `query = "Show me the invoice PDF"
 is_valid_user = True
@@ -289,7 +272,31 @@ print(can_access_model("developer", 10))`,
   },
   decisions: {
     title: "05 — Control Flow: Decisions",
+    skillId: "control-flow",
+    difficultyLevel: 3,
+    xpReward: 35,
     explanation: "AI applications branch on model response status codes, moderation checks, and tool choices using if/elif/else statements.",
+    mentorHints: [
+      "Conceptual Check: Does Python check all `elif` branches or exit as soon as one condition evaluates to True?",
+      "Mental Model Rule: Python evaluates branches in order from top to bottom and terminates evaluation on the first True condition.",
+      "Inspection: With `score = 0.95`, the first check `score > 0.3` is True, so Python returns 'LOW_RISK' without checking `score > 0.8`.",
+      "Scaffold: Order your conditions from most specific / highest threshold down to lowest threshold.",
+      "Full Solution: Put `if score > 0.8: return 'HIGH_RISK'` first, followed by `elif score > 0.3: return 'LOW_RISK'`, and `else: return 'SAFE'`."
+    ],
+    yourTurnPrompt: "Write `route_query(query_length, contains_image, user_tier)`. Return 'pro' if user_tier == 'enterprise' or query_length >= 500 or contains_image. Otherwise return 'flash' if query_length < 50 and not contains_image. Otherwise return 'standard'.",
+    yourTurnStarterCode: `def route_query(query_length, contains_image, user_tier):
+    pass`,
+    yourTurnSolution: `def route_query(query_length, contains_image, user_tier):
+    if user_tier == "enterprise" or query_length >= 500 or contains_image:
+        return "pro"
+    elif query_length < 50 and not contains_image:
+        return "flash"
+    return "standard"`,
+    rubricCriteria: [
+      "Places high-priority/enterprise checks before low-priority fallbacks",
+      "Combines boolean flags cleanly in conditional branches",
+      "Provides fallback default branch"
+    ],
     predictPrompt: "What status message is logged for status_code 429?",
     predictCode: `def handle_api_status(status_code):
     if status_code == 200:
@@ -333,7 +340,28 @@ print(classify_toxicity(0.95))`,
   },
   loops: {
     title: "06 — Loops & Repetition",
+    skillId: "control-flow",
+    difficultyLevel: 3,
+    xpReward: 35,
     explanation: "Loops iterate over document chunks, retry failed API requests, and transform datasets. List comprehensions offer clean, readable filtering.",
+    mentorHints: [
+      "Conceptual Check: What condition stops a `while` loop from continuing forever?",
+      "Mental Model Rule: Every while loop must advance its state variable toward the exit condition on every iteration.",
+      "Inspection: In `retry_api_call`, find where `attempts` is modified. If commented out, `attempts < max_retries` is always true.",
+      "Scaffold: Add `attempts += 1` inside the loop body, or rewrite as a bounded `for attempt in range(max_retries):` loop.",
+      "Full Solution: `attempts += 1` placed inside the while loop body, or `for attempt in range(max_retries):`."
+    ],
+    yourTurnPrompt: "Use a list comprehension to write `clean_document_chunks(chunks)`. Strip whitespace from each chunk, filter out any empty strings or strings shorter than 3 characters, and return the clean list.",
+    yourTurnStarterCode: `def clean_document_chunks(chunks):
+    # Return list comprehension with stripping and length filter
+    pass`,
+    yourTurnSolution: `def clean_document_chunks(chunks):
+    return [c.strip() for c in chunks if c and len(c.strip()) >= 3]`,
+    rubricCriteria: [
+      "Uses a concise, pythonic list comprehension",
+      "Strips whitespace on all chunks",
+      "Safely filters out empty and short strings"
+    ],
     predictPrompt: "What will this list comprehension produce?",
     predictCode: `chunks = ["Title: AI Guide", "  ", "Section 1: Python", "", "Section 2: RAG"]
 clean_chunks = [c.strip().upper() for c in chunks if c.strip()]
@@ -372,7 +400,31 @@ print(clean_chunks)`,
   },
   functions: {
     title: "07 — Functions: Modular Programming",
+    skillId: "functions",
+    difficultyLevel: 4,
+    xpReward: 40,
     explanation: "Functions isolate responsibilities, accept default arguments, return structured values, and document intent with docstrings.",
+    mentorHints: [
+      "Conceptual Check: When does Python evaluate default parameter values: when the function is defined, or each time it is called?",
+      "Mental Model Rule: Python evaluates default parameter expressions once at function definition time. Mutable defaults retain modifications between calls!",
+      "Inspection: In `def add_message(msg, history=[]):`, `history` points to one single shared list object across the life of the program.",
+      "Scaffold: Set `history=None` as the default in the signature, and initialize `if history is None: history = []` inside the function body.",
+      "Full Solution: `def add_message(msg, history=None): if history is None: history = []; history.append(msg); return history`."
+    ],
+    yourTurnPrompt: "Write `create_chat_session(system_role='assistant', initial_messages=None)`. Safely handle mutable default arguments, prepend `{'role': 'system', 'content': system_role}`, append initial_messages if provided, and return the list.",
+    yourTurnStarterCode: `def create_chat_session(system_role="assistant", initial_messages=None):
+    # Safely create message history list
+    pass`,
+    yourTurnSolution: `def create_chat_session(system_role="assistant", initial_messages=None):
+    messages = [{"role": "system", "content": system_role}]
+    if initial_messages:
+        messages.extend(initial_messages)
+    return messages`,
+    rubricCriteria: [
+      "Uses safe default argument (initial_messages=None)",
+      "Initializes system prompt dictionary as first message",
+      "Appends extra messages without shared state leakage"
+    ],
     predictPrompt: "What will build_prompt('Summarize text') return?",
     predictCode: `def build_prompt(user_query, system_role="You are a helpful AI tutor."):
     """Builds a formatted message dictionary for LLM APIs."""
@@ -406,7 +458,32 @@ print(add_message("How are you?"))`,
   },
   dataStructures: {
     title: "08 — Data Structures: JSON-Shaped AI Data",
+    skillId: "data-structures",
+    difficultyLevel: 4,
+    xpReward: 40,
     explanation: "Lists (sequences), Dicts (JSON key-value maps), Sets (unique values), and Tuples (immutable records). Safe dictionary key access with .get() is essential.",
+    mentorHints: [
+      "Conceptual Check: What happens if an LLM API payload doesn't contain a key you index with square brackets `data['choices']`?",
+      "Mental Model Rule: Direct bracket access `data['key']` throws a KeyError if missing. The `.get('key', default)` method safely falls back.",
+      "Inspection: In `extract_response`, `data['choices'][0]['message']['text']` assumes `'choices'` is non-empty and uses key `'text'` instead of `'content'`.",
+      "Scaffold: Extract `choices = data.get('choices', [])`, verify it is non-empty, then extract `.get('message', {}).get('content', '')`.",
+      "Full Solution: `choices = data.get('choices', []); if not choices: return 'No response'; return choices[0].get('message', {}).get('content', '')`."
+    ],
+    yourTurnPrompt: "Write `extract_model_metadata(response_dict)`. Safely extract `'model'` (default 'unknown'), `'prompt_tokens'` and `'completion_tokens'` from nested `'usage'` dict (default 0), and return a dictionary with total_tokens calculated.",
+    yourTurnStarterCode: `def extract_model_metadata(response_dict):
+    # Safely navigate nested keys using .get()
+    pass`,
+    yourTurnSolution: `def extract_model_metadata(response_dict):
+    model = response_dict.get("model", "unknown")
+    usage = response_dict.get("usage", {})
+    p = usage.get("prompt_tokens", 0)
+    c = usage.get("completion_tokens", 0)
+    return {"model": model, "prompt_tokens": p, "completion_tokens": c, "total_tokens": p + c}`,
+    rubricCriteria: [
+      "Uses .get() for top-level and nested dictionary keys",
+      "Provides appropriate default values",
+      "Calculates total_tokens accurately"
+    ],
     predictPrompt: "What does user.get('tier', 'free') return when key 'tier' is missing?",
     predictCode: `user = {"name": "Rohan", "score": 95}
 user_tier = user.get("tier", "free")
@@ -445,7 +522,37 @@ print(extract_response(payload))`,
   },
   filesAndPaths: {
     title: "09 — Files, Paths & Encoding",
+    skillId: "file-handling",
+    difficultyLevel: 4,
+    xpReward: 40,
     explanation: "AI applications load prompt templates, persist logs, and read dataset files. Using pathlib.Path and specifying encoding='utf-8' prevents OS path and character encoding bugs.",
+    mentorHints: [
+      "Conceptual Check: Why are backslash strings like `'logs\\\\app.txt'` dangerous for cross-platform applications?",
+      "Mental Model Rule: Different operating systems use different path separators. `pathlib.Path` uses the `/` operator to generate valid paths on any OS.",
+      "Inspection: In `save_log`, the file is opened without a context manager (`with`) and without `encoding='utf-8'`. Writing emojis like 🚀 will fail on non-UTF-8 defaults.",
+      "Scaffold: Use `path = Path('logs') / 'app.txt'`, ensure `path.parent.mkdir(parents=True, exist_ok=True)`, and open with `with open(path, 'a', encoding='utf-8') as f:`.",
+      "Full Solution: `log_path = Path('logs') / 'app.txt'; log_path.parent.mkdir(parents=True, exist_ok=True); with open(log_path, 'a', encoding='utf-8') as f: f.write(log_text + '\\n')`."
+    ],
+    yourTurnPrompt: "Write `save_prompt_template(directory_path, filename, content)`. Use `pathlib.Path`, create parent folders if they do not exist, and write the file with `encoding='utf-8'` in a `with` statement. Return the string path.",
+    yourTurnStarterCode: `from pathlib import Path
+
+def save_prompt_template(directory_path, filename, content):
+    # Use pathlib, mkdir, and UTF-8 encoding
+    pass`,
+    yourTurnSolution: `from pathlib import Path
+
+def save_prompt_template(directory_path, filename, content):
+    target_dir = Path(directory_path)
+    target_dir.mkdir(parents=True, exist_ok=True)
+    target_file = target_dir / filename
+    with open(target_file, "w", encoding="utf-8") as f:
+        f.write(content)
+    return str(target_file)`,
+    rubricCriteria: [
+      "Uses pathlib.Path object joining",
+      "Creates missing directories safely with mkdir(parents=True, exist_ok=True)",
+      "Explicitly specifies encoding='utf-8' in open()"
+    ],
     predictPrompt: "What path object method guarantees valid cross-platform path resolution?",
     predictCode: `from pathlib import Path
 
@@ -480,7 +587,49 @@ def save_log(log_text):
   },
   jsonHandling: {
     title: "10 — JSON: The Lingua Franca of AI",
+    skillId: "json",
+    difficultyLevel: 5,
+    xpReward: 45,
     explanation: "LLM tool calling, structured outputs, and API payloads depend on JSON. Defensive parsing with json.loads and validation of expected keys is mandatory.",
+    mentorHints: [
+      "Conceptual Check: What character wrapper around JSON commonly causes `json.loads` to crash when parsing LLM outputs?",
+      "Mental Model Rule: LLMs frequently wrap json responses in markdown backtick blocks (```json ... ```). `json.loads()` strictly expects bare JSON syntax.",
+      "Inspection: In `parse_model_json`, `json.loads` is given ````json\\n{\"rating\": 5}\\n````. The backtick fences immediately trigger JSONDecodeError.",
+      "Scaffold: Strip leading whitespace, check `.startswith('```json')`, slice away the markdown fences, and parse inside a try/except block.",
+      "Full Solution: Strip ```json from start and ``` from end, then wrap `json.loads(clean_text)` in try/except json.JSONDecodeError and validate required keys."
+    ],
+    yourTurnPrompt: "Write `parse_llm_json_response(raw_text, required_keys)`. Strip markdown fences (```json and ```), parse with json.loads, check that all required_keys exist, and return `(True, data)` on success or `(False, error_message)` on failure.",
+    yourTurnStarterCode: `import json
+
+def parse_llm_json_response(raw_text, required_keys):
+    # Strip markdown fences, parse JSON, validate keys
+    pass`,
+    yourTurnSolution: `import json
+
+def parse_llm_json_response(raw_text, required_keys):
+    text = raw_text.strip()
+    if text.startswith("\`\`\`json"):
+        text = text[7:]
+    elif text.startswith("\`\`\`"):
+        text = text[3:]
+    if text.endswith("\`\`\`"):
+        text = text[:-3]
+    text = text.strip()
+    try:
+        data = json.loads(text)
+        if not isinstance(data, dict):
+            return False, "Parsed JSON is not an object"
+        for key in required_keys:
+            if key not in data:
+                return False, f"Missing required key: {key}"
+        return True, data
+    except Exception as e:
+        return False, f"JSON parse error: {e}"`,
+    rubricCriteria: [
+      "Defensively removes markdown fences (```json and ```)",
+      "Uses try/except to guard against malformed JSON",
+      "Validates that all required keys are present"
+    ],
     predictPrompt: "What Python type does json.loads('{\"status\": true, \"count\": 5}') produce?",
     predictCode: `import json
 
@@ -530,7 +679,35 @@ def parse_model_json(response_text):
   },
   envAndDependencies: {
     title: "11 — Virtual Environments & Package Management",
+    skillId: "environments",
+    difficultyLevel: 4,
+    xpReward: 40,
     explanation: "Isolating dependencies with venv and pinning exact versions in requirements.txt prevents 'works on my machine' breakage in AI pipelines.",
+    mentorHints: [
+      "Conceptual Check: What happens when two AI projects on your machine require conflicting versions of `pydantic` or `openai`?",
+      "Mental Model Rule: Virtual environments isolate python interpreters and site-packages so projects never contaminate each other.",
+      "Inspection: In the break-it scenario, `pip install` run globally writes into the system-wide site-packages directory.",
+      "Scaffold: Always create an environment (`python3 -m venv .venv`), activate it (`source .venv/bin/activate`), and pin requirements with `==`.",
+      "Full Solution: `python3 -m venv .venv; source .venv/bin/activate; pip install -r requirements.txt; pip freeze > requirements.txt`."
+    ],
+    yourTurnPrompt: "Write `validate_requirements_pinned(requirements_text)`. Split by line, ignore comments and empty lines, and return a list of unpinned package lines (lines without '==').",
+    yourTurnStarterCode: `def validate_requirements_pinned(requirements_text):
+    # Find all unpinned package entries
+    pass`,
+    yourTurnSolution: `def validate_requirements_pinned(requirements_text):
+    unpinned = []
+    for line in requirements_text.strip().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "==" not in line:
+            unpinned.append(line)
+    return unpinned`,
+    rubricCriteria: [
+      "Correctly ignores comments (#) and blank lines",
+      "Detects unpinned packages lacking exact '==' version specifier",
+      "Returns clean list of problematic dependencies"
+    ],
     predictPrompt: "Why do unpinned dependencies like openai cause production pipeline failures months later?",
     predictCode: `# requirements.txt (Unpinned vs Pinned):
 # Unpinned (Dangerous):
@@ -713,6 +890,57 @@ def process_ai_data_pipeline(input_json_path, output_report_path, min_score=80.0
         "processed": len(items),
         "passed": len(passed_items),
         "rejected": rejected_count
-    }`
+    }`,
+    rubric: [
+      {
+        id: "rubric-1",
+        title: "Defensive File Handling (pathlib & try/except)",
+        criterion: "Uses pathlib.Path for all file operations, verifies file existence, and catches FileNotFoundError gracefully.",
+        hint: "Path(input_json_path).exists() guard prevent unhandled OS crashes.",
+        maxPoints: 15,
+      },
+      {
+        id: "rubric-2",
+        title: "Defensive JSON Ingestion",
+        criterion: "Parses input JSON inside a try/except block, handling JSONDecodeError and invalid payload structures.",
+        hint: "Wrap json.load() in try/except and ensure the parsed root is a list.",
+        maxPoints: 15,
+      },
+      {
+        id: "rubric-3",
+        title: "Structural Record Validation",
+        criterion: "Validates that every record is a dict and safely reads 'id', 'status', and 'score' using item.get().",
+        hint: "Safely filter out corrupted non-dict items with isinstance(item, dict).",
+        maxPoints: 15,
+      },
+      {
+        id: "rubric-4",
+        title: "Robust Type Coercion",
+        criterion: "Defensively coerces string scores ('85.5') to float and rejects non-numeric junk ('INVALID_SCORE').",
+        hint: "Catch (ValueError, TypeError) when calling float(raw_score).",
+        maxPoints: 15,
+      },
+      {
+        id: "rubric-5",
+        title: "Filtering & Transformation",
+        criterion: "Filters for status == 'active' and score >= min_score, rounds score to 2 decimals, and marks passed: True.",
+        hint: "Never mutate shared dictionaries directly; construct clean records.",
+        maxPoints: 15,
+      },
+      {
+        id: "rubric-6",
+        title: "Output File & Explicit UTF-8",
+        criterion: "Creates destination directory if missing, writes using with open(..., encoding='utf-8'), and formats with indent=2.",
+        hint: "Ensure output_path.parent.mkdir(parents=True, exist_ok=True) runs before open().",
+        maxPoints: 15,
+      },
+      {
+        id: "rubric-7",
+        title: "Operational Metric Summary",
+        criterion: "Returns exact summary dictionary with processed, passed, and rejected counts matching real data.",
+        hint: "Verify total items == passed + rejected count.",
+        maxPoints: 10,
+      },
+    ]
   }
 };

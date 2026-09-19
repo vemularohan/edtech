@@ -23,6 +23,28 @@ export type ConceptProgress = {
   challengeCompleted: boolean;
   attempts: number;
   lastActivity: string;
+  skillLevel?: number; // 1-6
+  xpEarned?: number;
+  completedStepIds?: string[];
+};
+
+export const SKILL_LEVEL_LABELS: Record<number, string> = {
+  0: "Not Started",
+  1: "Recognized",
+  2: "Understood",
+  3: "Practiced",
+  4: "Debugged",
+  5: "Independent",
+  6: "Mastered",
+};
+
+export type SkillMasteryItem = {
+  id: string;
+  name: string;
+  topic: string;
+  level: number; // 0-6
+  label: string;
+  evidence: string[];
 };
 
 export type LearningEvidence = {
@@ -329,3 +351,162 @@ export function useLearningProgress() {
 
   return progress;
 }
+
+export const MODULE_01_SKILLS: { id: string; name: string; topic: string; description: string }[] = [
+  {
+    id: "python-types",
+    name: "Python Types & Variables",
+    topic: "Python basics",
+    description: "Memory tags, immutability, type coercion, f-strings, strong vs weak typing",
+  },
+  {
+    id: "control-flow",
+    name: "Control Flow & Decisions",
+    topic: "control flow",
+    description: "if/elif/else, truthy/falsy, short-circuit evaluation, match/case",
+  },
+  {
+    id: "functions",
+    name: "Functions & Scope",
+    topic: "functions",
+    description: "def, args/kwargs, return vs print, LEGB scope, mutable default argument traps",
+  },
+  {
+    id: "data-structures",
+    name: "Data Structures & Comprehensions",
+    topic: "data structures",
+    description: "lists, dicts, tuples, sets, comprehensions, reference vs copy, nested data",
+  },
+  {
+    id: "file-handling",
+    name: "File Handling & Paths",
+    topic: "file handling",
+    description: "pathlib.Path, with context manager, explicit UTF-8 encoding, cross-platform paths",
+  },
+  {
+    id: "json",
+    name: "Defensive JSON Handling",
+    topic: "JSON handling",
+    description: "json.loads/dumps, LLM API response parsing, markdown fence cleaning, schema validation",
+  },
+  {
+    id: "environments",
+    name: "Virtual Environments",
+    topic: "virtual environments",
+    description: "python -m venv, activation, interpreter isolation, sys.prefix, clean environments",
+  },
+  {
+    id: "dependencies",
+    name: "Package Management & Hygiene",
+    topic: "package management",
+    description: "pip install, requirements.txt pinning, lockfiles, dependency conflict resolution",
+  },
+];
+
+const SKILL_STORAGE_PREFIX = "ai-skills-track.skill-mastery.";
+
+export function getSkillMasteryForModule(moduleCode: string): SkillMasteryItem[] {
+  if (typeof window === "undefined") {
+    return MODULE_01_SKILLS.map((skill) => ({
+      id: skill.id,
+      name: skill.name,
+      topic: skill.topic,
+      level: 0,
+      label: SKILL_LEVEL_LABELS[0] ?? "Not Started",
+      evidence: [],
+    }));
+  }
+
+  const raw = window.localStorage.getItem(`${SKILL_STORAGE_PREFIX}${moduleCode}`);
+  const stored: Record<string, { level: number; evidence: string[] }> = raw ? JSON.parse(raw) : {};
+
+  // Also correlate with conceptProgressMap
+  const progress = readLearningProgress();
+
+  return MODULE_01_SKILLS.map((skill) => {
+    const item = stored[skill.id] ?? { level: 0, evidence: [] };
+    // Check if conceptProgressMap has entries matching this skill
+    const conceptEntry = Object.values(progress.conceptProgressMap).find(
+      (cp) => cp.conceptId.includes(skill.id) || cp.conceptId.includes(skill.topic),
+    );
+
+    let level = item.level;
+    const evidence = [...item.evidence];
+
+    if (conceptEntry) {
+      if (conceptEntry.lessonViewed && level < 1) {
+        level = 1;
+        if (!evidence.includes("Recognized concept")) evidence.push("Recognized concept");
+      }
+      if (conceptEntry.practiceCompleted && level < 3) {
+        level = 3;
+        if (!evidence.includes("Completed practice exercise")) evidence.push("Completed practice exercise");
+      }
+      if (conceptEntry.breakItCompleted && level < 4) {
+        level = 4;
+        if (!evidence.includes("Debugged and fixed break-it bug")) evidence.push("Debugged and fixed break-it bug");
+      }
+      if (conceptEntry.yourTurnCompleted && level < 5) {
+        level = 5;
+        if (!evidence.includes("Built independent code implementation")) evidence.push("Built independent code implementation");
+      }
+      if (conceptEntry.knowledgeCheckScore >= 80 && level < 6) {
+        level = 6;
+        if (!evidence.includes(`Mastered: scored ${conceptEntry.knowledgeCheckScore}% on check`)) {
+          evidence.push(`Mastered: scored ${conceptEntry.knowledgeCheckScore}% on check`);
+        }
+      }
+    }
+
+    return {
+      id: skill.id,
+      name: skill.name,
+      topic: skill.topic,
+      level,
+      label: SKILL_LEVEL_LABELS[level] ?? "Not Started",
+      evidence,
+    };
+  });
+}
+
+export function recordSkillActivity(
+  moduleCode: string,
+  skillId: string,
+  newLevel: number,
+  evidenceItem: string,
+) {
+  if (typeof window === "undefined") return;
+  const key = `${SKILL_STORAGE_PREFIX}${moduleCode}`;
+  const raw = window.localStorage.getItem(key);
+  const stored: Record<string, { level: number; evidence: string[] }> = raw ? JSON.parse(raw) : {};
+
+  const current = stored[skillId] ?? { level: 0, evidence: [] };
+  const updatedLevel = Math.max(current.level, Math.min(6, newLevel));
+  const updatedEvidence = current.evidence.includes(evidenceItem)
+    ? current.evidence
+    : [...current.evidence, evidenceItem];
+
+  stored[skillId] = {
+    level: updatedLevel,
+    evidence: updatedEvidence,
+  };
+
+  window.localStorage.setItem(key, JSON.stringify(stored));
+  window.dispatchEvent(new Event(CHANGE_EVENT));
+}
+
+export function useSkillMastery(moduleCode: string = "3.2") {
+  const [skills, setSkills] = React.useState<SkillMasteryItem[]>(() =>
+    getSkillMasteryForModule(moduleCode),
+  );
+
+  React.useEffect(() => {
+    const refresh = () => setSkills(getSkillMasteryForModule(moduleCode));
+    refresh();
+    window.addEventListener(CHANGE_EVENT, refresh);
+    return () => window.removeEventListener(CHANGE_EVENT, refresh);
+  }, [moduleCode]);
+
+  return skills;
+}
+

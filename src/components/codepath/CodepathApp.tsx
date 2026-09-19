@@ -103,6 +103,13 @@ import {
 import type { CurriculumChallenge } from "@/lib/codepath-data";
 import { curriculumModules } from "@/lib/curriculum-data";
 import { getLearningExperience } from "@/lib/learning-experiences";
+import { Module01Studio } from "./Module01Studio";
+import { LockedModulePreview } from "./LockedModulePreview";
+import { DashboardView } from "./DashboardView";
+import { PracticeLabView } from "./PracticeLabView";
+import { ProjectsView } from "./ProjectsView";
+import { SkillsView } from "./SkillsView";
+import { ProfileView } from "./ProfileView";
 import {
   completeLearningModule,
   getLearningProgressSummary,
@@ -130,13 +137,13 @@ type View =
   | "recovery";
 
 const navItems: { label: string; to: string; icon: typeof Activity }[] = [
-  { label: "Discover", to: "/dashboard", icon: Compass },
+  { label: "Home", to: "/dashboard", icon: Compass },
   { label: "Curriculum", to: "/curriculum", icon: GitBranch },
   { label: "Learning Mode", to: "/learning-mode", icon: BookOpen },
-  { label: "Challenges", to: "/challenges", icon: Zap },
-  { label: "Build", to: "/build", icon: FolderKanban },
+  { label: "Practice Lab", to: "/challenges", icon: Terminal },
+  { label: "Projects", to: "/build", icon: FolderKanban },
   { label: "Skills", to: "/skills", icon: BarChart3 },
-  { label: "Portfolio", to: "/portfolio", icon: UserRound },
+  { label: "Profile", to: "/profile", icon: UserRound },
   { label: "Career", to: "/career", icon: Target },
 ];
 
@@ -307,201 +314,245 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
 
   return (
     <div className="app-shell min-h-screen w-full overflow-x-clip bg-background text-foreground relative">
-      <Background3D />
+      {/* Subtle ambient background — much more restrained than before */}
       <div aria-hidden className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="cp-float absolute -left-40 -top-48 size-[580px] rounded-full bg-brand-soft/25 blur-3xl opacity-70" />
-        <div className="absolute -right-40 top-1/4 size-[620px] rounded-full bg-lilac-soft/20 blur-3xl opacity-60" />
-        <div className="absolute bottom-0 left-1/3 size-[480px] rounded-full bg-peach-soft/20 blur-3xl opacity-50" />
+        <div className="absolute -left-60 -top-60 size-[500px] rounded-full blur-3xl opacity-30"
+          style={{ background: "var(--color-brand-soft)" }} />
+        <div className="absolute -right-60 top-1/3 size-[500px] rounded-full blur-3xl opacity-20"
+          style={{ background: "var(--color-lilac-soft)" }} />
       </div>
+
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1540px]">
-        {/* Desktop Sidebar */}
-        <aside className="app-sidebar sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border/70 bg-surface/60 px-4 py-5 backdrop-blur-2xl md:flex">
-          <div className="mb-7 px-2">
+
+        {/* ── Desktop Sidebar ── */}
+        <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-border bg-surface/80 px-3 py-5 backdrop-blur-xl md:flex"
+          style={{ boxShadow: "1px 0 0 var(--color-border)" }}
+        >
+          {/* Brand mark */}
+          <div className="mb-6 px-2">
             <Mark />
           </div>
-          <div className="px-2">
-            <Eyebrow>Academic Navigation</Eyebrow>
+
+          {/* Section label */}
+          <div className="px-2 mb-1.5">
+            <p className="font-mono text-[9px] font-bold uppercase tracking-[.22em] text-faint">Navigation</p>
           </div>
-          <nav className="mt-2.5 flex flex-col gap-1.5">
-            {navItems.map(({ label, to, icon: Icon }) => (
-              <Link
-                key={to}
-                to={to}
-                className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
-                  activePath(active, to)
-                    ? "bg-surface-elevated/95 text-foreground shadow-md ring-1 ring-border/80 translate-x-1"
-                    : "text-muted-foreground hover:bg-surface-elevated/60 hover:text-foreground hover:translate-x-0.5"
-                }`}
-              >
-                <Icon
-                  className={`size-4 transition-colors ${activePath(active, to) ? "text-brand" : "text-faint"}`}
-                />
-                {label}
-              </Link>
-            ))}
+
+          {/* Nav items */}
+          <nav className="flex flex-col gap-0.5">
+            {navItems.map(({ label, to, icon: Icon }) => {
+              const isActive = activePath(active, to);
+              return (
+                <Link
+                  key={to}
+                  to={to}
+                  className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+                    isActive
+                      ? "bg-surface-elevated text-foreground"
+                      : "text-muted-foreground hover:bg-surface-elevated/70 hover:text-foreground"
+                  }`}
+                  style={isActive ? {
+                    boxShadow: "0 1px 3px rgba(15,23,42,.06), 0 0 0 1px var(--color-border)",
+                  } : {}}
+                >
+                  <Icon
+                    className="size-4 shrink-0 transition-colors"
+                    style={{ color: isActive ? "var(--color-brand)" : undefined }}
+                  />
+                  <span className="truncate">{label}</span>
+                  {isActive && (
+                    <span
+                      className="ml-auto size-1.5 rounded-full shrink-0"
+                      style={{ background: "var(--color-brand)" }}
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
-          <div className="mt-auto rounded-2xl border border-border/80 bg-surface-elevated/85 p-3.5 shadow-sm backdrop-blur-md">
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-xs font-semibold">Spine Progress</p>
-              <span className="rounded-full bg-lilac-soft px-2 py-0.5 text-[10px] font-semibold text-lilac border border-lilac/30">
-                {summary.completedCount}/{summary.totalModules}
-              </span>
+
+          {/* Bottom: Progress card + settings */}
+          <div className="mt-auto space-y-2">
+            <div
+              className="rounded-2xl border border-border p-3.5 space-y-2"
+              style={{ background: "var(--color-surface-elevated)", boxShadow: "0 1px 2px rgba(15,23,42,.04)" }}
+            >
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-foreground">Program Progress</p>
+                <span
+                  className="rounded-full px-2 py-0.5 font-mono text-[10px] font-bold"
+                  style={{ background: "var(--color-lilac-soft)", color: "var(--color-lilac)" }}
+                >
+                  {summary.completedCount}/{summary.totalModules}
+                </span>
+              </div>
+              <ProgressBar value={summary.progressPercent} />
+              <p className="text-[11px] text-faint truncate">
+                Mod {summary.currentModule.code} · {summary.currentStepTitle || "Ready to start"}
+              </p>
             </div>
-            <ProgressBar value={summary.progressPercent} />
-            <p className="mt-2 text-[11px] text-faint truncate">
-              Module {summary.currentModule.code} · {summary.currentStepTitle || "Ready to start"}
-            </p>
+
+            <button
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground transition hover:bg-surface-elevated hover:text-foreground"
+              onClick={() => navigate({ to: "/profile" })}
+            >
+              <Settings2 className="size-4 text-faint" />
+              <span>Profile & Settings</span>
+            </button>
           </div>
-          <button
-            className="mt-3 flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground transition hover:bg-surface-elevated hover:text-foreground"
-            onClick={() => navigate({ to: "/profile" })}
-          >
-            <Settings2 className="size-4 text-faint" />
-            Settings & Lab Config
-          </button>
         </aside>
 
-        {/* Mobile Navigation Drawer */}
+        {/* ── Mobile Navigation Drawer ── */}
         {mobileOpen && (
           <div
-            className="fixed inset-0 z-50 bg-foreground/30 backdrop-blur-sm md:hidden transition-opacity"
+            className="fixed inset-0 z-50 bg-foreground/20 backdrop-blur-sm md:hidden"
             onClick={() => setMobileOpen(false)}
             role="dialog"
             aria-modal="true"
             aria-label="Navigation Menu"
           >
             <aside
-              className="h-full w-[min(20rem,calc(100vw-2.5rem))] flex flex-col justify-between overflow-y-auto bg-background/95 p-5 shadow-2xl backdrop-blur-2xl border-r border-border touch-scroller"
+              className="h-full w-[min(20rem,calc(100vw-2.5rem))] flex flex-col bg-background/98 p-5 shadow-2xl backdrop-blur-2xl border-r border-border touch-scroller overflow-y-auto"
               onClick={(event) => event.stopPropagation()}
             >
-              <div>
-                <div className="mb-6 flex items-center justify-between">
-                  <Mark />
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="min-h-[44px] min-w-[44px] rounded-xl hover:bg-surface"
-                    aria-label="Close navigation"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    <X className="size-5" />
-                  </Button>
-                </div>
-
-                {/* Mobile Active Module Banner */}
-                <div className="mb-5 rounded-xl border border-brand/25 bg-brand-soft/50 p-3">
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="font-mono font-bold text-brand">ACTIVE MISSION</span>
-                    <span className="font-mono font-semibold text-brand">Mod {summary.currentModule.code}</span>
-                  </div>
-                  <p className="mt-1 text-xs font-semibold text-foreground truncate">{summary.currentModule.title}</p>
-                  <div className="mt-2.5">
-                    <ProgressBar value={summary.progressPercent} />
-                  </div>
-                </div>
-
-                <nav className="flex flex-col gap-1.5" aria-label="Mobile Main Navigation">
-                  {navItems.map(({ label, to, icon: Icon }) => {
-                    const isActive = activePath(active, to);
-                    return (
-                      <Link
-                        key={to}
-                        to={to}
-                        onClick={() => setMobileOpen(false)}
-                        className={`flex min-h-[48px] items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
-                          isActive
-                            ? "bg-brand text-primary-foreground font-semibold shadow-md shadow-brand/20"
-                            : "text-muted-foreground hover:bg-surface-elevated hover:text-foreground"
-                        }`}
-                      >
-                        <Icon className={`size-4.5 shrink-0 ${isActive ? "text-primary-foreground" : "text-brand"}`} />
-                        <span>{label}</span>
-                        {isActive && <span className="ml-auto size-2 rounded-full bg-primary-foreground animate-pulse" />}
-                      </Link>
-                    );
-                  })}
-                </nav>
+              <div className="mb-5 flex items-center justify-between">
+                <Mark />
+                <Button
+                  size="icon" variant="ghost"
+                  className="min-h-[44px] min-w-[44px] rounded-xl hover:bg-surface"
+                  aria-label="Close navigation"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <X className="size-5" />
+                </Button>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-border/70 space-y-2">
+              {/* Active module badge */}
+              <div
+                className="mb-4 rounded-xl border p-3"
+                style={{
+                  background: "var(--color-brand-soft)",
+                  borderColor: "color-mix(in oklch, var(--color-brand) 25%, transparent)",
+                }}
+              >
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-mono font-bold" style={{ color: "var(--color-brand)" }}>ACTIVE MISSION</span>
+                  <span className="font-mono font-semibold" style={{ color: "var(--color-brand)" }}>Mod {summary.currentModule.code}</span>
+                </div>
+                <p className="mt-1 text-xs font-semibold text-foreground truncate">{summary.currentModule.title}</p>
+                <div className="mt-2">
+                  <ProgressBar value={summary.progressPercent} />
+                </div>
+              </div>
+
+              <nav className="flex flex-col gap-1" aria-label="Mobile Main Navigation">
+                {navItems.map(({ label, to, icon: Icon }) => {
+                  const isActive = activePath(active, to);
+                  return (
+                    <Link
+                      key={to}
+                      to={to}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex min-h-[48px] items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all`}
+                      style={isActive ? {
+                        background: "var(--color-brand)",
+                        color: "white",
+                      } : {}}
+                    >
+                      <Icon className="size-4.5 shrink-0" style={{ color: isActive ? "white" : "var(--color-brand)" }} />
+                      <span className={isActive ? "text-white" : "text-muted-foreground"}>{label}</span>
+                      {isActive && <span className="ml-auto size-2 rounded-full bg-white/70 animate-pulse" />}
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              <div className="mt-auto pt-4 border-t border-border">
                 <button
-                  className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-medium text-muted-foreground hover:bg-surface-elevated hover:text-foreground transition"
-                  onClick={() => {
-                    setMobileOpen(false);
-                    navigate({ to: "/profile" });
-                  }}
+                  className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-surface-elevated hover:text-foreground transition"
+                  onClick={() => { setMobileOpen(false); navigate({ to: "/profile" }); }}
                 >
                   <Settings2 className="size-4 text-faint" />
-                  <span>Profile & Learning Config</span>
+                  <span>Profile & Settings</span>
                 </button>
               </div>
             </aside>
           </div>
         )}
 
-        {/* Main Content Viewport */}
+        {/* ── Main Content ── */}
         <div className="min-w-0 flex-1 flex flex-col">
-          {/* Mobile & Desktop Header */}
-          <header className="sticky top-0 z-30 w-full border-b border-border/70 bg-background/90 backdrop-blur-2xl">
-            <div className="flex min-h-14 sm:min-h-16 items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6">
-              {/* Mobile Left: Menu Toggle + Brand Icon + Page Title */}
-              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
+
+          {/* Header */}
+          <header className="sticky top-0 z-30 w-full border-b border-border bg-background/92 backdrop-blur-xl">
+            <div className="flex min-h-14 sm:min-h-15 items-center justify-between gap-2 px-3 sm:gap-4 sm:px-5">
+
+              {/* Left: hamburger + page title */}
+              <div className="flex items-center gap-2.5 min-w-0">
                 <Button
-                  size="icon"
-                  variant="ghost"
+                  size="icon" variant="ghost"
                   className="md:hidden min-h-[44px] min-w-[44px] rounded-xl text-foreground hover:bg-surface"
                   aria-label="Open navigation menu"
                   onClick={() => setMobileOpen(true)}
                 >
                   <Menu className="size-5" />
                 </Button>
-                <div className="flex items-center gap-2 min-w-0 truncate">
-                  <div className="md:hidden grid size-7 place-items-center rounded-lg bg-ink text-background shrink-0">
-                    <GitBranch className="size-3.5" />
-                  </div>
-                  <p className="min-w-0 truncate font-display text-sm font-semibold text-foreground">
-                    {pageTitle}
-                  </p>
+                <div className="md:hidden grid size-7 place-items-center rounded-lg bg-ink text-background shrink-0">
+                  <GitBranch className="size-3.5" />
                 </div>
+                <p className="min-w-0 truncate font-display text-sm font-semibold text-foreground">
+                  {pageTitle}
+                </p>
               </div>
 
-              {/* Desktop Search Bar */}
-              <div className="hidden flex-1 items-center gap-2 rounded-xl border border-border/80 bg-surface-elevated/80 px-3.5 py-2 shadow-inner backdrop-blur-md sm:flex sm:max-w-md mx-2">
-                <Search className="size-4 text-faint" />
+              {/* Center: Search */}
+              <div className="hidden flex-1 items-center gap-2 rounded-xl border border-border bg-surface-elevated/90 px-3.5 py-2 sm:flex sm:max-w-sm mx-3">
+                <Search className="size-4 text-faint shrink-0" />
                 <input
                   className="w-full bg-transparent text-sm outline-none placeholder:text-faint"
-                  placeholder="Search subjects, modules, projects, skills…"
+                  placeholder="Search modules, skills, projects…"
                 />
-                <span className="hidden rounded-md bg-foreground/10 px-1.5 py-0.5 font-mono text-[10px] text-faint sm:inline">
+                <span className="hidden rounded-md bg-foreground/8 px-1.5 py-0.5 font-mono text-[10px] text-faint lg:inline">
                   ⌘K
                 </span>
               </div>
 
-              {/* Right User & Actions */}
-              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                <div className="hidden sm:flex items-center gap-2 rounded-full border border-brand/30 bg-brand-soft/50 px-3 py-1 text-[11px] font-mono text-brand font-medium">
-                  <span className="size-2 rounded-full bg-brand cp-pulse" />
-                  KLH University Student
+              {/* Right: stats + profile */}
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-xs font-semibold text-amber-600">
+                  <Flame className="size-3.5" /> 12d
+                </div>
+                <div
+                  className="hidden sm:flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-xs font-bold"
+                  style={{
+                    borderColor: "color-mix(in oklch, var(--color-brand) 30%, transparent)",
+                    background: "var(--color-brand-soft)",
+                    color: "var(--color-brand)",
+                  }}
+                >
+                  <Zap className="size-3.5" /> 1,280 XP
                 </div>
                 <Button
-                  size="icon"
-                  variant="ghost"
+                  size="icon" variant="ghost"
                   className="hidden sm:inline-flex rounded-xl"
                   aria-label="Notifications"
-                  onClick={() => toast("Academic progress synced with KLH LMS")}
+                  onClick={() => toast("Academic progress synced")}
                 >
                   <Bell className="size-4 text-faint" />
                 </Button>
                 <button
-                  className="flex min-h-[40px] items-center gap-2 rounded-xl bg-surface-elevated/90 px-2.5 py-1 text-left border border-border/60 shadow-xs hover:border-brand/40 transition"
+                  className="flex min-h-[40px] items-center gap-2 rounded-xl border border-border bg-surface-elevated px-2.5 py-1 text-left transition hover:border-[var(--color-brand)]/40"
                   onClick={() => navigate({ to: "/profile" })}
                   aria-label="User Profile"
                 >
                   <div className="hidden sm:flex flex-col text-right leading-tight">
                     <span className="text-xs font-semibold">Aarav Kulkarni</span>
-                    <span className="text-[10px] text-muted-foreground">B.Tech CSE · Sem 3</span>
+                    <span className="text-[10px] text-muted-foreground">GenAI Engineer</span>
                   </div>
-                  <span className="grid size-7 place-items-center rounded-lg bg-lilac-soft text-xs font-bold text-lilac">
+                  <span
+                    className="grid size-7 place-items-center rounded-lg text-xs font-bold text-white"
+                    style={{ background: "var(--color-brand)" }}
+                  >
                     AK
                   </span>
                 </button>
@@ -509,7 +560,7 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
             </div>
           </header>
 
-          <main className="app-main w-full min-w-0 flex-1 px-3.5 pb-20 pt-4 sm:px-6 sm:pt-6 lg:px-10">
+          <main className="app-main w-full min-w-0 flex-1 px-3.5 pb-20 pt-5 sm:px-6 sm:pt-6 lg:px-8">
             {children}
           </main>
         </div>
@@ -1195,7 +1246,8 @@ function LegacyCurriculumMap() {
           {curriculumModules.map((module) => (
             <article
               key={module.code}
-              className="rounded-xl border border-border/60 bg-background/35 p-3 transition hover:border-brand/40"
+              onClick={() => navigate({ to: "/learning-mode", search: { module: module.code } })}
+              className="rounded-xl border border-border/60 bg-background/35 p-3 transition hover:border-brand/40 cursor-pointer hover:shadow-md hover:bg-background/60"
             >
               <div className="flex items-start justify-between gap-2">
                 <span className="font-mono text-[10px] font-semibold text-brand">
@@ -1861,7 +1913,7 @@ function NotFoundState({
 }
 
 function LearningMode({
-  moduleId = "3.1",
+  moduleId = "3.2",
   concept,
   stepIndex,
 }: {
@@ -1869,16 +1921,24 @@ function LearningMode({
   concept?: string;
   stepIndex?: number;
 }) {
-  const moduleExists = curriculumModules.some((module) => module.code === moduleId);
-  if (!moduleExists) {
+  const targetModule = curriculumModules.find((module) => module.code === moduleId);
+  if (!targetModule) {
     return (
       <NotFoundState
         title="Lesson not found"
         detail={`No lesson exists for module ${moduleId}.`}
-        backTo="/curriculum-map"
+        backTo="/curriculum"
       />
     );
   }
+
+  // Preview locked modules with syllabus, outcomes, and clear prerequisite lock gates
+  // Modules 3.1 (Bridge) and 3.2 (Module 01: Python Foundations for AI) are unlocked
+  const isLocked = targetModule.code !== "3.1" && targetModule.code !== "3.2";
+  if (isLocked) {
+    return <LockedModulePreview module={targetModule} />;
+  }
+
   return (
     <LearningModeContent
       moduleId={moduleId}
@@ -1897,6 +1957,16 @@ function LearningModeContent({
   concept?: string;
   stepIndex?: number;
 }) {
+  // Gold-standard Studio for Module 01 (Python Foundations for AI)
+  if (moduleId === "3.2") {
+    return (
+      <Module01Studio
+        {...(concept ? { concept } : {})}
+        {...(resumeStepIndex !== undefined ? { stepIndex: resumeStepIndex } : {})}
+      />
+    );
+  }
+
   const navigate = useNavigate();
   const experience = getLearningExperience(moduleId);
   const conceptIndex = concept
@@ -4079,7 +4149,7 @@ export function CodepathApp({
   if (view === "dashboard")
     return (
       <Shell active="dashboard">
-        <Dashboard />
+        <DashboardView />
       </Shell>
     );
   if (view === "map")
@@ -4104,32 +4174,22 @@ export function CodepathApp({
         <Tutor />
       </Shell>
     );
-  if (view === "lab")
-    return (
-      <Shell active="lab">
-        <CodingLab {...(moduleId ? { moduleId } : {})} />
-      </Shell>
-    );
-  if (view === "challenge" || view === "challenges")
+  if (view === "lab" || view === "challenge" || view === "challenges")
     return (
       <Shell active="challenge">
-        <CodingLab
-          challenge
-          {...(moduleId ? { moduleId } : {})}
-          {...(challengeId ? { challengeId } : {})}
-        />
+        <PracticeLabView />
       </Shell>
     );
   if (view === "projects")
     return (
       <Shell active="projects">
-        <Projects />
+        <ProjectsView />
       </Shell>
     );
   if (view === "analytics")
     return (
       <Shell active="analytics">
-        <Analytics />
+        <SkillsView />
       </Shell>
     );
   if (view === "career")
@@ -4141,7 +4201,7 @@ export function CodepathApp({
   if (view === "profile")
     return (
       <Shell active="profile">
-        <Profile />
+        <ProfileView />
       </Shell>
     );
   return (

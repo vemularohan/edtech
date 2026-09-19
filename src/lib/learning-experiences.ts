@@ -24,10 +24,30 @@ export type LearningStep = {
   example: string;
   interaction: "inspect" | "edit" | "choose" | "order";
   prompt: string;
-  options?: string[];
-  answer?: string;
-  fixedCode?: string;
-  misconceptionExpl?: string;
+  options?: string[] | undefined;
+  answer?: string | undefined;
+  fixedCode?: string | undefined;
+  misconceptionExpl?: string | undefined;
+  activityType?:
+    | "hook"
+    | "why"
+    | "learn"
+    | "predict"
+    | "try"
+    | "practice"
+    | "break-it"
+    | "your-turn"
+    | "knowledge-check"
+    | "mastery"
+    | "final-mission"
+    | undefined;
+  skillId?: string | undefined;
+  difficultyLevel?: 1 | 2 | 3 | 4 | 5 | 6 | undefined;
+  xpReward?: number | undefined;
+  mentorHints?: string[] | undefined;
+  rubricItems?: { id: string; criterion: string; tip?: string | undefined }[] | undefined;
+  expectedOutput?: string | undefined;
+  testCases?: { input: string; expected: string; label: string }[] | undefined;
 };
 
 export type LearningSection = {
@@ -128,7 +148,7 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
   const challenge = allCurriculumChallenges.find((item) => item.moduleId === module.code);
   if (!challenge) throw new Error(`No challenge configured for curriculum module: ${module.code}`);
 
-  if (moduleId === "3.1") {
+  if (moduleId === "3.2") {
     const c = module01Content;
     const learningSections = module.topics.map((concept, index) => ({
       id: `${module.code}-concept-${index + 1}`,
@@ -145,9 +165,11 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
       learningSections,
       challenge,
       steps: [
+        // 1. HOOK
         {
-          id: "3.1-mission1",
+          id: "3.2-hook",
           stage: "HOOK",
+          activityType: "hook",
           title: c.mission01.title,
           explanation: `${c.mission01.scenario.title}\n\nExpected: ${c.mission01.scenario.expected}\nActual: ${c.mission01.scenario.actual}`,
           whyItMatters: "AI code generators write syntactically clean code, but produce subtle runtime type and logic failures.",
@@ -157,23 +179,81 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
           options: c.mission01.scenario.options.map((o) => o.text),
           answer: c.mission01.scenario.options[0]?.text ?? "",
           misconceptionExpl: c.mission01.scenario.options[0]?.feedback ?? "",
+          skillId: "python-types",
+          difficultyLevel: 1,
+          xpReward: 25,
+          mentorHints: [
+            "Observe the second user record in the payload: {'id': 2, 'score': '92'}. Notice the quotation marks around 92.",
+            "In Python, what happens when you add an int to a str without casting?",
+            "AI generators frequently make assumptions about clean data types.",
+            "The error is a TypeError at line: total_score += user['score'].",
+            "Solution: Python refuses to implicitly cast string '92' to integer 92."
+          ],
         },
+        // 2. WHY
         {
-          id: "3.1-mental-model",
+          id: "3.2-why",
+          stage: "WHY",
+          activityType: "why",
+          title: "Why Python Discipline Matters in AI Engineering",
+          explanation: "In modern AI systems, LLMs generate text, embeddings, and tool calls. If your Python code blindly trusts types, neglects memory references, or leaves files open, failures propagate silently through agent loops and vector pipelines.",
+          whyItMatters: "Python discipline is the difference between an AI demo that crashes on production edge cases and an enterprise-grade agent pipeline.",
+          example: `# Demoware vs Production Python in AI:
+# ❌ Demoware:
+data = json.loads(llm_output)
+result = data["price"] * quantity
+
+# ✅ Production AI Engineer:
+clean_text = clean_markdown_fences(llm_output)
+try:
+    data = json.loads(clean_text)
+    price = float(data.get("price", 0.0))
+except (json.JSONDecodeError, ValueError) as err:
+    logger.error(f"Validation failed: {err}")
+    price = 0.0`,
+          interaction: "inspect",
+          prompt: "Which mindset characterizes production-grade AI engineering?",
+          options: [
+            "Treat AI output as unverified proposals that require schema validation and type coercion",
+            "Assume the LLM always returns valid JSON matching the exact requested types",
+            "Disable type checks to allow dynamic execution speed"
+          ],
+          answer: "Treat AI output as unverified proposals that require schema validation and type coercion",
+          misconceptionExpl: "AI outputs are probabilistic text predictions. Defensive programming must validate every boundary.",
+          skillId: "python-types",
+          difficultyLevel: 1,
+          xpReward: 20,
+        },
+        // 3. LEARN: Mental Model
+        {
+          id: "3.2-mental-model",
           stage: "LEARN",
+          activityType: "learn",
           title: c.mentalModel.title,
           explanation: c.mentalModel.explanation,
-          whyItMatters: "In Python, variables are tags bound to memory objects. Understanding reference mutation avoids silent context leaks.",
-          example: c.mentalModel.pillars.map((p) => `# ${p.title}\n${p.desc}\n${p.code}`).join("\n\n"),
+          whyItMatters: "In Python, variables are tags bound to memory objects. Understanding reference mutation avoids silent context leaks in AI agent history.",
+          example: c.mentalModel.pillars.map((p) => `# ${p.title}\n${p.desc}\n${p.code}\n# Insight: ${p.insight}`).join("\n\n"),
           interaction: "choose",
           prompt: c.mentalModel.predictPrompt,
           options: c.mentalModel.predictOptions.map((o) => o.text),
           answer: c.mentalModel.predictOptions[0]?.text ?? "",
           misconceptionExpl: c.mentalModel.predictOptions[0]?.feedback ?? "",
+          skillId: "python-types",
+          difficultyLevel: 2,
+          xpReward: 30,
+          mentorHints: c.mentalModel.mentorHints ?? [
+            "Are variables in Python independent storage buckets, or are they pointers to memory objects?",
+            "Assignment with '=' never copies data. It only binds another name tag to the exact same object in memory.",
+            "Look at 'data_b = data_a'. How many dictionary objects exist in memory? Exactly one!",
+            "When data_b['temperature'] is modified, the shared object is mutated in place.",
+            "Therefore data_a['temperature'] prints 0.2."
+          ],
         },
+        // 4. TRY IT: Types & Immutability
         {
-          id: "3.1-types",
+          id: "3.2-types-predict",
           stage: "TRY IT",
+          activityType: "predict",
           title: c.typesAndVariables.title,
           explanation: c.typesAndVariables.explanation,
           whyItMatters: "LLM APIs output text string payloads. Strong typing requires explicit cast before numerical operations.",
@@ -183,11 +263,17 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
           options: c.typesAndVariables.predictOptions.map((o) => o.text),
           answer: c.typesAndVariables.predictOptions[0]?.text ?? "",
           misconceptionExpl: c.typesAndVariables.predictOptions[0]?.feedback ?? "",
+          skillId: "python-types",
+          difficultyLevel: 2,
+          xpReward: 30,
+          mentorHints: c.typesAndVariables.mentorHints,
         },
+        // 5. BREAK IT: Types Assumption
         {
-          id: "3.1-types-break",
+          id: "3.2-types-break",
           stage: "BREAK IT",
-          title: "Break It — Values, Types & Immutability",
+          activityType: "break-it",
+          title: "Break It — Strong Typing & Calculation Crash",
           explanation: c.typesAndVariables.breakItPrompt,
           whyItMatters: "Executing unvalidated string inputs in mathematical formulas raises immediate TypeErrors.",
           example: c.typesAndVariables.breakItCode,
@@ -197,10 +283,16 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
           answer: c.typesAndVariables.breakItOptions[0]?.text ?? "",
           fixedCode: c.typesAndVariables.fixCode,
           misconceptionExpl: c.typesAndVariables.breakItOptions[0]?.feedback ?? "",
+          skillId: "python-types",
+          difficultyLevel: 3,
+          xpReward: 40,
+          mentorHints: c.typesAndVariables.mentorHints,
         },
+        // 6. PRACTICE: Operators
         {
-          id: "3.1-operators",
+          id: "3.2-operators",
           stage: "PRACTICE",
+          activityType: "practice",
           title: c.operators.title,
           explanation: c.operators.explanation,
           whyItMatters: "Logical operator precedence determines how authentication and model routing conditions evaluate.",
@@ -210,11 +302,17 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
           options: c.operators.predictOptions.map((o) => o.text),
           answer: c.operators.predictOptions[0]?.text ?? "",
           misconceptionExpl: c.operators.predictOptions[0]?.feedback ?? "",
+          skillId: "control-flow",
+          difficultyLevel: 2,
+          xpReward: 30,
+          mentorHints: c.operators.mentorHints,
         },
+        // 7. BREAK IT: Operator Precedence
         {
-          id: "3.1-operators-break",
+          id: "3.2-operators-break",
           stage: "BREAK IT",
-          title: "Break It — Operator Precedence Bug",
+          activityType: "break-it",
+          title: "Break It — Operator Precedence Security Bug",
           explanation: "Inverted or unparenthesized logical operators bypass security role checks.",
           whyItMatters: "Always parenthesize combined 'or' and 'and' conditions.",
           example: c.operators.breakItCode,
@@ -224,13 +322,38 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
           answer: c.operators.breakItOptions[0]?.text ?? "",
           fixedCode: c.operators.fixCode,
           misconceptionExpl: c.operators.breakItOptions[0]?.feedback ?? "",
+          skillId: "control-flow",
+          difficultyLevel: 3,
+          xpReward: 40,
+          mentorHints: c.operators.mentorHints,
         },
+        // 8. PRACTICE: Decisions
         {
-          id: "3.1-decisions",
-          stage: "YOUR TURN",
+          id: "3.2-decisions",
+          stage: "PRACTICE",
+          activityType: "practice",
           title: c.decisions.title,
           explanation: c.decisions.explanation,
           whyItMatters: "Branch ordering in if/elif/else dictates which status check fires first.",
+          example: c.decisions.predictCode,
+          interaction: "choose",
+          prompt: c.decisions.predictPrompt,
+          options: c.decisions.predictOptions.map((o) => o.text),
+          answer: c.decisions.predictOptions[0]?.text ?? "",
+          misconceptionExpl: c.decisions.predictOptions[0]?.feedback ?? "",
+          skillId: "control-flow",
+          difficultyLevel: 3,
+          xpReward: 35,
+          mentorHints: c.decisions.mentorHints,
+        },
+        // 9. BREAK IT: Branch Ordering
+        {
+          id: "3.2-decisions-break",
+          stage: "BREAK IT",
+          activityType: "break-it",
+          title: "Break It — Branch Order Toxicity Inversion",
+          explanation: c.decisions.breakItPrompt,
+          whyItMatters: "In conditional trees, specific restrictive criteria must precede broad general criteria.",
           example: c.decisions.breakItCode,
           interaction: "choose",
           prompt: c.decisions.breakItPrompt,
@@ -238,10 +361,16 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
           answer: c.decisions.breakItOptions[0]?.text ?? "",
           fixedCode: c.decisions.fixCode,
           misconceptionExpl: c.decisions.breakItOptions[0]?.feedback ?? "",
+          skillId: "control-flow",
+          difficultyLevel: 3,
+          xpReward: 40,
+          mentorHints: c.decisions.mentorHints,
         },
+        // 10. PRACTICE: Loops
         {
-          id: "3.1-loops",
+          id: "3.2-loops",
           stage: "PRACTICE",
+          activityType: "practice",
           title: c.loops.title,
           explanation: c.loops.explanation,
           whyItMatters: "List comprehensions offer concise, pythonic data filtering over text chunks.",
@@ -251,13 +380,38 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
           options: c.loops.predictOptions.map((o) => o.text),
           answer: c.loops.predictOptions[0]?.text ?? "",
           misconceptionExpl: c.loops.predictOptions[0]?.feedback ?? "",
+          skillId: "control-flow",
+          difficultyLevel: 3,
+          xpReward: 35,
+          mentorHints: c.loops.mentorHints,
         },
+        // 11. LEARN: Functions & Scope
         {
-          id: "3.1-functions",
+          id: "3.2-functions",
           stage: "LEARN",
+          activityType: "learn",
           title: c.functions.title,
           explanation: c.functions.explanation,
           whyItMatters: "Functions package reusable decisions. Avoid mutable default arguments like history=[].",
+          example: c.functions.predictCode,
+          interaction: "choose",
+          prompt: c.functions.predictPrompt,
+          options: c.functions.predictOptions.map((o) => o.text),
+          answer: c.functions.predictOptions[0]?.text ?? "",
+          misconceptionExpl: c.functions.predictOptions[0]?.feedback ?? "",
+          skillId: "functions",
+          difficultyLevel: 4,
+          xpReward: 40,
+          mentorHints: c.functions.mentorHints,
+        },
+        // 12. BREAK IT: Mutable Default Arg
+        {
+          id: "3.2-functions-break",
+          stage: "BREAK IT",
+          activityType: "break-it",
+          title: "Break It — The Mutable Default Argument Bug",
+          explanation: "Look at default argument history=[]. Notice how state leaks across calls.",
+          whyItMatters: "Never use mutable containers (lists, dicts) as default parameter values.",
           example: c.functions.breakItCode,
           interaction: "choose",
           prompt: c.functions.breakItPrompt,
@@ -265,24 +419,55 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
           answer: c.functions.breakItOptions[0]?.text ?? "",
           fixedCode: c.functions.fixCode,
           misconceptionExpl: c.functions.breakItOptions[0]?.feedback ?? "",
+          skillId: "functions",
+          difficultyLevel: 4,
+          xpReward: 45,
+          mentorHints: c.functions.mentorHints,
         },
+        // 13. TRY IT: Data Structures
         {
-          id: "3.1-json",
-          stage: "PRACTICE",
-          title: c.jsonHandling.title,
-          explanation: c.jsonHandling.explanation,
-          whyItMatters: "JSON is the lingua franca of AI tool calls. Strip markdown fences before parsing with json.loads.",
-          example: c.jsonHandling.breakItCode,
+          id: "3.2-data-structures",
+          stage: "TRY IT",
+          activityType: "try",
+          title: c.dataStructures.title,
+          explanation: c.dataStructures.explanation,
+          whyItMatters: "Safe dictionary key access with .get() avoids KeyErrors when parsing API payloads.",
+          example: c.dataStructures.predictCode,
           interaction: "choose",
-          prompt: c.jsonHandling.breakItPrompt,
-          options: c.jsonHandling.breakItOptions.map((o) => o.text),
-          answer: c.jsonHandling.breakItOptions[0]?.text ?? "",
-          fixedCode: c.jsonHandling.fixCode,
-          misconceptionExpl: c.jsonHandling.breakItOptions[0]?.feedback ?? "",
+          prompt: c.dataStructures.predictPrompt,
+          options: c.dataStructures.predictOptions.map((o) => o.text),
+          answer: c.dataStructures.predictOptions[0]?.text ?? "",
+          misconceptionExpl: c.dataStructures.predictOptions[0]?.feedback ?? "",
+          skillId: "data-structures",
+          difficultyLevel: 4,
+          xpReward: 40,
+          mentorHints: c.dataStructures.mentorHints,
         },
+        // 14. BREAK IT: Unsafe Nested Dict
         {
-          id: "3.1-files",
-          stage: "YOUR TURN",
+          id: "3.2-data-structures-break",
+          stage: "BREAK IT",
+          activityType: "break-it",
+          title: "Break It — Unsafe Nested LLM Response Extraction",
+          explanation: c.dataStructures.breakItPrompt,
+          whyItMatters: "API payload structures change. Direct bracket indexing causes runtime crashes.",
+          example: c.dataStructures.breakItCode,
+          interaction: "choose",
+          prompt: c.dataStructures.breakItPrompt,
+          options: c.dataStructures.breakItOptions.map((o) => o.text),
+          answer: c.dataStructures.breakItOptions[0]?.text ?? "",
+          fixedCode: c.dataStructures.fixCode,
+          misconceptionExpl: c.dataStructures.breakItOptions[0]?.feedback ?? "",
+          skillId: "data-structures",
+          difficultyLevel: 4,
+          xpReward: 45,
+          mentorHints: c.dataStructures.mentorHints,
+        },
+        // 15. PRACTICE: Files & Paths
+        {
+          id: "3.2-files",
+          stage: "PRACTICE",
+          activityType: "practice",
           title: c.filesAndPaths.title,
           explanation: c.filesAndPaths.explanation,
           whyItMatters: "Always use pathlib.Path and specify encoding='utf-8' for cross-platform file reading.",
@@ -293,10 +478,55 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
           answer: c.filesAndPaths.breakItOptions[0]?.text ?? "",
           fixedCode: c.filesAndPaths.fixCode,
           misconceptionExpl: c.filesAndPaths.breakItOptions[0]?.feedback ?? "",
+          skillId: "file-handling",
+          difficultyLevel: 4,
+          xpReward: 40,
+          mentorHints: c.filesAndPaths.mentorHints,
         },
+        // 16. PRACTICE: Defensive JSON
         {
-          id: "3.1-debugging-lab",
+          id: "3.2-json",
+          stage: "PRACTICE",
+          activityType: "practice",
+          title: c.jsonHandling.title,
+          explanation: c.jsonHandling.explanation,
+          whyItMatters: "JSON is the lingua franca of AI tool calls. Strip markdown fences before parsing with json.loads.",
+          example: c.jsonHandling.breakItCode,
+          interaction: "choose",
+          prompt: c.jsonHandling.breakItPrompt,
+          options: c.jsonHandling.breakItOptions.map((o) => o.text),
+          answer: c.jsonHandling.breakItOptions[0]?.text ?? "",
+          fixedCode: c.jsonHandling.fixCode,
+          misconceptionExpl: c.jsonHandling.breakItOptions[0]?.feedback ?? "",
+          skillId: "json",
+          difficultyLevel: 5,
+          xpReward: 45,
+          mentorHints: c.jsonHandling.mentorHints,
+        },
+        // 17. LEARN: Environments
+        {
+          id: "3.2-environments",
+          stage: "LEARN",
+          activityType: "learn",
+          title: c.envAndDependencies.title,
+          explanation: c.envAndDependencies.explanation,
+          whyItMatters: "Isolating dependencies with venv and pinning exact versions in requirements.txt prevents production pipeline failures.",
+          example: c.envAndDependencies.predictCode,
+          interaction: "choose",
+          prompt: c.envAndDependencies.predictPrompt,
+          options: c.envAndDependencies.predictOptions.map((o) => o.text),
+          answer: c.envAndDependencies.predictOptions[0]?.text ?? "",
+          misconceptionExpl: c.envAndDependencies.predictOptions[0]?.feedback ?? "",
+          skillId: "environments",
+          difficultyLevel: 4,
+          xpReward: 40,
+          mentorHints: c.envAndDependencies.mentorHints,
+        },
+        // 18. KNOWLEDGE CHECK: Debugging Lab
+        {
+          id: "3.2-debugging-lab",
           stage: "KNOWLEDGE CHECK",
+          activityType: "knowledge-check",
           title: c.debuggingLab.title,
           explanation: c.debuggingLab.explanation,
           whyItMatters: "Independent triage of FileNotFoundError and UnicodeDecodeError confirms operational readiness.",
@@ -307,10 +537,22 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
           answer: c.debuggingLab.challenges[0]?.options[0]?.text ?? "",
           fixedCode: c.debuggingLab.challenges[0]?.fixedCode ?? "",
           misconceptionExpl: c.debuggingLab.challenges[0]?.options[0]?.feedback ?? "",
+          skillId: "file-handling",
+          difficultyLevel: 5,
+          xpReward: 50,
+          mentorHints: [
+            "Check how Python resolves relative paths when the script is run from other directories.",
+            "Always anchor paths to Path(__file__).parent.",
+            "Windows default encoding cannot parse multi-byte UTF-8 emoji characters.",
+            "Pass encoding='utf-8' explicitly.",
+            "Solution: Anchor with Path(__file__).parent and open with encoding='utf-8'."
+          ],
         },
+        // 19. MASTERY: Final Project
         {
-          id: "3.1-final-build",
+          id: "3.2-final-build",
           stage: "MASTERY",
+          activityType: "final-mission",
           title: c.finalProject.title,
           explanation: c.finalProject.mission,
           whyItMatters: "Building a reliable data CLI utility proves you can write functions, use pathlib, parse JSON, filter datasets, and handle errors.",
@@ -318,16 +560,167 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
           interaction: "edit",
           prompt: "Implement your solution for the Reliable Data CLI utility in the code editor:",
           fixedCode: c.finalProject.solutionCode,
+          skillId: "json",
+          difficultyLevel: 6,
+          xpReward: 100,
+          rubricItems: (c.finalProject.rubric ?? []).map((r) => ({
+            id: r.id,
+            criterion: `${r.title} (${r.maxPoints} pts): ${r.criterion}`,
+            tip: r.hint,
+          })),
+        },
+        // 20. NEXT: Module 01 Complete
+        {
+          id: "3.2-next",
+          stage: "NEXT",
+          activityType: "mastery",
+          title: "Module 01 Complete — Python Foundations Mastered!",
+          explanation: "You have completed Python Foundations for AI! You possess the programming discipline required for production AI development.",
+          whyItMatters: "Solid Python discipline underpins all future LLM integrations, RAG pipelines, and autonomous agent systems.",
+          example: "# Evidence Verified:\n✓ Clean Syntax & Control Flow\n✓ pathlib & UTF-8 Encoding\n✓ Defensive JSON Parsing & Schema Validation\n✓ Virtual Environments & Pinned Dependencies",
+          interaction: "inspect",
+          prompt: "Proceed to Challenge Lab or Next Module.",
+          skillId: "python-types",
+          difficultyLevel: 6,
+          xpReward: 50,
+        },
+      ],
+    };
+  }
+
+  if (moduleId === "3.1") {
+    const c = module31Content;
+    const learningSections = module.topics.map((concept, index) => ({
+      id: `${module.code}-concept-${index + 1}`,
+      concept,
+      title: `Understand ${concept}`,
+      explanation: `Learn why ${concept} matters when AI generates code.`,
+      whyItMatters: `${concept} is required for verifying AI-generated solutions.`,
+      example: c.teach.pillars[0]?.example ?? c.hook.incidentScenario.code,
+      practicePrompt: `Verify ${concept} before running code.`,
+    }));
+
+    return {
+      module,
+      learningSections,
+      challenge,
+      steps: [
+        {
+          id: "3.1-hook",
+          stage: "HOOK",
+          activityType: "hook",
+          title: c.hook.title,
+          explanation: `${c.hook.incidentScenario.missionTitle}\n\nExpected: ${c.hook.incidentScenario.expectedBehavior}\nActual: ${c.hook.incidentScenario.actualBehavior}`,
+          whyItMatters: "AI-generated code often assumes ideal inputs and fails catastrophically on production edge cases.",
+          example: c.hook.incidentScenario.code,
+          interaction: "choose",
+          prompt: c.hook.incidentScenario.prompt,
+          options: c.hook.incidentScenario.predictionOptions.map((o) => o.text),
+          answer: c.hook.incidentScenario.predictionOptions[0]?.text ?? "",
+          misconceptionExpl: c.hook.incidentScenario.predictionOptions[0]?.feedback ?? "",
+        },
+        {
+          id: "3.1-why",
+          stage: "WHY",
+          activityType: "why",
+          title: c.why.title,
+          explanation: `${c.why.practicalProblem}\n\nCore takeaways:\n${c.why.coreTakeaways.map((t) => `• ${t}`).join("\n")}`,
+          whyItMatters: "Vibe coding without code literacy creates security vulnerabilities, silent logic errors, and maintenance debt.",
+          example: "# When to Vibe Code vs When to Engineer:\n# Ideation & Prototyping: Vibe Coding is great!\n# Architecture, Data Contracts & Tool Execution: Engineering discipline is mandatory.",
+          interaction: "inspect",
+          prompt: "What is the primary danger of unverified vibe coding in production?",
+        },
+        {
+          id: "3.1-teach",
+          stage: "LEARN",
+          activityType: "learn",
+          title: "The Three Pillars of Code Literacy",
+          explanation: c.teach.pillars.map((p) => `### ${p.title}\n${p.explanation}\n\n**Key Insight:** ${p.keyInsight}`).join("\n\n"),
+          whyItMatters: "Reading code is 10x more frequent than writing code in modern AI-assisted engineering.",
+          example: c.teach.pillars.map((p) => `# ${p.title}\n${p.example}`).join("\n\n"),
+          interaction: "inspect",
+          prompt: "Review the three pillars of code literacy.",
+        },
+        {
+          id: "3.1-try-it",
+          stage: "TRY IT",
+          activityType: "predict",
+          title: c.tryIt.title,
+          explanation: `${c.tryIt.revelation.predictionSummary}\n\n${c.tryIt.revelation.why}`,
+          whyItMatters: "Always verify assumptions before running generated code.",
+          example: c.tryIt.code,
+          interaction: "choose",
+          prompt: c.tryIt.prompt,
+          options: c.tryIt.predictionOptions.map((o) => o.text),
+          answer: c.tryIt.predictionOptions[0]?.text ?? "",
+          misconceptionExpl: c.tryIt.predictionOptions[0]?.feedback ?? "",
+        },
+        {
+          id: "3.1-break-it",
+          stage: "BREAK IT",
+          activityType: "break-it",
+          title: c.breakIt.title,
+          explanation: c.breakIt.subtleBugDescription,
+          whyItMatters: "Debugging AI code requires isolating boundary conditions and edge cases.",
+          example: c.breakIt.brokenCode,
+          interaction: "choose",
+          prompt: c.breakIt.question1.prompt,
+          options: c.breakIt.question1.options.map((o) => o.text),
+          answer: c.breakIt.question1.options[0]?.text ?? "",
+          fixedCode: c.fixIt.fixedCode,
+          misconceptionExpl: c.breakIt.question1.options[0]?.feedback ?? "",
+        },
+        {
+          id: "3.1-your-turn",
+          stage: "YOUR TURN",
+          activityType: "your-turn",
+          title: c.yourTurn.title,
+          explanation: `${c.yourTurn.expectedGoal}\n\nBug identified: ${c.yourTurn.bugSummary}`,
+          whyItMatters: "Hands-on code correction cements debugging confidence.",
+          example: c.yourTurn.aiGeneratedCode,
+          interaction: "choose",
+          prompt: c.yourTurn.taskPrompt,
+          options: c.yourTurn.options.map((o) => o.text),
+          answer: c.yourTurn.options[0]?.text ?? "",
+          fixedCode: c.yourTurn.fixedCode,
+          misconceptionExpl: c.yourTurn.options[0]?.feedback ?? "",
+        },
+        {
+          id: "3.1-knowledge-check",
+          stage: "KNOWLEDGE CHECK",
+          activityType: "knowledge-check",
+          title: "Module 3.1 Knowledge Check",
+          explanation: "Validate your comprehension of the boundary between assisted generation and disciplined engineering.",
+          whyItMatters: "Confirm you can spot silent AI logic traps.",
+          example: c.knowledgeCheck.questions[0]?.code ?? "",
+          interaction: "choose",
+          prompt: c.knowledgeCheck.questions[0]?.question ?? "",
+          options: (c.knowledgeCheck.questions[0]?.options ?? []).map((o) => o.text),
+          answer: c.knowledgeCheck.questions[0]?.options[0]?.text ?? "",
+          misconceptionExpl: c.knowledgeCheck.questions[0]?.options[0]?.explanation ?? "",
+        },
+        {
+          id: "3.1-mastery",
+          stage: "MASTERY",
+          activityType: "mastery",
+          title: "Module 3.1 Capstone Mastery",
+          explanation: c.mastery.finalEvidencePrompt,
+          whyItMatters: "Proving code literacy on production scenarios demonstrates readiness for building AI systems.",
+          example: "# Verification Criteria:\n" + c.mastery.criteria.map((cr) => `- ${cr.label}`).join("\n"),
+          interaction: "inspect",
+          prompt: "Verify your readiness to proceed to Module 3.2.",
+          fixedCode: c.mastery.criteria.map((cr) => cr.label).join("\n"),
         },
         {
           id: "3.1-next",
           stage: "NEXT",
-          title: "Module 01 Complete — Python Foundations Mastered!",
-          explanation: "You have completed Python Foundations for AI! You are ready to tackle AI & Generative AI Fundamentals.",
-          whyItMatters: "Solid Python discipline underpins all future LLM integrations, RAG pipelines, and autonomous agent systems.",
-          example: "# Evidence Verified:\n✓ Clean Syntax & Control Flow\n✓ pathlib & UTF-8 Encoding\n✓ Defensive JSON Parsing\n✓ Virtual Environments & Pinned Dependencies",
+          activityType: "mastery",
+          title: "The Bridge Complete — Ready for Python Foundations",
+          explanation: "You have verified how to inspect, isolate, and debug AI-generated code.",
+          whyItMatters: "With code literacy established, you are ready to master Python fundamentals.",
+          example: "✓ Code literacy\n✓ Operator precedence\n✓ Defensive boundary testing",
           interaction: "inspect",
-          prompt: "Proceed to Challenge Lab or Next Module.",
+          prompt: "Proceed to Module 3.2: Python Foundations for AI.",
         },
       ],
     };
