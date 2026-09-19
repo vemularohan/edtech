@@ -170,24 +170,39 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
           id: "3.2-hook",
           stage: "HOOK",
           activityType: "hook",
-          title: c.mission01.title,
-          explanation: `${c.mission01.scenario.title}\n\nExpected: ${c.mission01.scenario.expected}\nActual: ${c.mission01.scenario.actual}`,
-          whyItMatters: "AI code generators write syntactically clean code, but produce subtle runtime type and logic failures.",
-          example: c.mission01.scenario.code,
+          title: "Incident Report: The Costly Type Coercion Bug",
+          explanation: `INCIDENT REPORT #101 — E-Commerce Discount Calculator
+Customers are being charged the wrong amount in production.
+Expected: $84.00
+Actual: $79.00`,
+          whyItMatters: "AI-generated functions often assume ideal inputs and silently introduce type or logic errors that cost real money in production.",
+          example: `def calculate_order_total(subtotal, discount_code):
+    # AI generated this discount calculation:
+    # Discount payload from promo API: {"code": "SPRING10", "discount": "5.00"}
+    discount = discount_code.get("discount", 0)
+    # Buggy subtraction:
+    return subtotal - discount
+
+# Order: $84.00 subtotal with invalid discount logic
+result = calculate_order_total(84.0, {"discount": "5.00"})`,
           interaction: "choose",
-          prompt: c.mission01.scenario.prompt,
-          options: c.mission01.scenario.options.map((o) => o.text),
-          answer: c.mission01.scenario.options[0]?.text ?? "",
-          misconceptionExpl: c.mission01.scenario.options[0]?.feedback ?? "",
+          prompt: "Customers were charged $79.00 instead of $84.00 due to unvalidated promo payload types. What failed?",
+          options: [
+            "TypeError: unsupported operand type(s) for -: 'float' and 'str'",
+            "ZeroDivisionError in subtotal calculation",
+            "Discount code string was parsed as integer 0"
+          ],
+          answer: "TypeError: unsupported operand type(s) for -: 'float' and 'str'",
+          misconceptionExpl: "In Python, Strong Typing means string '5.00' will NEVER automatically coerce to float 5.00. Python throws an unhandled TypeError during subtraction.",
           skillId: "python-types",
           difficultyLevel: 1,
           xpReward: 25,
           mentorHints: [
-            "Observe the second user record in the payload: {'id': 2, 'score': '92'}. Notice the quotation marks around 92.",
-            "In Python, what happens when you add an int to a str without casting?",
+            "Observe the discount parameter: {'discount': '5.00'}. Notice the quotation marks.",
+            "In Python, can you subtract a string from a float?",
             "AI generators frequently make assumptions about clean data types.",
-            "The error is a TypeError at line: total_score += user['score'].",
-            "Solution: Python refuses to implicitly cast string '92' to integer 92."
+            "The error is a TypeError: unsupported operand type(s) for -.",
+            "Solution: Cast string to float(discount) before performing arithmetic."
           ],
         },
         // 2. WHY
@@ -195,391 +210,268 @@ function createExperience(moduleId: `3.${number}`): LearningExperience {
           id: "3.2-why",
           stage: "WHY",
           activityType: "why",
-          title: "Why Python Discipline Matters in AI Engineering",
+          title: "Start here: Why does Python discipline matter?",
           explanation: "In modern AI systems, LLMs generate text, embeddings, and tool calls. If your Python code blindly trusts types, neglects memory references, or leaves files open, failures propagate silently through agent loops and vector pipelines.",
           whyItMatters: "Python discipline is the difference between an AI demo that crashes on production edge cases and an enterprise-grade agent pipeline.",
           example: `# Demoware vs Production Python in AI:
-# ❌ Demoware:
+# ❌ Demoware (Trusting model output directly):
 data = json.loads(llm_output)
 result = data["price"] * quantity
 
-# ✅ Production AI Engineer:
-clean_text = clean_markdown_fences(llm_output)
+# ✅ Production AI Engineer (Defensive validation):
 try:
-    data = json.loads(clean_text)
+    clean_json = clean_markdown_fences(llm_output)
+    data = json.loads(clean_json)
     price = float(data.get("price", 0.0))
 except (json.JSONDecodeError, ValueError) as err:
     logger.error(f"Validation failed: {err}")
     price = 0.0`,
-          interaction: "inspect",
-          prompt: "Which mindset characterizes production-grade AI engineering?",
+          interaction: "choose",
+          prompt: "What do you think happens if an LLM returns price as a quoted string '19.99' to the demoware code?",
           options: [
-            "Treat AI output as unverified proposals that require schema validation and type coercion",
-            "Assume the LLM always returns valid JSON matching the exact requested types",
-            "Disable type checks to allow dynamic execution speed"
+            "TypeError: unsupported operand type(s) for *: 'str' and 'float' (or repeat strings if quantity is int)",
+            "Python automatically converts '19.99' into float 19.99",
+            "The program completes successfully with accurate balance"
           ],
-          answer: "Treat AI output as unverified proposals that require schema validation and type coercion",
-          misconceptionExpl: "AI outputs are probabilistic text predictions. Defensive programming must validate every boundary.",
+          answer: "TypeError: unsupported operand type(s) for *: 'str' and 'float' (or repeat strings if quantity is int)",
+          misconceptionExpl: "Python is strongly typed. Multiplying a string by an integer repeats the string ('19.99' * 2 = '19.9919.99'), while multiplying by a float raises a TypeError!",
           skillId: "python-types",
           difficultyLevel: 1,
           xpReward: 20,
         },
-        // 3. LEARN: Mental Model
+        // 3. LEARN
         {
-          id: "3.2-mental-model",
+          id: "3.2-learn",
           stage: "LEARN",
           activityType: "learn",
-          title: c.mentalModel.title,
-          explanation: c.mentalModel.explanation,
-          whyItMatters: "In Python, variables are tags bound to memory objects. Understanding reference mutation avoids silent context leaks in AI agent history.",
-          example: c.mentalModel.pillars.map((p) => `# ${p.title}\n${p.desc}\n${p.code}\n# Insight: ${p.insight}`).join("\n\n"),
-          interaction: "choose",
-          prompt: c.mentalModel.predictPrompt,
-          options: c.mentalModel.predictOptions.map((o) => o.text),
-          answer: c.mentalModel.predictOptions[0]?.text ?? "",
-          misconceptionExpl: c.mentalModel.predictOptions[0]?.feedback ?? "",
+          title: "Variables, Types and Operators in Python",
+          explanation: "Variables in Python are not storage boxes — they are name tags pointing to objects in memory. Python features strong dynamic typing, meaning values carry types and operations are strictly enforced.",
+          whyItMatters: "Understanding memory reference mutation avoids silent context leaks in AI agent history.",
+          example: `# 1. Objects and References:
+prompt_config = {"temperature": 0.7, "model": "gpt-4o"}
+alias_config = prompt_config
+alias_config["temperature"] = 0.2
+# Both alias_config AND prompt_config now have temperature: 0.2!
+
+# 2. Immutable Primitives:
+tokens = 1000
+tokens = tokens + 50  # Creates a new int object in memory
+
+# 3. Defensive Type Casting:
+raw_tokens = "2500"
+safe_tokens = int(raw_tokens)  # Explicit cast before math`,
+          interaction: "inspect",
+          prompt: "Review the memory model: assignment '=' never copies data; it only binds another name tag to the exact same object in memory.",
           skillId: "python-types",
-          difficultyLevel: 2,
-          xpReward: 30,
-          mentorHints: c.mentalModel.mentorHints ?? [
-            "Are variables in Python independent storage buckets, or are they pointers to memory objects?",
-            "Assignment with '=' never copies data. It only binds another name tag to the exact same object in memory.",
-            "Look at 'data_b = data_a'. How many dictionary objects exist in memory? Exactly one!",
-            "When data_b['temperature'] is modified, the shared object is mutated in place.",
-            "Therefore data_a['temperature'] prints 0.2."
-          ],
         },
-        // 4. TRY IT: Types & Immutability
+        // 4. TRY IT
         {
-          id: "3.2-types-predict",
+          id: "3.2-try",
           stage: "TRY IT",
           activityType: "predict",
-          title: c.typesAndVariables.title,
-          explanation: c.typesAndVariables.explanation,
-          whyItMatters: "LLM APIs output text string payloads. Strong typing requires explicit cast before numerical operations.",
-          example: c.typesAndVariables.predictCode,
+          title: "Prediction Lab: Predict the Output",
+          explanation: "What will this code return? Turn your intuition into an active prediction before executing the code.",
+          whyItMatters: "Making predictions before seeing output builds active conceptual recall.",
+          example: `system_prompt = "You are a helpful assistant."
+system_prompt.replace("helpful", "strict")
+
+print(system_prompt)`,
           interaction: "choose",
-          prompt: c.typesAndVariables.predictPrompt,
-          options: c.typesAndVariables.predictOptions.map((o) => o.text),
-          answer: c.typesAndVariables.predictOptions[0]?.text ?? "",
-          misconceptionExpl: c.typesAndVariables.predictOptions[0]?.feedback ?? "",
+          prompt: "What will this code print?",
+          options: [
+            "\"You are a helpful assistant.\" (Strings are immutable, replace() returns a new string!)",
+            "\"You are a strict assistant.\"",
+            "SyntaxError: strings cannot be modified"
+          ],
+          answer: "\"You are a helpful assistant.\" (Strings are immutable, replace() returns a new string!)",
+          misconceptionExpl: "Strings in Python are IMMUTABLE. The .replace() method returns a brand new string. Because it wasn't re-assigned (system_prompt = system_prompt.replace(...)), the original string remained untouched!",
           skillId: "python-types",
           difficultyLevel: 2,
           xpReward: 30,
-          mentorHints: c.typesAndVariables.mentorHints,
-        },
-        // 5. BREAK IT: Types Assumption
-        {
-          id: "3.2-types-break",
-          stage: "BREAK IT",
-          activityType: "break-it",
-          title: "Break It — Strong Typing & Calculation Crash",
-          explanation: c.typesAndVariables.breakItPrompt,
-          whyItMatters: "Executing unvalidated string inputs in mathematical formulas raises immediate TypeErrors.",
-          example: c.typesAndVariables.breakItCode,
-          interaction: "choose",
-          prompt: c.typesAndVariables.breakItPrompt,
-          options: c.typesAndVariables.breakItOptions.map((o) => o.text),
-          answer: c.typesAndVariables.breakItOptions[0]?.text ?? "",
-          fixedCode: c.typesAndVariables.fixCode,
-          misconceptionExpl: c.typesAndVariables.breakItOptions[0]?.feedback ?? "",
-          skillId: "python-types",
-          difficultyLevel: 3,
-          xpReward: 40,
-          mentorHints: c.typesAndVariables.mentorHints,
-        },
-        // 6. PRACTICE: Operators
-        {
-          id: "3.2-operators",
-          stage: "PRACTICE",
-          activityType: "practice",
-          title: c.operators.title,
-          explanation: c.operators.explanation,
-          whyItMatters: "Logical operator precedence determines how authentication and model routing conditions evaluate.",
-          example: c.operators.predictCode,
-          interaction: "choose",
-          prompt: c.operators.predictPrompt,
-          options: c.operators.predictOptions.map((o) => o.text),
-          answer: c.operators.predictOptions[0]?.text ?? "",
-          misconceptionExpl: c.operators.predictOptions[0]?.feedback ?? "",
-          skillId: "control-flow",
-          difficultyLevel: 2,
-          xpReward: 30,
-          mentorHints: c.operators.mentorHints,
-        },
-        // 7. BREAK IT: Operator Precedence
-        {
-          id: "3.2-operators-break",
-          stage: "BREAK IT",
-          activityType: "break-it",
-          title: "Break It — Operator Precedence Security Bug",
-          explanation: "Inverted or unparenthesized logical operators bypass security role checks.",
-          whyItMatters: "Always parenthesize combined 'or' and 'and' conditions.",
-          example: c.operators.breakItCode,
-          interaction: "choose",
-          prompt: c.operators.breakItPrompt,
-          options: c.operators.breakItOptions.map((o) => o.text),
-          answer: c.operators.breakItOptions[0]?.text ?? "",
-          fixedCode: c.operators.fixCode,
-          misconceptionExpl: c.operators.breakItOptions[0]?.feedback ?? "",
-          skillId: "control-flow",
-          difficultyLevel: 3,
-          xpReward: 40,
-          mentorHints: c.operators.mentorHints,
-        },
-        // 8. PRACTICE: Decisions
-        {
-          id: "3.2-decisions",
-          stage: "PRACTICE",
-          activityType: "practice",
-          title: c.decisions.title,
-          explanation: c.decisions.explanation,
-          whyItMatters: "Branch ordering in if/elif/else dictates which status check fires first.",
-          example: c.decisions.predictCode,
-          interaction: "choose",
-          prompt: c.decisions.predictPrompt,
-          options: c.decisions.predictOptions.map((o) => o.text),
-          answer: c.decisions.predictOptions[0]?.text ?? "",
-          misconceptionExpl: c.decisions.predictOptions[0]?.feedback ?? "",
-          skillId: "control-flow",
-          difficultyLevel: 3,
-          xpReward: 35,
-          mentorHints: c.decisions.mentorHints,
-        },
-        // 9. BREAK IT: Branch Ordering
-        {
-          id: "3.2-decisions-break",
-          stage: "BREAK IT",
-          activityType: "break-it",
-          title: "Break It — Branch Order Toxicity Inversion",
-          explanation: c.decisions.breakItPrompt,
-          whyItMatters: "In conditional trees, specific restrictive criteria must precede broad general criteria.",
-          example: c.decisions.breakItCode,
-          interaction: "choose",
-          prompt: c.decisions.breakItPrompt,
-          options: c.decisions.breakItOptions.map((o) => o.text),
-          answer: c.decisions.breakItOptions[0]?.text ?? "",
-          fixedCode: c.decisions.fixCode,
-          misconceptionExpl: c.decisions.breakItOptions[0]?.feedback ?? "",
-          skillId: "control-flow",
-          difficultyLevel: 3,
-          xpReward: 40,
-          mentorHints: c.decisions.mentorHints,
-        },
-        // 10. PRACTICE: Loops
-        {
-          id: "3.2-loops",
-          stage: "PRACTICE",
-          activityType: "practice",
-          title: c.loops.title,
-          explanation: c.loops.explanation,
-          whyItMatters: "List comprehensions offer concise, pythonic data filtering over text chunks.",
-          example: c.loops.predictCode,
-          interaction: "choose",
-          prompt: c.loops.predictPrompt,
-          options: c.loops.predictOptions.map((o) => o.text),
-          answer: c.loops.predictOptions[0]?.text ?? "",
-          misconceptionExpl: c.loops.predictOptions[0]?.feedback ?? "",
-          skillId: "control-flow",
-          difficultyLevel: 3,
-          xpReward: 35,
-          mentorHints: c.loops.mentorHints,
-        },
-        // 11. LEARN: Functions & Scope
-        {
-          id: "3.2-functions",
-          stage: "LEARN",
-          activityType: "learn",
-          title: c.functions.title,
-          explanation: c.functions.explanation,
-          whyItMatters: "Functions package reusable decisions. Avoid mutable default arguments like history=[].",
-          example: c.functions.predictCode,
-          interaction: "choose",
-          prompt: c.functions.predictPrompt,
-          options: c.functions.predictOptions.map((o) => o.text),
-          answer: c.functions.predictOptions[0]?.text ?? "",
-          misconceptionExpl: c.functions.predictOptions[0]?.feedback ?? "",
-          skillId: "functions",
-          difficultyLevel: 4,
-          xpReward: 40,
-          mentorHints: c.functions.mentorHints,
-        },
-        // 12. BREAK IT: Mutable Default Arg
-        {
-          id: "3.2-functions-break",
-          stage: "BREAK IT",
-          activityType: "break-it",
-          title: "Break It — The Mutable Default Argument Bug",
-          explanation: "Look at default argument history=[]. Notice how state leaks across calls.",
-          whyItMatters: "Never use mutable containers (lists, dicts) as default parameter values.",
-          example: c.functions.breakItCode,
-          interaction: "choose",
-          prompt: c.functions.breakItPrompt,
-          options: c.functions.breakItOptions.map((o) => o.text),
-          answer: c.functions.breakItOptions[0]?.text ?? "",
-          fixedCode: c.functions.fixCode,
-          misconceptionExpl: c.functions.breakItOptions[0]?.feedback ?? "",
-          skillId: "functions",
-          difficultyLevel: 4,
-          xpReward: 45,
-          mentorHints: c.functions.mentorHints,
-        },
-        // 13. TRY IT: Data Structures
-        {
-          id: "3.2-data-structures",
-          stage: "TRY IT",
-          activityType: "try",
-          title: c.dataStructures.title,
-          explanation: c.dataStructures.explanation,
-          whyItMatters: "Safe dictionary key access with .get() avoids KeyErrors when parsing API payloads.",
-          example: c.dataStructures.predictCode,
-          interaction: "choose",
-          prompt: c.dataStructures.predictPrompt,
-          options: c.dataStructures.predictOptions.map((o) => o.text),
-          answer: c.dataStructures.predictOptions[0]?.text ?? "",
-          misconceptionExpl: c.dataStructures.predictOptions[0]?.feedback ?? "",
-          skillId: "data-structures",
-          difficultyLevel: 4,
-          xpReward: 40,
-          mentorHints: c.dataStructures.mentorHints,
-        },
-        // 14. BREAK IT: Unsafe Nested Dict
-        {
-          id: "3.2-data-structures-break",
-          stage: "BREAK IT",
-          activityType: "break-it",
-          title: "Break It — Unsafe Nested LLM Response Extraction",
-          explanation: c.dataStructures.breakItPrompt,
-          whyItMatters: "API payload structures change. Direct bracket indexing causes runtime crashes.",
-          example: c.dataStructures.breakItCode,
-          interaction: "choose",
-          prompt: c.dataStructures.breakItPrompt,
-          options: c.dataStructures.breakItOptions.map((o) => o.text),
-          answer: c.dataStructures.breakItOptions[0]?.text ?? "",
-          fixedCode: c.dataStructures.fixCode,
-          misconceptionExpl: c.dataStructures.breakItOptions[0]?.feedback ?? "",
-          skillId: "data-structures",
-          difficultyLevel: 4,
-          xpReward: 45,
-          mentorHints: c.dataStructures.mentorHints,
-        },
-        // 15. PRACTICE: Files & Paths
-        {
-          id: "3.2-files",
-          stage: "PRACTICE",
-          activityType: "practice",
-          title: c.filesAndPaths.title,
-          explanation: c.filesAndPaths.explanation,
-          whyItMatters: "Always use pathlib.Path and specify encoding='utf-8' for cross-platform file reading.",
-          example: c.filesAndPaths.breakItCode,
-          interaction: "choose",
-          prompt: c.filesAndPaths.breakItPrompt,
-          options: c.filesAndPaths.breakItOptions.map((o) => o.text),
-          answer: c.filesAndPaths.breakItOptions[0]?.text ?? "",
-          fixedCode: c.filesAndPaths.fixCode,
-          misconceptionExpl: c.filesAndPaths.breakItOptions[0]?.feedback ?? "",
-          skillId: "file-handling",
-          difficultyLevel: 4,
-          xpReward: 40,
-          mentorHints: c.filesAndPaths.mentorHints,
-        },
-        // 16. PRACTICE: Defensive JSON
-        {
-          id: "3.2-json",
-          stage: "PRACTICE",
-          activityType: "practice",
-          title: c.jsonHandling.title,
-          explanation: c.jsonHandling.explanation,
-          whyItMatters: "JSON is the lingua franca of AI tool calls. Strip markdown fences before parsing with json.loads.",
-          example: c.jsonHandling.breakItCode,
-          interaction: "choose",
-          prompt: c.jsonHandling.breakItPrompt,
-          options: c.jsonHandling.breakItOptions.map((o) => o.text),
-          answer: c.jsonHandling.breakItOptions[0]?.text ?? "",
-          fixedCode: c.jsonHandling.fixCode,
-          misconceptionExpl: c.jsonHandling.breakItOptions[0]?.feedback ?? "",
-          skillId: "json",
-          difficultyLevel: 5,
-          xpReward: 45,
-          mentorHints: c.jsonHandling.mentorHints,
-        },
-        // 17. LEARN: Environments
-        {
-          id: "3.2-environments",
-          stage: "LEARN",
-          activityType: "learn",
-          title: c.envAndDependencies.title,
-          explanation: c.envAndDependencies.explanation,
-          whyItMatters: "Isolating dependencies with venv and pinning exact versions in requirements.txt prevents production pipeline failures.",
-          example: c.envAndDependencies.predictCode,
-          interaction: "choose",
-          prompt: c.envAndDependencies.predictPrompt,
-          options: c.envAndDependencies.predictOptions.map((o) => o.text),
-          answer: c.envAndDependencies.predictOptions[0]?.text ?? "",
-          misconceptionExpl: c.envAndDependencies.predictOptions[0]?.feedback ?? "",
-          skillId: "environments",
-          difficultyLevel: 4,
-          xpReward: 40,
-          mentorHints: c.envAndDependencies.mentorHints,
-        },
-        // 18. KNOWLEDGE CHECK: Debugging Lab
-        {
-          id: "3.2-debugging-lab",
-          stage: "KNOWLEDGE CHECK",
-          activityType: "knowledge-check",
-          title: c.debuggingLab.title,
-          explanation: c.debuggingLab.explanation,
-          whyItMatters: "Independent triage of FileNotFoundError and UnicodeDecodeError confirms operational readiness.",
-          example: c.debuggingLab.challenges[0]?.code ?? "",
-          interaction: "choose",
-          prompt: c.debuggingLab.challenges[0]?.prompt ?? "",
-          options: (c.debuggingLab.challenges[0]?.options ?? []).map((o) => o.text),
-          answer: c.debuggingLab.challenges[0]?.options[0]?.text ?? "",
-          fixedCode: c.debuggingLab.challenges[0]?.fixedCode ?? "",
-          misconceptionExpl: c.debuggingLab.challenges[0]?.options[0]?.feedback ?? "",
-          skillId: "file-handling",
-          difficultyLevel: 5,
-          xpReward: 50,
           mentorHints: [
-            "Check how Python resolves relative paths when the script is run from other directories.",
-            "Always anchor paths to Path(__file__).parent.",
-            "Windows default encoding cannot parse multi-byte UTF-8 emoji characters.",
-            "Pass encoding='utf-8' explicitly.",
-            "Solution: Anchor with Path(__file__).parent and open with encoding='utf-8'."
+            "Are Python strings mutable or immutable?",
+            "What does string.replace() actually return?",
+            "Notice whether the return value was stored back into system_prompt.",
+            "Solution: strings are immutable, so print(system_prompt) prints the original string."
           ],
         },
-        // 19. MASTERY: Final Project
+        // 5. PRACTICE
         {
-          id: "3.2-final-build",
+          id: "3.2-practice",
+          stage: "PRACTICE",
+          activityType: "practice",
+          title: "Hands-on Practice: Token Cost Calculator",
+          explanation: "Calculate the total cost of LLM prompt and completion tokens. Cast string inputs defensively, format to 4 decimal places, and handle edge cases.",
+          whyItMatters: "Building utility calculations with defensive casting is a foundational skill in AI engineering.",
+          example: `def calculate_token_cost(prompt_tokens, completion_tokens, prompt_rate_1k=0.0015, completion_rate_1k=0.002):
+    # Safely cast inputs
+    p_tok = int(prompt_tokens)
+    c_tok = int(completion_tokens)
+    total_cost = (p_tok / 1000 * prompt_rate_1k) + (c_tok / 1000 * completion_rate_1k)
+    return round(total_cost, 4)
+
+# Example run:
+print("$" + str(calculate_token_cost("1200", "800")))
+# Expected output: $0.0034`,
+          interaction: "choose",
+          prompt: "Which statement best describes defensive input validation in this calculator?",
+          options: [
+            "Explicitly cast both prompt and completion tokens with int() before mathematical division",
+            "Leave parameters uncast so Python can infer floating point precision",
+            "Use eval() on incoming string values"
+          ],
+          answer: "Explicitly cast both prompt and completion tokens with int() before mathematical division",
+          misconceptionExpl: "Always cast string parameters explicitly with int() or float() before mathematical operations.",
+          skillId: "python-types",
+          difficultyLevel: 3,
+          xpReward: 35,
+          testCases: [
+            { input: "calculate_token_cost('1000', '1000')", expected: "0.0035", label: "String inputs casted cleanly" },
+            { input: "calculate_token_cost(0, 0)", expected: "0.0", label: "Zero token edge case" },
+          ],
+        },
+        // 6. BREAK IT
+        {
+          id: "3.2-break",
+          stage: "BREAK IT",
+          activityType: "break-it",
+          title: "Break It: The Operator Precedence Security Bug",
+          explanation: "Something is wrong. Find it. An AI code assistant generated this permission check, but normal users are gaining unauthorized admin access.",
+          whyItMatters: "In Python, logical operator precedence determines how authentication and model routing conditions evaluate.",
+          example: `def check_user_access(user_role, is_verified, total_credits):
+    # BUGGY AI IMPLEMENTATION:
+    # Intended logic: User must have credits > 0 AND be either 'admin' OR verified 'developer'
+    if user_role == "admin" or user_role == "developer" and is_verified:
+        return True
+    return False
+
+# Normal user with 0 credits and unverified:
+print("Access:", check_user_access("admin", False, 0)) # What happens if unverified user passes role='admin'?
+print("Access:", check_user_access("developer", False, 100)) # Fails correctly`,
+          interaction: "choose",
+          prompt: "What operator precedence bug allows unverified access in: user_role == 'admin' or user_role == 'developer' and is_verified?",
+          options: [
+            "'and' binds more tightly than 'or'. Python evaluates this as: (user_role == 'admin') or (user_role == 'developer' and is_verified), completely bypassing verification for admin!",
+            "'or' binds more tightly than 'and', causing all evaluations to return False",
+            "Python doesn't support combined 'and' and 'or' in if-statements"
+          ],
+          answer: "'and' binds more tightly than 'or'. Python evaluates this as: (user_role == 'admin') or (user_role == 'developer' and is_verified), completely bypassing verification for admin!",
+          fixedCode: `def check_user_access(user_role, is_verified, total_credits):
+    # FIXED: Group conditions explicitly with parentheses
+    is_valid_role = (user_role == "admin" or user_role == "developer")
+    return is_valid_role and is_verified and total_credits > 0`,
+          misconceptionExpl: "In Python, 'not' has highest precedence, followed by 'and', and lastly 'or'. Never rely on operator precedence without parentheses in authorization logic!",
+          skillId: "control-flow",
+          difficultyLevel: 3,
+          xpReward: 40,
+        },
+        // 7. YOUR TURN
+        {
+          id: "3.2-your-turn",
+          stage: "YOUR TURN",
+          activityType: "your-turn",
+          title: "Your Turn: Fix the AI-Generated Code",
+          explanation: "Review the following AI-generated code and fix the bug. Provide clean defensive casting and validation.",
+          whyItMatters: "Demonstrating independent code repair is how senior AI engineers build reliable systems.",
+          example: `def sanitize_model_parameters(temperature, max_tokens, stop_sequences=None):
+    """
+    AI-generated starter code has 2 subtle bugs:
+    1. temperature might be passed as string '0.7' or out-of-bounds (< 0.0 or > 2.0).
+    2. max_tokens might be string '2048' or negative.
+    3. Return validated dict: {'temperature': float, 'max_tokens': int, 'stop': list}
+    """
+    # Fix the implementation below:
+    clean_temp = max(0.0, min(2.0, float(temperature)))
+    clean_tokens = max(1, int(max_tokens))
+    clean_stop = list(stop_sequences) if stop_sequences is not None else []
+    return {
+        "temperature": clean_temp,
+        "max_tokens": clean_tokens,
+        "stop": clean_stop
+    }`,
+          interaction: "edit",
+          prompt: "Review and verify the sanitized model parameters function in your code editor:",
+          fixedCode: `def sanitize_model_parameters(temperature, max_tokens, stop_sequences=None):
+    clean_temp = max(0.0, min(2.0, float(temperature)))
+    clean_tokens = max(1, int(max_tokens))
+    clean_stop = list(stop_sequences) if stop_sequences is not None else []
+    return {
+        "temperature": clean_temp,
+        "max_tokens": clean_tokens,
+        "stop": clean_stop
+    }`,
+          rubricItems: [
+            { id: "r1", criterion: "Safely casts temperature to float and clamps between 0.0 and 2.0" },
+            { id: "r2", criterion: "Safely casts max_tokens to int with minimum value of 1" },
+            { id: "r3", criterion: "Avoids mutable default argument for stop_sequences (uses None default)" }
+          ],
+          skillId: "functions",
+          difficultyLevel: 4,
+          xpReward: 45,
+        },
+        // 8. KNOWLEDGE CHECK
+        {
+          id: "3.2-check",
+          stage: "KNOWLEDGE CHECK",
+          activityType: "knowledge-check",
+          title: "Knowledge Check: Core Diagnostic Questions",
+          explanation: "What is the type of this value in Python? Verify your comprehension with quick diagnostic checks.",
+          whyItMatters: "Diagnostic knowledge checks verify understanding before proceeding to capstone mastery.",
+          example: `sample_payload = [1, 2, 3]
+type_of_value = type(sample_payload)
+print(type_of_value)`,
+          interaction: "choose",
+          prompt: "What is the type of the value [1, 2, 3] in Python?",
+          options: [
+            "list",
+            "tuple",
+            "array",
+            "dict"
+          ],
+          answer: "list",
+          misconceptionExpl: "Square brackets [1, 2, 3] define a mutable Python list. Parentheses (1, 2, 3) define an immutable tuple.",
+          skillId: "python-types",
+          difficultyLevel: 3,
+          xpReward: 30,
+        },
+        // 9. MASTERY
+        {
+          id: "3.2-mastery",
           stage: "MASTERY",
           activityType: "final-mission",
-          title: c.finalProject.title,
-          explanation: c.finalProject.mission,
-          whyItMatters: "Building a reliable data CLI utility proves you can write functions, use pathlib, parse JSON, filter datasets, and handle errors.",
+          title: "Mastery Challenge: Reliable AI Pipeline Utility",
+          explanation: "You're almost there! Build a realistic, production-ready data pipeline function that combines variables, types, defensive casting, exception handling, and pathlib.",
+          whyItMatters: "Proving competence through an integrated coding challenge confirms university-grade readiness.",
           example: c.finalProject.starterCode,
           interaction: "edit",
-          prompt: "Implement your solution for the Reliable Data CLI utility in the code editor:",
+          prompt: "Implement process_ai_data_pipeline(input_json_path, output_report_path, min_score=80.0):",
           fixedCode: c.finalProject.solutionCode,
           skillId: "json",
           difficultyLevel: 6,
           xpReward: 100,
-          rubricItems: (c.finalProject.rubric ?? []).map((r) => ({
-            id: r.id,
-            criterion: `${r.title} (${r.maxPoints} pts): ${r.criterion}`,
-            tip: r.hint,
-          })),
+          rubricItems: [
+            { id: "m1", criterion: "Correct solution: Processes data and handles valid/rejected counts accurately" },
+            { id: "m2", criterion: "Handles edge cases: Missing status keys, string scores ('85.5'), and missing input files" },
+            { id: "m3", criterion: "Code quality: Uses pathlib, context managers, and UTF-8 encoding" },
+            { id: "m4", criterion: "Explanation: Understands memory model and defensive validation" }
+          ],
         },
-        // 20. NEXT: Module 01 Complete
+        // 10. NEXT
         {
           id: "3.2-next",
           stage: "NEXT",
           activityType: "mastery",
-          title: "Module 01 Complete — Python Foundations Mastered!",
-          explanation: "You have completed Python Foundations for AI! You possess the programming discipline required for production AI development.",
-          whyItMatters: "Solid Python discipline underpins all future LLM integrations, RAG pipelines, and autonomous agent systems.",
-          example: "# Evidence Verified:\n✓ Clean Syntax & Control Flow\n✓ pathlib & UTF-8 Encoding\n✓ Defensive JSON Parsing & Schema Validation\n✓ Virtual Environments & Pinned Dependencies",
+          title: "Module 01 Complete: What You Unlocked",
+          explanation: "Congratulations! You have completed Python Foundations for AI. You have proven your ability to write resilient, defensive Python code.",
+          whyItMatters: "Your foundational knowledge now unlocks advanced data manipulation, NumPy, Pandas, and LLM integrations.",
+          example: `# You Mastered:
+✓ Variables & Object Reference Model
+✓ Primitive Data Types & Immutability
+✓ Control Flow & Operator Precedence
+✓ Functions & Scope Discipline
+✓ Defensive Parsing & Type Conversion`,
           interaction: "inspect",
-          prompt: "Proceed to Challenge Lab or Next Module.",
+          prompt: "Click Continue to proceed to Module 02: Python Libraries for AI.",
           skillId: "python-types",
           difficultyLevel: 6,
           xpReward: 50,

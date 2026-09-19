@@ -4,9 +4,11 @@ import {
   Activity,
   ArrowLeft,
   ArrowRight,
+  Award,
   BarChart3,
   Bell,
   BookOpen,
+  Bookmark,
   Bot,
   BrainCircuit,
   Check,
@@ -18,10 +20,13 @@ import {
   Command,
   Compass,
   Database,
+  Download,
+  FileText,
   Flame,
   FolderKanban,
   GitBranch,
   GraduationCap,
+  Home,
   Layers3,
   Lightbulb,
   Lock,
@@ -106,10 +111,13 @@ import { getLearningExperience } from "@/lib/learning-experiences";
 import { Module01Studio } from "./Module01Studio";
 import { LockedModulePreview } from "./LockedModulePreview";
 import { DashboardView } from "./DashboardView";
+import { CurriculumView } from "./CurriculumView";
 import { PracticeLabView } from "./PracticeLabView";
 import { ProjectsView } from "./ProjectsView";
 import { SkillsView } from "./SkillsView";
 import { ProfileView } from "./ProfileView";
+import { AchievementsCareer } from "./AchievementsCareer";
+import { AIMentorView } from "./AIMentorView";
 import {
   completeLearningModule,
   getLearningProgressSummary,
@@ -137,14 +145,19 @@ type View =
   | "recovery";
 
 const navItems: { label: string; to: string; icon: typeof Activity }[] = [
-  { label: "Home", to: "/dashboard", icon: Compass },
+  { label: "Home", to: "/dashboard", icon: Home },
   { label: "Curriculum", to: "/curriculum", icon: GitBranch },
-  { label: "Learning Mode", to: "/learning-mode", icon: BookOpen },
-  { label: "Practice Lab", to: "/challenges", icon: Terminal },
   { label: "Projects", to: "/build", icon: FolderKanban },
   { label: "Skills", to: "/skills", icon: BarChart3 },
   { label: "Profile", to: "/profile", icon: UserRound },
-  { label: "Career", to: "/career", icon: Target },
+  { label: "AI Mentor", to: "/tutor", icon: Bot },
+];
+
+const learningNavItems: { label: string; to: string; icon: typeof Activity }[] = [
+  { label: "Bookmarks", to: "/dashboard", icon: Bookmark },
+  { label: "Notes", to: "/dashboard", icon: FileText },
+  { label: "Downloads", to: "/dashboard", icon: Download },
+  { label: "Achievements", to: "/career", icon: Award },
 ];
 
 const toneMap = { brand: "bg-brand", lilac: "bg-lilac", peach: "bg-peach", mint: "bg-mint" };
@@ -158,14 +171,14 @@ const softToneMap = {
 function Mark({ compact = false }: { compact?: boolean }) {
   return (
     <div className="flex items-center gap-2.5">
-      <div className="grid size-9 place-items-center rounded-xl bg-ink text-background font-bold text-xs tracking-tight">
-        KLH
+      <div className="grid size-8 place-items-center rounded-xl bg-[#0F766E] text-white font-bold text-xs tracking-tight shadow-2xs">
+        <Sparkle className="size-4 text-[#CCFBF1] fill-current" />
       </div>
       {!compact && (
         <div className="leading-tight">
-          <p className="font-display text-[15px] font-semibold text-foreground">KLH AI Platform</p>
-          <p className="text-[10px] uppercase tracking-[.18em] text-faint">
-            Academic & Skill Track
+          <p className="font-display text-[15px] font-bold text-[#0B1F2A] tracking-tight">KLH Learn</p>
+          <p className="text-[10px] text-[#84979D]">
+            AI & Applied Tech
           </p>
         </div>
       )}
@@ -333,12 +346,7 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
             <Mark />
           </div>
 
-          {/* Section label */}
-          <div className="px-2 mb-1.5">
-            <p className="font-mono text-[9px] font-bold uppercase tracking-[.22em] text-faint">Navigation</p>
-          </div>
-
-          {/* Nav items */}
+          {/* Primary Nav items */}
           <nav className="flex flex-col gap-0.5">
             {navItems.map(({ label, to, icon: Icon }) => {
               const isActive = activePath(active, to);
@@ -346,24 +354,21 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
                 <Link
                   key={to}
                   to={to}
-                  className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+                  className={`group flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium transition-all duration-150 ${
                     isActive
-                      ? "bg-surface-elevated text-foreground"
-                      : "text-muted-foreground hover:bg-surface-elevated/70 hover:text-foreground"
+                      ? "bg-[#CCFBF1] text-[#0B1F2A] font-semibold border border-[#0F766E]/20"
+                      : "text-[#587078] hover:bg-[#F0F5F4] hover:text-[#0B1F2A]"
                   }`}
-                  style={isActive ? {
-                    boxShadow: "0 1px 3px rgba(15,23,42,.06), 0 0 0 1px var(--color-border)",
-                  } : {}}
                 >
                   <Icon
                     className="size-4 shrink-0 transition-colors"
-                    style={{ color: isActive ? "var(--color-brand)" : undefined }}
+                    style={{ color: isActive ? "#0F766E" : "#84979D" }}
                   />
                   <span className="truncate">{label}</span>
                   {isActive && (
                     <span
                       className="ml-auto size-1.5 rounded-full shrink-0"
-                      style={{ background: "var(--color-brand)" }}
+                      style={{ background: "#0F766E" }}
                     />
                   )}
                 </Link>
@@ -371,34 +376,56 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
             })}
           </nav>
 
-          {/* Bottom: Progress card + settings */}
-          <div className="mt-auto space-y-2">
-            <div
-              className="rounded-2xl border border-border p-3.5 space-y-2"
-              style={{ background: "var(--color-surface-elevated)", boxShadow: "0 1px 2px rgba(15,23,42,.04)" }}
-            >
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-foreground">Program Progress</p>
-                <span
-                  className="rounded-full px-2 py-0.5 font-mono text-[10px] font-bold"
-                  style={{ background: "var(--color-lilac-soft)", color: "var(--color-lilac)" }}
+          {/* Learning Section */}
+          <div className="mt-5 mb-1.5 px-2">
+            <p className="font-mono text-[9px] font-bold uppercase tracking-[.22em] text-[#84979D]">Learning</p>
+          </div>
+          <nav className="flex flex-col gap-0.5">
+            {learningNavItems.map(({ label, to, icon: Icon }) => {
+              const isActive = activePath(active, to) && label === "Achievements" && active === "career";
+              return (
+                <Link
+                  key={label}
+                  to={to}
+                  className={`group flex items-center gap-2.5 rounded-xl px-3 py-1.5 text-xs font-medium transition-all duration-150 ${
+                    isActive
+                      ? "bg-[#CCFBF1] text-[#0B1F2A] font-semibold border border-[#0F766E]/20"
+                      : "text-[#587078] hover:bg-[#F0F5F4] hover:text-[#0B1F2A]"
+                  }`}
                 >
-                  {summary.completedCount}/{summary.totalModules}
-                </span>
-              </div>
-              <ProgressBar value={summary.progressPercent} />
-              <p className="text-[11px] text-faint truncate">
-                Mod {summary.currentModule.code} · {summary.currentStepTitle || "Ready to start"}
-              </p>
-            </div>
+                  <Icon
+                    className="size-3.5 shrink-0 transition-colors"
+                    style={{ color: isActive ? "#0F766E" : "#84979D" }}
+                  />
+                  <span className="truncate">{label}</span>
+                </Link>
+              );
+            })}
+          </nav>
 
-            <button
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground transition hover:bg-surface-elevated hover:text-foreground"
-              onClick={() => navigate({ to: "/profile" })}
+          {/* Bottom: Upgrade Your Future career CTA */}
+          <div className="mt-auto pt-3">
+            <div
+              className="rounded-2xl border border-[#DCE7E5] bg-gradient-to-b from-[#F0FDF4] to-[#F7FAFA] p-3.5 space-y-2 shadow-2xs"
             >
-              <Settings2 className="size-4 text-faint" />
-              <span>Profile & Settings</span>
-            </button>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-[#CCFBF1] text-[#0F766E] flex items-center justify-center font-bold text-xs">
+                  <Sparkle className="size-3.5 fill-current" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-[#0B1F2A]">Upgrade Your Future</p>
+                  <p className="text-[10px] text-[#84979D]">Fast-track AI Engineer</p>
+                </div>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full text-[11px] font-semibold h-7 border-[#0F766E]/30 text-[#0F766E] hover:bg-[#CCFBF1]/40"
+                onClick={() => navigate({ to: "/career" })}
+              >
+                View Career Track →
+              </Button>
+            </div>
           </div>
         </aside>
 
@@ -453,15 +480,15 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
                       key={to}
                       to={to}
                       onClick={() => setMobileOpen(false)}
-                      className={`flex min-h-[48px] items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all`}
-                      style={isActive ? {
-                        background: "var(--color-brand)",
-                        color: "white",
-                      } : {}}
+                      className={`flex min-h-[48px] items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
+                        isActive
+                          ? "bg-[#CCFBF1] text-[#0B1F2A] font-semibold border border-[#0F766E]/25"
+                          : "text-[#587078] hover:bg-[#F0F5F4] hover:text-[#0B1F2A]"
+                      }`}
                     >
-                      <Icon className="size-4.5 shrink-0" style={{ color: isActive ? "white" : "var(--color-brand)" }} />
-                      <span className={isActive ? "text-white" : "text-muted-foreground"}>{label}</span>
-                      {isActive && <span className="ml-auto size-2 rounded-full bg-white/70 animate-pulse" />}
+                      <Icon className="size-4.5 shrink-0" style={{ color: isActive ? "#0F766E" : "#84979D" }} />
+                      <span className={isActive ? "text-[#0B1F2A] font-semibold" : "text-[#587078]"}>{label}</span>
+                      {isActive && <span className="ml-auto size-2 rounded-full bg-[#0F766E]" />}
                     </Link>
                   );
                 })}
@@ -506,55 +533,46 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
               </div>
 
               {/* Center: Search */}
-              <div className="hidden flex-1 items-center gap-2 rounded-xl border border-border bg-surface-elevated/90 px-3.5 py-2 sm:flex sm:max-w-sm mx-3">
-                <Search className="size-4 text-faint shrink-0" />
+              <div className="hidden flex-1 items-center gap-2 rounded-xl border border-[#DCE7E5] bg-white px-3.5 py-1.5 sm:flex sm:max-w-md mx-3 shadow-2xs">
+                <Search className="size-3.5 text-[#84979D] shrink-0" />
                 <input
-                  className="w-full bg-transparent text-sm outline-none placeholder:text-faint"
-                  placeholder="Search modules, skills, projects…"
+                  className="w-full bg-transparent text-xs outline-none placeholder:text-[#84979D] text-[#102A33]"
+                  placeholder="Search modules, topics, or ask AI..."
                 />
-                <span className="hidden rounded-md bg-foreground/8 px-1.5 py-0.5 font-mono text-[10px] text-faint lg:inline">
-                  ⌘K
-                </span>
               </div>
 
               {/* Right: stats + profile */}
               <div className="flex items-center gap-2 shrink-0">
-                <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-xs font-semibold text-amber-600">
-                  <Flame className="size-3.5" /> 12d
+                <div className="flex items-center gap-1.5 rounded-full border border-[#D97706]/20 bg-[#FEF3C7] px-2.5 py-1 text-xs font-semibold text-[#D97706]">
+                  <Flame className="size-3.5 fill-current" />
+                  <span>6</span>
+                  <span className="text-[10px] text-[#92400E] font-normal hidden sm:inline">Day Streak</span>
                 </div>
-                <div
-                  className="hidden sm:flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-xs font-bold"
-                  style={{
-                    borderColor: "color-mix(in oklch, var(--color-brand) 30%, transparent)",
-                    background: "var(--color-brand-soft)",
-                    color: "var(--color-brand)",
-                  }}
-                >
-                  <Zap className="size-3.5" /> 1,280 XP
+                <div className="flex items-center gap-1.5 rounded-full border border-[#0F766E]/20 bg-[#CCFBF1] px-2.5 py-1 text-xs font-bold text-[#0F766E]">
+                  <Zap className="size-3.5 fill-current" />
+                  <span>1,280</span>
                 </div>
                 <Button
                   size="icon" variant="ghost"
-                  className="hidden sm:inline-flex rounded-xl"
+                  className="hidden sm:inline-flex rounded-xl h-8 w-8 text-[#587078] hover:text-[#0B1F2A]"
                   aria-label="Notifications"
-                  onClick={() => toast("Academic progress synced")}
+                  onClick={() => toast("All academic systems operational")}
                 >
-                  <Bell className="size-4 text-faint" />
+                  <Bell className="size-4" />
                 </Button>
                 <button
-                  className="flex min-h-[40px] items-center gap-2 rounded-xl border border-border bg-surface-elevated px-2.5 py-1 text-left transition hover:border-[var(--color-brand)]/40"
+                  className="flex items-center gap-2 rounded-xl border border-[#DCE7E5] bg-white px-2 py-1 text-left transition hover:border-[#0F766E]/40 shadow-2xs"
                   onClick={() => navigate({ to: "/profile" })}
                   aria-label="User Profile"
                 >
-                  <div className="hidden sm:flex flex-col text-right leading-tight">
-                    <span className="text-xs font-semibold">Aarav Kulkarni</span>
-                    <span className="text-[10px] text-muted-foreground">GenAI Engineer</span>
-                  </div>
-                  <span
-                    className="grid size-7 place-items-center rounded-lg text-xs font-bold text-white"
-                    style={{ background: "var(--color-brand)" }}
-                  >
+                  <span className="grid size-7 place-items-center rounded-lg text-xs font-bold text-white bg-[#0F766E]">
                     AK
                   </span>
+                  <div className="hidden sm:flex flex-col text-left leading-tight">
+                    <span className="text-xs font-bold text-[#0B1F2A]">Aarav Kulkarni</span>
+                    <span className="text-[10px] text-[#84979D]">B.Tech CSE · AI Track</span>
+                  </div>
+                  <ChevronDown className="size-3 text-[#84979D] hidden sm:inline" />
                 </button>
               </div>
             </div>
@@ -858,7 +876,7 @@ function Dashboard() {
 function MiniMap({ onNode }: { onNode: () => void }) {
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-surface/50 p-4 shadow-inner">
-      <div className="absolute left-[9%] right-[9%] top-1/2 h-[2px] bg-gradient-to-r from-brand via-lilac to-border -translate-y-1/2" />
+      <div className="absolute left-[9%] right-[9%] top-1/2 h-[2px] bg-[#0F766E]/30 -translate-y-1/2" />
       <div className="relative grid grid-cols-6 gap-2">
         {nodes.slice(0, 6).map((node, index) => (
           <button
@@ -869,12 +887,12 @@ function MiniMap({ onNode }: { onNode: () => void }) {
             <span
               className={`grid size-10 place-items-center rounded-xl border transition-all duration-300 ${
                 index === 0
-                  ? "border-mint/60 bg-mint-soft text-mint shadow-[0_0_10px_rgba(20,184,166,0.3)]"
+                  ? "border-[#0F766E]/40 bg-[#CCFBF1] text-[#0F766E]"
                   : index === 1
-                  ? "cp-pulse border-brand bg-brand-soft text-brand shadow-[0_0_12px_rgba(0,180,180,0.4)]"
+                  ? "border-[#0F766E] bg-[#CCFBF1] text-[#0F766E]"
                   : index === 2
-                  ? "border-lilac/40 bg-lilac-soft/60 text-lilac"
-                  : "border-border/60 bg-muted/70 text-faint"
+                  ? "border-[#14B8A6]/40 bg-[#E6F7F5] text-[#0F766E]"
+                  : "border-border/60 bg-surface text-faint"
               }`}
             >
               {index === 0 ? (
@@ -1380,9 +1398,9 @@ function InteractiveCurriculumMap() {
             </div>
           </div>
 
-          <div className="h-2 overflow-hidden rounded-full bg-foreground/10 p-[2px] border border-border/60">
+          <div className="h-2 overflow-hidden rounded-full bg-[#E6F7F5] border border-[#DCE7E5]">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-brand via-lilac to-mint transition-all duration-700 shadow-[0_0_12px_rgba(20,184,166,0.6)]"
+              className="h-full rounded-full bg-[#0F766E] transition-all duration-700"
               style={{ width: `${Math.max(3, (mastered / curriculumModules.length) * 100)}%` }}
             />
           </div>
@@ -4155,7 +4173,7 @@ export function CodepathApp({
   if (view === "map")
     return (
       <Shell active="map">
-        <InteractiveCurriculumMap />
+        <CurriculumView />
       </Shell>
     );
   if (view === "learning")
@@ -4171,7 +4189,7 @@ export function CodepathApp({
   if (view === "tutor")
     return (
       <Shell active="tutor">
-        <Tutor />
+        <AIMentorView />
       </Shell>
     );
   if (view === "lab" || view === "challenge" || view === "challenges")
@@ -4195,7 +4213,7 @@ export function CodepathApp({
   if (view === "career")
     return (
       <Shell active="career">
-        <Career />
+        <AchievementsCareer />
       </Shell>
     );
   if (view === "profile")

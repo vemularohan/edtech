@@ -101,7 +101,7 @@ export function LockedModulePreview({ module }: LockedModulePreviewProps) {
 
         <div className="rounded-xl border border-border/70 bg-surface/60 p-4">
           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-            <GraduationCap className="size-3.5 text-lilac" />
+            <GraduationCap className="size-3.5 text-[#0F766E]" />
             <span>Difficulty</span>
           </div>
           <p className="font-display text-base font-bold text-foreground">
@@ -112,7 +112,7 @@ export function LockedModulePreview({ module }: LockedModulePreviewProps) {
 
         <div className="rounded-xl border border-border/70 bg-surface/60 p-4">
           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-            <Code2 className="size-3.5 text-mint" />
+            <Code2 className="size-3.5 text-[#14B8A6]" />
             <span>Core Concepts</span>
           </div>
           <p className="font-display text-base font-bold text-foreground">
@@ -123,7 +123,7 @@ export function LockedModulePreview({ module }: LockedModulePreviewProps) {
 
         <div className="rounded-xl border border-border/70 bg-surface/60 p-4">
           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-            <FolderKanban className="size-3.5 text-peach" />
+            <FolderKanban className="size-3.5 text-[#0F766E]" />
             <span>Milestone Build</span>
           </div>
           <p className="font-display text-sm font-bold text-foreground truncate">

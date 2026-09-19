@@ -2,355 +2,267 @@ import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
   ArrowRight,
-  Award,
+  BarChart2,
   BarChart3,
-  BookOpen,
+  Bot,
+  Brain,
   CheckCircle2,
   Code2,
+  Cpu,
+  Database,
   ExternalLink,
   Flame,
   FolderKanban,
   Lock,
   Play,
-  RotateCcw,
-  ShieldCheck,
   Sparkles,
-  Target,
-  Trophy,
+  Terminal,
 } from "lucide-react";
-import {
-  PolarAngleAxis,
-  PolarGrid,
-  Radar,
-  RadarChart,
-  ResponsiveContainer,
-} from "recharts";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useLearningEvidence, useLearningProgress, useSkillMastery } from "@/lib/learning-progress";
+import { useLearningProgress } from "@/lib/learning-progress";
 
 export function SkillsView() {
   const navigate = useNavigate();
   const progress = useLearningProgress();
-  const evidence = useLearningEvidence();
-  const skills = useSkillMastery("3.2");
-  const [activeTab, setActiveTab] = useState<"all" | "in-progress" | "locked">("all");
 
-  const radarData = [
-    { subject: "Python", A: 85, fullMark: 100 },
-    { subject: "RAG", A: 40, fullMark: 100 },
-    { subject: "Agents", A: 25, fullMark: 100 },
-    { subject: "System Design", A: 35, fullMark: 100 },
-    { subject: "Problem Solving", A: 75, fullMark: 100 },
-  ];
-
-  const competencies = [
+  const skillCategories = [
     {
-      id: "python-ai",
-      title: "Python for AI",
-      category: "Foundations",
-      status: "In Progress",
-      description: "Functions, JSON, file handling, pip and environments",
-      milestone: "Module 01 · Practice CLI tool",
-      color: "brand",
+      id: "python",
+      title: "Python",
+      icon: Code2,
+      count: "3 / 15",
+      progress: 20,
     },
     {
-      id: "llm-apis",
-      title: "LLM APIs & Prompts",
-      category: "Foundations",
-      status: "Available",
-      description: "Streaming chat, JSON templates, structured output",
-      milestone: "Modules 03–04 · API chat project",
-      color: "lilac",
+      id: "data-analysis",
+      title: "Data Analysis",
+      icon: BarChart2,
+      count: "0 / 15",
+      progress: 0,
     },
     {
-      id: "rag-systems",
-      title: "RAG Systems",
-      category: "Knowledge Apps",
-      status: "Locked",
-      description: "Embeddings, hybrid search, LangChain",
-      milestone: "Modules 06–09 · Citation evaluator",
-      color: "mint",
+      id: "machine-learning",
+      title: "Machine Learning",
+      icon: Brain,
+      count: "0 / 15",
+      progress: 0,
     },
     {
-      id: "agents-prod",
-      title: "Agents & Production",
-      category: "Agents & Deploy",
-      status: "Locked",
-      description: "Tools, graphs, guardrails, ops",
-      milestone: "Modules 10–13 · Bounded agent project",
-      color: "peach",
+      id: "ai-applications",
+      title: "AI Applications",
+      icon: Cpu,
+      count: "0 / 15",
+      progress: 0,
     },
   ];
 
-  const filtered =
-    activeTab === "all"
-      ? competencies
-      : activeTab === "in-progress"
-      ? competencies.filter((c) => c.status === "In Progress" || c.status === "Available")
-      : competencies.filter((c) => c.status === "Locked");
-
-  const statusColor = (status: string) => {
-    if (status === "In Progress") return "var(--color-brand)";
-    if (status === "Available") return "var(--color-lilac)";
-    return "var(--color-faint)";
-  };
-  const statusBg = (status: string) => {
-    if (status === "In Progress") return "var(--color-brand-soft)";
-    if (status === "Available") return "var(--color-lilac-soft)";
-    return "var(--color-muted)";
-  };
+  const recentSkills = [
+    { name: "Variables", status: "Active", level: "Beginner", icon: Code2, locked: false },
+    { name: "Data Types", status: "Active", level: "Beginner", icon: Terminal, locked: false },
+    { name: "Control Flow", status: "Locked", level: "Locked", icon: Lock, locked: true },
+    { name: "Functions", status: "Locked", level: "Locked", icon: Lock, locked: true },
+    { name: "Data Handling", status: "Locked", level: "Locked", icon: Lock, locked: true },
+  ];
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 pb-16 cp-rise">
-
-      {/* ── 1. Hero Banner ── */}
-      <section
-        className="relative overflow-hidden rounded-2xl border border-border bg-surface-elevated p-6 sm:p-8"
-        style={{ boxShadow: "0 1px 3px rgba(15,23,42,.03), 0 8px 28px -6px rgba(15,23,42,.06)" }}
-      >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full blur-3xl opacity-25"
-          style={{ background: "var(--color-mint-soft)" }}
-        />
-        <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          <div className="space-y-3 max-w-2xl">
-            <span
-              className="font-mono text-[11px] font-bold uppercase tracking-widest"
-              style={{ color: "var(--color-brand)" }}
-            >
-              SKILLS YOU CAN PROVE
-            </span>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">
-              Turn your learning into real proof
-            </h1>
-            <p className="text-sm text-muted-foreground leading-relaxed max-w-xl">
-              Every skill here is linked to a module, a practice lab, or a project submission.
-              No self-assessments — only verified evidence.
-            </p>
-          </div>
-
-          {/* Summary stats */}
-          <div className="flex flex-wrap gap-3 shrink-0">
-            {[
-              { label: "Skills Tracked", value: "4", color: "brand" },
-              { label: "In Progress", value: "1", color: "lilac" },
-              { label: "Mastered", value: "0", color: "mint" },
-            ].map(({ label, value, color }) => (
-              <div
-                key={label}
-                className="rounded-xl border border-border bg-surface/60 px-4 py-3 text-center min-w-[80px]"
-              >
-                <p className="font-display text-2xl font-bold" style={{ color: `var(--color-${color})` }}>
-                  {value}
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-0.5 font-medium">{label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── 2. Radar + Competencies Grid ── */}
-      <div className="grid gap-4 lg:grid-cols-[340px_1fr]">
-
-        {/* Radar chart */}
-        <div
-          className="rounded-2xl border border-border bg-surface-elevated p-5"
-          style={{ boxShadow: "0 1px 2px rgba(15,23,42,.025), 0 4px 14px -4px rgba(15,23,42,.05)" }}
-        >
-          <div className="mb-3">
-            <span
-              className="font-mono text-[10px] font-bold uppercase tracking-wider"
-              style={{ color: "var(--color-brand)" }}
-            >
-              Competency Profile
-            </span>
-            <h2 className="font-display text-base font-bold text-foreground mt-0.5">
-              Skill Radar
-            </h2>
-          </div>
-          <ResponsiveContainer width="100%" height={220}>
-            <RadarChart data={radarData}>
-              <PolarGrid stroke="var(--color-border)" strokeDasharray="3 3" />
-              <PolarAngleAxis
-                dataKey="subject"
-                tick={{ fill: "var(--color-faint)", fontSize: 10, fontFamily: "Inter" }}
-              />
-              <Radar
-                name="Skills"
-                dataKey="A"
-                stroke="var(--color-brand)"
-                fill="var(--color-brand)"
-                fillOpacity={0.12}
-                strokeWidth={2}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
-          <div className="mt-3 space-y-2">
-            {radarData.map((d) => (
-              <div key={d.subject} className="flex items-center gap-2">
-                <div className="flex-1">
-                  <div className="flex justify-between text-[11px] mb-0.5">
-                    <span className="font-medium text-foreground">{d.subject}</span>
-                    <span className="font-mono text-faint">{d.A}%</span>
-                  </div>
-                  <div className="progress-track" style={{ height: "4px" }}>
-                    <div
-                      className="progress-fill"
-                      style={{
-                        width: `${d.A}%`,
-                        background: d.A >= 70 ? "var(--color-brand)" : d.A >= 50 ? "var(--color-lilac)" : "var(--color-border)",
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+    <div className="mx-auto max-w-6xl space-y-6 pb-16">
+      {/* ── Top Header ── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-[#DCE7E5] pb-4">
+        <div>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#0B1F2A] tracking-tight">
+            Your Skills
+          </h1>
+          <p className="mt-0.5 text-xs sm:text-sm text-[#587078]">
+            Track your progress, build expertise, and unlock opportunities.
+          </p>
         </div>
 
-        {/* Competencies list */}
-        <div
-          className="rounded-2xl border border-border bg-surface-elevated p-5"
-          style={{ boxShadow: "0 1px 2px rgba(15,23,42,.025), 0 4px 14px -4px rgba(15,23,42,.05)" }}
+        <Button
+          size="sm"
+          variant="outline"
+          className="border-[#DCE7E5] text-[#0F766E] hover:bg-[#CCFBF1]/40 text-xs font-semibold self-start sm:self-auto h-8"
+          onClick={() => navigate({ to: "/career" })}
         >
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <span
-                className="font-mono text-[10px] font-bold uppercase tracking-wider"
-                style={{ color: "var(--color-brand)" }}
-              >
-                Tracked Competencies
-              </span>
-              <h2 className="font-display text-base font-bold text-foreground mt-0.5">
-                Evidence-Based Skills
-              </h2>
+          View Career Path →
+        </Button>
+      </div>
+
+      {/* ── Circular Progress & Skill Categories Row ── */}
+      <div className="grid gap-4 lg:grid-cols-12 items-stretch">
+        {/* Overall Skill Progress Circular Gauge (col-span-4) */}
+        <div className="lg:col-span-4 rounded-2xl border border-[#DCE7E5] bg-white p-6 shadow-2xs flex flex-col items-center justify-center text-center">
+          <div className="relative size-36">
+            <svg className="size-full -rotate-90" viewBox="0 0 36 36">
+              <path
+                className="text-[#E6F7F5]"
+                strokeWidth="3.5"
+                stroke="currentColor"
+                fill="none"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              />
+              <path
+                className="text-[#0F766E] transition-all duration-1000"
+                strokeDasharray="15, 100"
+                strokeLinecap="round"
+                strokeWidth="3.5"
+                stroke="currentColor"
+                fill="none"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="font-display text-2xl font-extrabold text-[#0B1F2A]">15%</span>
             </div>
-            {/* Filter tabs */}
-            <div className="flex rounded-xl border border-border bg-surface p-1 gap-0.5 text-xs">
-              {(["all", "in-progress", "locked"] as const).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`rounded-lg px-3 py-1.5 font-medium transition-all capitalize ${
-                    activeTab === tab
-                      ? "bg-surface-elevated shadow-sm text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
+          </div>
+
+          <h3 className="mt-3 text-sm font-bold text-[#0B1F2A]">Overall Skill Progress</h3>
+          <p className="mt-0.5 text-xs text-[#84979D]">12 of 80 skills completed</p>
+        </div>
+
+        {/* Skill Categories (col-span-8) */}
+        <div className="lg:col-span-8 rounded-2xl border border-[#DCE7E5] bg-white p-6 shadow-2xs space-y-4">
+          <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#84979D]">
+            Skill Categories
+          </p>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {skillCategories.map((cat) => {
+              const Icon = cat.icon;
+              return (
+                <div
+                  key={cat.id}
+                  className="rounded-xl border border-[#DCE7E5] bg-[#F7FAFA] p-3.5 flex flex-col justify-between"
                 >
-                  {tab === "in-progress" ? "Active" : tab === "locked" ? "Locked" : "All"}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {filtered.map((comp) => (
-              <div
-                key={comp.id}
-                className="group rounded-2xl border border-border bg-surface/40 p-4 transition-all hover:bg-surface hover:border-border/80 hover:shadow-sm"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-display text-sm font-bold text-foreground">{comp.title}</span>
-                      <span
-                        className="rounded-full px-2 py-0.5 text-[10px] font-bold font-mono"
-                        style={{
-                          background: statusBg(comp.status),
-                          color: statusColor(comp.status),
-                        }}
-                      >
-                        {comp.status}
-                      </span>
+                  <div className="flex items-center justify-between">
+                    <div className="grid size-8 place-items-center rounded-lg bg-[#CCFBF1] text-[#0F766E]">
+                      <Icon className="size-4" />
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">{comp.description}</p>
-                    <div className="mt-2 flex items-center gap-1.5 text-[11px] text-faint">
-                      <BookOpen className="size-3" />
-                      <span>{comp.milestone}</span>
-                    </div>
+                    <span className="font-mono text-[11px] font-bold text-[#0F766E]">
+                      {cat.count}
+                    </span>
                   </div>
 
-                  <div className="shrink-0">
-                    {comp.status === "In Progress" || comp.status === "Available" ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-xs h-7 px-2.5"
-                        onClick={() =>
-                          navigate({ to: "/learning-mode", search: { module: "3.2" } })
-                        }
-                      >
-                        <Play className="size-3 mr-1" />
-                        Practice
-                      </Button>
-                    ) : (
-                      <span className="grid size-7 place-items-center rounded-lg bg-surface border border-border">
-                        <Lock className="size-3.5 text-faint" />
-                      </span>
-                    )}
+                  <div className="mt-3">
+                    <h4 className="text-xs font-bold text-[#0B1F2A]">{cat.title}</h4>
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#E6F7F5]">
+                      <div
+                        className="h-full rounded-full bg-[#0F766E]"
+                        style={{ width: `${cat.progress}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
 
-      {/* ── 3. Career Readiness ── */}
-      <section
-        className="rounded-2xl border border-border bg-surface-elevated p-5 sm:p-6"
-        style={{ boxShadow: "0 1px 2px rgba(15,23,42,.025), 0 4px 14px -4px rgba(15,23,42,.05)" }}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <span
-              className="font-mono text-[10px] font-bold uppercase tracking-wider"
-              style={{ color: "var(--color-brand)" }}
-            >
-              Career Readiness
-            </span>
-            <h2 className="font-display text-base font-bold text-foreground mt-0.5">
-              How you track against GenAI Engineer roles
-            </h2>
-          </div>
-          <Button variant="ghost" size="sm" className="text-xs" onClick={() => navigate({ to: "/career" })}>
-            Career Map <ArrowRight className="size-3.5 ml-1" />
-          </Button>
+      {/* ── Recent Skills Row ── */}
+      <div className="rounded-2xl border border-[#DCE7E5] bg-white p-6 shadow-2xs space-y-3">
+        <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#84979D]">
+          Recent Skills
+        </p>
+
+        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {recentSkills.map((sk) => {
+            const Icon = sk.icon;
+            return (
+              <div
+                key={sk.name}
+                className={`rounded-xl border p-3.5 transition-all ${
+                  sk.locked
+                    ? "border-[#DCE7E5] bg-[#F7FAFA] opacity-60"
+                    : "border-[#0F766E]/30 bg-white shadow-2xs"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`grid size-7 place-items-center rounded-lg text-xs ${
+                      sk.locked
+                        ? "bg-[#F0F5F4] text-[#84979D]"
+                        : "bg-[#CCFBF1] text-[#0F766E]"
+                    }`}
+                  >
+                    <Icon className="size-3.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-[#0B1F2A]">{sk.name}</h4>
+                    <p className="text-[10px] text-[#84979D]">{sk.level}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
+      </div>
+
+      {/* ── Recommended Next Steps ── */}
+      <div className="space-y-3">
+        <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#84979D]">
+          Recommended Next Steps
+        </p>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { role: "Python Developer", match: 85, color: "brand" },
-            { role: "LLM API Engineer", match: 40, color: "lilac" },
-            { role: "RAG Specialist", match: 20, color: "mint" },
-            { role: "AI Agent Builder", match: 10, color: "peach" },
-          ].map(({ role, match, color }) => (
-            <div
-              key={role}
-              className="rounded-xl border border-border bg-surface/40 p-3.5"
-            >
-              <div className="flex items-center justify-between text-xs mb-1.5">
-                <span className="font-semibold text-foreground">{role}</span>
-                <span className="font-mono font-bold" style={{ color: `var(--color-${color})` }}>
-                  {match}%
-                </span>
-              </div>
-              <div className="progress-track">
-                <div
-                  className="progress-fill cp-fill"
-                  style={{ width: `${match}%`, background: `var(--color-${color})` }}
-                />
-              </div>
-              <p className="mt-1.5 text-[10px] text-faint">
-                {match >= 70 ? "Strong match" : match >= 40 ? "Building foundation" : "Complete more modules"}
-              </p>
+          <button
+            onClick={() =>
+              navigate({
+                to: "/learning-mode",
+                search: { module: "3.2" },
+              })
+            }
+            className="flex items-center gap-3 rounded-xl border border-[#DCE7E5] bg-white p-4 text-left shadow-2xs hover:border-[#0F766E]/40 transition group"
+          >
+            <div className="grid size-9 place-items-center rounded-xl bg-[#CCFBF1] text-[#0F766E] group-hover:scale-105 transition-transform">
+              <Play className="size-4 fill-current" />
             </div>
-          ))}
+            <div>
+              <p className="text-xs font-bold text-[#0B1F2A]">Continue Module 01</p>
+              <p className="text-[10px] text-[#84979D]">Complete current module</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => navigate({ to: "/coding-lab" })}
+            className="flex items-center gap-3 rounded-xl border border-[#DCE7E5] bg-white p-4 text-left shadow-2xs hover:border-[#0F766E]/40 transition group"
+          >
+            <div className="grid size-9 place-items-center rounded-xl bg-[#CCFBF1] text-[#0F766E] group-hover:scale-105 transition-transform">
+              <Terminal className="size-4" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-[#0B1F2A]">Practice Coding</p>
+              <p className="text-[10px] text-[#84979D]">Sharpen your skills</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => navigate({ to: "/build" })}
+            className="flex items-center gap-3 rounded-xl border border-[#DCE7E5] bg-white p-4 text-left shadow-2xs hover:border-[#0F766E]/40 transition group"
+          >
+            <div className="grid size-9 place-items-center rounded-xl bg-[#CCFBF1] text-[#0F766E] group-hover:scale-105 transition-transform">
+              <FolderKanban className="size-4" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-[#0B1F2A]">Build a Project</p>
+              <p className="text-[10px] text-[#84979D]">Apply what you learn</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => navigate({ to: "/curriculum" })}
+            className="flex items-center gap-3 rounded-xl border border-[#DCE7E5] bg-white p-4 text-left shadow-2xs hover:border-[#0F766E]/40 transition group"
+          >
+            <div className="grid size-9 place-items-center rounded-xl bg-[#CCFBF1] text-[#0F766E] group-hover:scale-105 transition-transform">
+              <Sparkles className="size-4" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-[#0B1F2A]">Explore AI Track</p>
+              <p className="text-[10px] text-[#84979D]">See what's next</p>
+            </div>
+          </button>
         </div>
-      </section>
+      </div>
     </div>
   );
 }

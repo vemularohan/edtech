@@ -96,6 +96,8 @@ export function Module01Studio({
   const [activeSidebarTab, setActiveSidebarTab] = useState<"mentor" | "skills" | "terminal">("mentor");
   const [testResults, setTestResults] = useState<{ id: string; passed: boolean; label: string; details: string }[]>([]);
 
+  const [learnConceptTab, setLearnConceptTab] = useState<string>("Variables");
+
   const skills = useSkillMastery("3.2");
   const step = steps[currentStepIdx] || steps[0]!;
 
@@ -338,64 +340,47 @@ export function Module01Studio({
       )}
 
       {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[var(--color-surface-elevated)]/90 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-40 border-b border-[#DCE7E5] bg-white/95 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => (onNavigateHome ? onNavigateHome() : navigate({ to: "/curriculum" }))}
-              className="gap-2 text-[var(--color-faint)] hover:text-[var(--color-foreground)]"
+              className="gap-1.5 text-[#587078] hover:text-[#0B1F2A] px-2 h-8"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Curriculum</span>
+              <span className="hidden sm:inline text-xs font-medium">Curriculum</span>
             </Button>
-            <div className="h-4 w-px bg-[var(--color-border)]" />
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-[var(--color-brand)]/10 text-[var(--color-brand)] border border-[var(--color-brand)]/20">
-                MODULE 01 [3.2]
-              </span>
-              <h1 className="text-sm sm:text-base font-semibold truncate">
+            <div className="h-4 w-px bg-[#DCE7E5]" />
+            <div className="flex items-center gap-2 truncate">
+              <span className="text-xs font-bold text-[#0B1F2A] font-display">
                 Python Foundations for AI
-              </h1>
+              </span>
+              <span className="text-xs text-[#84979D]">·</span>
+              <span className="text-xs text-[#587078] truncate">
+                Module 01 · Variables and Types
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Step indicator */}
-            <div className="hidden md:flex items-center gap-2 text-xs text-[var(--color-faint)]">
-              <span>
-                Step {currentStepIdx + 1} of {steps.length}
-              </span>
-              <div className="w-24 h-2 rounded-full bg-[var(--color-border)] overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-[var(--color-brand)] to-[var(--color-mint)] transition-all duration-300"
-                  style={{ width: `${overallProgressPercent}%` }}
-                />
-              </div>
-              <span className="font-mono">{overallProgressPercent}%</span>
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Streak indicator */}
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#FEF3C7] text-[#D97706] border border-[#D97706]/20 text-xs font-semibold">
+              <Flame className="w-3.5 h-3.5 fill-current" />
+              <span>12</span>
             </div>
 
             {/* Total Module XP badge */}
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--color-peach)]/10 text-[var(--color-peach)] border border-[var(--color-peach)]/30 text-xs font-semibold">
-              <Flame className="w-3.5 h-3.5 fill-current" />
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#0F766E]/20 text-xs font-semibold">
+              <Zap className="w-3.5 h-3.5 fill-current" />
               <span>{completedSteps.size * 35 + 50} XP</span>
             </div>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setCurrentStepIdx(0);
-                setSelectedOption("");
-                setIsRevealed(false);
-              }}
-              title="Restart Module"
-              className="text-xs gap-1"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Reset</span>
-            </Button>
+            {/* Student Avatar */}
+            <div className="w-7 h-7 rounded-full bg-[#0B1F2A] text-white flex items-center justify-center text-xs font-bold font-mono">
+              RK
+            </div>
           </div>
         </div>
       </header>
@@ -404,21 +389,38 @@ export function Module01Studio({
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Navigation Rail (3 columns) */}
         <aside className="lg:col-span-3 space-y-4">
-          <div className="bg-[var(--color-surface-elevated)] border border-[var(--color-border)] rounded-2xl p-4 shadow-sm">
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--color-border)] mb-3">
-              <div className="flex items-center gap-2">
-                <BrainCircuit className="w-4 h-4 text-[var(--color-brand)]" />
-                <h2 className="text-xs font-bold uppercase tracking-wider text-[var(--color-faint)]">
-                  Learning Journey
-                </h2>
+          <div className="bg-white border border-[#DCE7E5] rounded-2xl p-4 shadow-sm">
+            {/* Sidebar Top: Module Title & Progress */}
+            <div className="pb-3 border-b border-[#DCE7E5] mb-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[10px] font-bold text-[#0F766E] uppercase tracking-wider bg-[#CCFBF1] px-2 py-0.5 rounded">
+                  Module 01
+                </span>
+                <span className="text-[11px] font-mono font-bold text-[#0F766E]">
+                  {overallProgressPercent}%
+                </span>
               </div>
-              <span className="text-xs font-mono text-[var(--color-brand)]">
-                {completedSteps.size}/{steps.length} Done
-              </span>
+              <div>
+                <h2 className="text-sm font-bold text-[#0B1F2A] font-display leading-tight">
+                  Python Foundations for AI
+                </h2>
+                <div className="flex items-center gap-2 mt-1 text-[11px] text-[#84979D]">
+                  <Clock className="w-3 h-3" />
+                  <span>Est. 8–12 hours · Step {currentStepIdx + 1} of {steps.length}</span>
+                </div>
+              </div>
+
+              {/* Progress bar */}
+              <div className="w-full h-1.5 rounded-full bg-[#F0F5F4] overflow-hidden">
+                <div
+                  className="h-full bg-[#0F766E] transition-all duration-300 rounded-full"
+                  style={{ width: `${overallProgressPercent}%` }}
+                />
+              </div>
             </div>
 
-            {/* Vertical Steps Rail */}
-            <div className="space-y-1.5 max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
+            {/* Vertical Steps Rail: Exactly matching the reference style */}
+            <div className="space-y-1 max-h-[calc(100vh-320px)] overflow-y-auto pr-1 no-scrollbar">
               {steps.map((s, idx) => {
                 const isActive = idx === currentStepIdx;
                 const isDone = completedSteps.has(idx);
@@ -427,49 +429,47 @@ export function Module01Studio({
                   <button
                     key={s.id}
                     onClick={() => setCurrentStepIdx(idx)}
-                    className={`w-full text-left p-2 rounded-xl text-xs transition-all flex items-start gap-2.5 ${
+                    className={`w-full text-left px-3 py-2 rounded-xl text-xs transition-all flex items-center gap-2.5 ${
                       isActive
-                        ? "bg-[var(--color-brand)]/15 text-[var(--color-foreground)] border border-[var(--color-brand)]/40 font-semibold shadow-sm"
+                        ? "bg-[#0F766E] text-white font-semibold shadow-sm"
                         : isDone
-                          ? "text-[var(--color-faint)] hover:bg-[var(--color-surface)] hover:text-[var(--color-foreground)]"
-                          : "text-[var(--color-faint)]/70 hover:bg-[var(--color-surface)]"
+                          ? "bg-[#CCFBF1]/50 text-[#0F766E] hover:bg-[#CCFBF1]"
+                          : "text-[#84979D] hover:bg-[#F0F5F4] hover:text-[#0B1F2A]"
                     }`}
                   >
+                    {/* Status icon: ✓ for completed, ● for current, ○ for upcoming */}
                     <div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-mono mt-0.5 ${
+                      className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold ${
                         isActive
-                          ? "bg-[var(--color-brand)] text-white font-bold"
+                          ? "bg-white text-[#0F766E]"
                           : isDone
-                            ? "bg-[var(--color-mint)]/20 text-[var(--color-mint)]"
-                            : "bg-[var(--color-border)] text-[var(--color-faint)]"
+                            ? "bg-[#0F766E] text-white"
+                            : "border border-[#DCE7E5] text-[#84979D]"
                       }`}
                     >
-                      {isDone ? <Check className="w-3 h-3 stroke-[3]" /> : idx + 1}
+                      {isDone ? (
+                        <Check className="w-3 h-3 stroke-[3]" />
+                      ) : isActive ? (
+                        <span className="w-2 h-2 rounded-full bg-[#0F766E]" />
+                      ) : (
+                        <span className="text-[9px]">{idx + 1}</span>
+                      )}
                     </div>
+
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
-                        <span className="truncate">{s.title}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <span
-                          className={`text-[9px] uppercase px-1 py-0.2 rounded font-mono ${
-                            s.stage === "HOOK"
-                              ? "bg-red-500/10 text-red-400"
-                              : s.stage === "BREAK IT"
-                                ? "bg-amber-500/10 text-amber-400"
-                                : s.stage === "MASTERY"
-                                  ? "bg-purple-500/10 text-purple-400"
-                                  : "bg-[var(--color-brand)]/10 text-[var(--color-brand)]"
-                          }`}
-                        >
+                        <span className="font-mono text-[11px] font-bold uppercase tracking-wide truncate">
                           {s.stage}
                         </span>
-                        {s.xpReward && (
-                          <span className="text-[9px] text-[var(--color-peach)] font-mono">
-                            +{s.xpReward} XP
+                        {isDone && (
+                          <span className={`text-[9px] font-mono ${isActive ? "text-white/80" : "text-[#0F766E]"}`}>
+                            ✓
                           </span>
                         )}
                       </div>
+                      <p className={`text-[11px] truncate ${isActive ? "text-white/90" : isDone ? "text-[#587078]" : "text-[#84979D]"}`}>
+                        {s.title}
+                      </p>
                     </div>
                   </button>
                 );
@@ -518,32 +518,25 @@ export function Module01Studio({
         <main className="lg:col-span-6 space-y-6">
           {/* Active Step Card */}
           <div className="bg-[var(--color-surface-elevated)] border border-[var(--color-border)] rounded-2xl p-6 shadow-sm space-y-6">
-            {/* Step Stage & Title Header */}
+            {/* Step Hierarchy Header */}
             <div>
               <div className="flex items-center justify-between gap-2 mb-2">
-                <span
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold font-mono uppercase tracking-wider ${
-                    step.stage === "HOOK"
-                      ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
-                      : step.stage === "BREAK IT"
-                        ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                        : step.stage === "MASTERY"
-                          ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
-                          : "bg-[var(--color-brand)]/10 text-[var(--color-brand)] border border-[var(--color-brand)]/20"
-                  }`}
-                >
-                  {step.stage === "HOOK" && <AlertTriangle className="w-3.5 h-3.5" />}
-                  {step.stage === "BREAK IT" && <ShieldAlert className="w-3.5 h-3.5" />}
-                  {step.stage === "MASTERY" && <Trophy className="w-3.5 h-3.5" />}
-                  {step.stage}
-                </span>
-                <span className="text-xs text-[var(--color-faint)] font-mono">
-                  {step.skillId || "python-discipline"}
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#0F766E] bg-[#CCFBF1] px-2 py-0.5 rounded-md">
+                    {currentStepIdx + 1}. {step.stage}
+                  </span>
+                  <span className="text-xs text-[#84979D]">·</span>
+                  <span className="text-xs font-mono text-[#587078]">
+                    Step {currentStepIdx + 1} of {steps.length}
+                  </span>
+                </div>
+                <span className="text-xs text-[#84979D] font-mono hidden sm:inline">
+                  Module 01 · Variables and Types
                 </span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--color-foreground)]">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0B1F2A] font-display">
                 {step.title}
-              </h2>
+              </h1>
             </div>
 
             {/* Why It Matters Callout */}
@@ -556,13 +549,184 @@ export function Module01Studio({
               </div>
             )}
 
+            {/* Special HOOK Incident Report Scenario Block */}
+            {step.stage === "HOOK" && (
+              <div className="bg-[#FEF2F2] border border-[#FCA5A5]/60 rounded-xl p-4 sm:p-5 space-y-4">
+                <div className="flex items-center justify-between border-b border-[#FCA5A5]/40 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444] animate-pulse" />
+                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#991B1B]">
+                      INCIDENT REPORT #101 · PRODUCTION SEVERITY 1
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-mono text-[#991B1B]/80 font-semibold bg-[#FEE2E2] px-2 py-0.5 rounded">
+                    E-Commerce Discount Calculator
+                  </span>
+                </div>
+
+                <div className="text-sm font-semibold text-[#7F1D1D]">
+                  Customers are being charged the wrong amount.
+                </div>
+
+                {/* Expected vs Actual Comparison Cards */}
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <div className="bg-white border border-[#DCE7E5] rounded-xl p-3 sm:p-4 text-center shadow-xs">
+                    <div className="text-[11px] font-mono uppercase tracking-wider text-[#587078] font-semibold">
+                      Expected
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-bold font-mono text-[#0F766E] mt-1">
+                      $84.00
+                    </div>
+                    <div className="text-[11px] text-[#84979D] mt-0.5">Correct Subtotal</div>
+                  </div>
+
+                  <div className="bg-[#FEE2E2]/60 border border-[#F87171]/40 rounded-xl p-3 sm:p-4 text-center shadow-xs">
+                    <div className="text-[11px] font-mono uppercase tracking-wider text-[#991B1B] font-semibold">
+                      Actual Charged
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-bold font-mono text-[#DC2626] mt-1">
+                      $79.00
+                    </div>
+                    <div className="text-[11px] text-[#DC2626]/80 mt-0.5">Silent Bug Detected</div>
+                  </div>
+                </div>
+
+                <p className="text-xs text-[#991B1B] leading-relaxed">
+                  In production AI services, untyped discount API payloads silently inject string values into arithmetic logic, causing catastrophic financial errors or unhandled system crashes.
+                </p>
+              </div>
+            )}
+
+            {/* Special LEARN Interactive Concept Cards & Tabs */}
+            {step.stage === "LEARN" && (
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-2 border-b border-[#DCE7E5] pb-2">
+                  {[
+                    { id: "Variables", label: "Variables & Memory" },
+                    { id: "Types", label: "Data Types & Immutability" },
+                    { id: "Operators", label: "Operators & Precedence" },
+                    { id: "Conversion", label: "Type Conversion" },
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setLearnConceptTab(tab.id)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                        learnConceptTab === tab.id
+                          ? "bg-[#0F766E] text-white shadow-xs"
+                          : "bg-[#F0F5F4] text-[#587078] hover:text-[#0B1F2A] hover:bg-[#DCE7E5]"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Concept tab card content */}
+                <div className="bg-[#F7FAFA] border border-[#DCE7E5] rounded-xl p-4 text-xs space-y-2">
+                  {learnConceptTab === "Variables" && (
+                    <div>
+                      <h4 className="font-bold text-[#0B1F2A] text-sm mb-1">Name Tags, Not Storage Boxes</h4>
+                      <p className="text-[#587078] leading-relaxed">
+                        In Python, a variable does not contain the object directly. Instead, it is an immutable reference pointing to an object residing on the private heap. Assigning <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">b = a</code> merely attaches a second name tag to the identical object!
+                      </p>
+                    </div>
+                  )}
+                  {learnConceptTab === "Types" && (
+                    <div>
+                      <h4 className="font-bold text-[#0B1F2A] text-sm mb-1">Strong, Dynamic Typing</h4>
+                      <p className="text-[#587078] leading-relaxed">
+                        Every value in Python has an immutable type tag (<code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">int</code>, <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">float</code>, <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">str</code>, <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">bool</code>). String methods like <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">replace()</code> never alter strings in-place — they allocate and return brand new strings.
+                      </p>
+                    </div>
+                  )}
+                  {learnConceptTab === "Operators" && (
+                    <div>
+                      <h4 className="font-bold text-[#0B1F2A] text-sm mb-1">Strict Operator Hierarchy</h4>
+                      <p className="text-[#587078] leading-relaxed">
+                        In Python boolean logic, <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">not</code> evaluates first, then <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">and</code>, and finally <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">or</code>. Always group security and authorization expressions in explicit parentheses.
+                      </p>
+                    </div>
+                  )}
+                  {learnConceptTab === "Conversion" && (
+                    <div>
+                      <h4 className="font-bold text-[#0B1F2A] text-sm mb-1">Defensive Parsing</h4>
+                      <p className="text-[#587078] leading-relaxed">
+                        Incoming LLM generations, JSON payloads, and CLI arguments are string buffers. You must wrap type casts (<code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">int()</code>, <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">float()</code>) in defensive exception blocks (<code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">try/except ValueError</code>).
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Step Explanation */}
             <div className="text-sm text-[var(--color-foreground)]/90 leading-relaxed whitespace-pre-line">
               {step.explanation}
             </div>
 
+            {/* Special NEXT Stage: Module Complete & Progression Showcase */}
+            {step.stage === "NEXT" && (
+              <div className="space-y-6">
+                <div className="bg-[#CCFBF1]/40 border border-[#0F766E]/20 rounded-2xl p-6 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-[#0F766E] text-white flex items-center justify-center text-xs font-bold">
+                      ✓
+                    </span>
+                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#0F766E]">
+                      MODULE 01 COMPLETE
+                    </span>
+                  </div>
+                  <h3 className="text-2xl font-bold font-display text-[#0B1F2A]">
+                    You mastered Python Foundations for AI!
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+                    {[
+                      "Variables & Reference Model",
+                      "Data Types & Immutability",
+                      "Control Flow & Precedence",
+                      "Functions & Parameter Discipline",
+                      "Defensive Data Handling & Pathlib",
+                    ].map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-white border border-[#DCE7E5] rounded-xl p-3 flex items-center gap-2.5 shadow-2xs"
+                      >
+                        <div className="w-5 h-5 rounded-full bg-[#CCFBF1] text-[#0F766E] flex items-center justify-center text-xs font-bold shrink-0">
+                          ✓
+                        </div>
+                        <span className="text-xs font-semibold text-[#0B1F2A]">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Next Module Preview Card */}
+                <div className="bg-[#0B1F2A] text-white border border-[#123542] rounded-2xl p-6 space-y-3 shadow-sm">
+                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#14B8A6]">
+                    NEXT MODULE
+                  </span>
+                  <h4 className="text-xl font-bold font-display text-white">
+                    Python Libraries for AI (NumPy, Pandas, Vector Ops)
+                  </h4>
+                  <p className="text-xs text-[#DCE7E5] leading-relaxed">
+                    Transition from language mechanics to vector math, matrix operations, token embeddings, and high-performance tabular manipulation in AI systems.
+                  </p>
+                  <Button
+                    onClick={() => {
+                      completeLearningModule("3.2", 8);
+                      if (onNavigateHome) onNavigateHome();
+                      else navigate({ to: "/curriculum" });
+                    }}
+                    className="mt-2 bg-[#0F766E] hover:bg-[#0F766E]/90 text-white text-xs font-semibold px-5 h-9"
+                  >
+                    Continue to Next Module →
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Code / Visual Demonstration */}
-            {step.example && (
+            {step.example && step.stage !== "NEXT" && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs text-[var(--color-faint)]">
                   <span className="font-mono flex items-center gap-1.5">
@@ -605,18 +769,22 @@ export function Module01Studio({
 
                 {breakPhase === 1 && (
                   <div className="space-y-3">
-                    <p className="text-xs sm:text-sm font-medium text-amber-200">
-                      Phase 1: Predict Failure — {step.prompt}
+                    <div className="bg-[#FEF3C7] border border-[#F59E0B]/30 rounded-xl p-3 text-xs text-[#92400E]">
+                      <span className="font-bold block mb-0.5">DEBUGGING CHALLENGE: "Something is wrong. Find it."</span>
+                      An AI assistant generated this code. Run tests to uncover why it violates system invariants.
+                    </div>
+                    <p className="text-xs sm:text-sm font-semibold text-[#0B1F2A]">
+                      {step.prompt}
                     </p>
                     <div className="space-y-2">
                       {step.options?.map((opt, i) => (
                         <button
                           key={i}
                           onClick={() => setSelectedOption(opt)}
-                          className={`w-full text-left p-3 rounded-xl border text-xs sm:text-sm transition-all ${
+                          className={`w-full text-left p-3.5 rounded-xl border text-xs sm:text-sm transition-all ${
                             selectedOption === opt
-                              ? "bg-amber-500/20 border-amber-400 text-amber-100 font-medium"
-                              : "bg-[var(--color-surface)] border-[var(--color-border)] hover:border-amber-400/50"
+                              ? "bg-[#FEF3C7] border-[#D97706] text-[#92400E] font-medium"
+                              : "bg-white border-[#DCE7E5] hover:border-[#D97706]/60 text-[#334E57]"
                           }`}
                         >
                           {opt}
@@ -630,30 +798,48 @@ export function Module01Studio({
                         setBreakPhase(2);
                         handleRunSimulatedCode(step.example);
                       }}
-                      className="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold text-xs py-2"
+                      className="w-full bg-[#D97706] hover:bg-[#B45309] text-white font-semibold text-xs py-2.5"
                     >
-                      Execute & Inspect Stack Trace →
+                      Execute Tests & Inspect Stack Trace →
                     </Button>
                   </div>
                 )}
 
                 {breakPhase === 2 && (
                   <div className="space-y-3">
-                    <p className="text-xs font-semibold text-amber-300">
-                      Phase 2: Inspect Error Trace
-                    </p>
-                    <div className="bg-black/80 text-red-400 p-3 rounded-lg font-mono text-xs border border-red-500/30">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-[#92400E] uppercase tracking-wider">
+                        Phase 2: Test Results & Stack Trace
+                      </span>
+                      <span className="text-[11px] font-mono text-[#DC2626] font-bold">
+                        1 FAILED, 0 PASSED
+                      </span>
+                    </div>
+
+                    {/* Result vs Expected diff display */}
+                    <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                      <div className="bg-[#FEE2E2] border border-[#FCA5A5] p-2.5 rounded-lg text-[#991B1B]">
+                        <span className="text-[10px] font-bold uppercase block text-[#DC2626]">Result:</span>
+                        True (Unauthorized Admin Access)
+                      </div>
+                      <div className="bg-[#E6F4EA] border border-[#86EFAC] p-2.5 rounded-lg text-[#166534]">
+                        <span className="text-[10px] font-bold uppercase block text-[#15803D]">Expected:</span>
+                        False (Denied without Verification)
+                      </div>
+                    </div>
+
+                    <div className="bg-[#0B1F2A] text-[#FCA5A5] p-3 rounded-lg font-mono text-xs border border-[#EF4444]/30">
                       <pre>
                         {simulatedOutput ||
-                          `Traceback (most recent call last):\n  TypeError: unsupported operand type(s)\n  Line 3: invalid operation between uncoerced types`}
+                          `Traceback (most recent call last):\n  AssertionError: check_user_access('admin', False, 0) returned True; Expected False`}
                       </pre>
                     </div>
-                    <p className="text-xs text-[var(--color-faint)]">
-                      Notice how Python halts execution rather than coercing silently. How should we patch this function?
+                    <p className="text-xs text-[#587078]">
+                      Notice how 'and' binds more tightly than 'or'. How must we group the conditions defensively?
                     </p>
                     <Button
                       onClick={() => setBreakPhase(3)}
-                      className="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold text-xs py-2"
+                      className="w-full bg-[#0F766E] hover:bg-[#0F766E]/90 text-white font-semibold text-xs py-2.5"
                     >
                       Apply Defensive Fix →
                     </Button>
@@ -662,7 +848,7 @@ export function Module01Studio({
 
                 {breakPhase === 3 && (
                   <div className="space-y-3">
-                    <p className="text-xs font-semibold text-amber-300">
+                    <p className="text-xs font-bold text-[#0F766E] uppercase tracking-wider">
                       Phase 3: Verify Defensive Fix
                     </p>
                     {step.fixedCode && (
@@ -670,15 +856,15 @@ export function Module01Studio({
                         <pre>{step.fixedCode}</pre>
                       </div>
                     )}
-                    <p className="text-xs text-[var(--color-faint)]">
-                      {step.misconceptionExpl || "Defensive type conversion eliminates runtime failures."}
+                    <p className="text-xs text-[#587078]">
+                      {step.misconceptionExpl || "Defensive grouping with parentheses guarantees correct operator precedence."}
                     </p>
                     <Button
                       onClick={() => {
                         handleRunSimulatedCode(step.fixedCode || step.example);
                         triggerXp(35, "Break It Challenge Resolved!");
                       }}
-                      className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-semibold text-xs py-2"
+                      className="w-full bg-[#0F766E] hover:bg-[#0F766E]/90 text-white font-semibold text-xs py-2.5"
                     >
                       Verify Fix in Runtime Simulator ✓
                     </Button>
@@ -744,9 +930,17 @@ export function Module01Studio({
                           triggerXp(10, "Nice hypothesis! Study the explanation.");
                         }
                       }}
-                      className="w-full bg-[var(--color-brand)] hover:bg-[var(--color-brand)]/90 text-white text-xs py-2.5 font-semibold mt-2"
+                      className="w-full bg-[#0F766E] hover:bg-[#0F766E]/90 text-white text-xs py-2.5 font-semibold mt-2"
                     >
-                      Confirm Hypothesis & Reveal Explanation
+                      {step.stage === "HOOK"
+                        ? "Investigate →"
+                        : step.stage === "WHY"
+                          ? "Run & See →"
+                          : step.stage === "TRY IT"
+                            ? "Submit Answer →"
+                            : step.stage === "KNOWLEDGE CHECK"
+                              ? "Verify Answer →"
+                              : "Confirm Hypothesis & Reveal Explanation"}
                     </Button>
                   ) : (
                     <div className="bg-[var(--color-surface)] border border-[var(--color-border)] p-4 rounded-xl text-xs sm:text-sm space-y-2 animate-in fade-in duration-200">
@@ -769,6 +963,43 @@ export function Module01Studio({
                 </div>
               )}
 
+            {/* Special MASTERY Challenge Header & Rubric Highlights */}
+            {step.stage === "MASTERY" && (
+              <div className="bg-[#0B1F2A] text-white rounded-xl p-5 space-y-3 shadow-md border border-[#123542]">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="w-5 h-5 text-[#CCFBF1]" />
+                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#14B8A6]">
+                      MASTERY · FINAL CHALLENGE
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-mono text-[#CCFBF1] bg-[#0F766E]/50 px-2 py-0.5 rounded border border-[#14B8A6]/30">
+                    Proof of Competence
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold font-display text-white">
+                  You're almost there!
+                </h3>
+                <p className="text-xs text-[#DCE7E5] leading-relaxed">
+                  Solve the integrated production challenge below. Your solution will be validated against strict runtime test suites and defensive edge cases.
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-[#1E3A47] text-[11px]">
+                  <div className="flex items-center gap-1.5 text-[#CCFBF1]">
+                    <Check className="w-3.5 h-3.5 text-[#14B8A6]" /> Correct solution
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[#CCFBF1]">
+                    <Check className="w-3.5 h-3.5 text-[#14B8A6]" /> Handles edge cases
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[#CCFBF1]">
+                    <Check className="w-3.5 h-3.5 text-[#14B8A6]" /> Code quality
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[#CCFBF1]">
+                    <Check className="w-3.5 h-3.5 text-[#14B8A6]" /> Defensive typing
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Editable Code Editor for YOUR TURN & FINAL MISSION */}
             {(step.stage === "YOUR TURN" ||
               step.stage === "MASTERY" ||
@@ -776,7 +1007,8 @@ export function Module01Studio({
               <div className="space-y-4 pt-2 border-t border-[var(--color-border)]">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-[var(--color-foreground)] flex items-center gap-1.5">
-                    <Code2 className="w-4 h-4 text-[var(--color-brand)]" /> Interactive Implementation Editor
+                    <Code2 className="w-4 h-4 text-[var(--color-brand)]" />
+                    {step.stage === "MASTERY" ? "Mastery Challenge Editor" : "Interactive Implementation Editor"}
                   </span>
                   <div className="flex items-center gap-2">
                     <Button
@@ -791,10 +1023,10 @@ export function Module01Studio({
                       size="sm"
                       onClick={() => handleRunSimulatedCode(studentCode)}
                       disabled={isRunningCode}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1.5"
+                      className="bg-[#0F766E] hover:bg-[#0F766E]/90 text-white text-xs gap-1.5"
                     >
                       <Play className="w-3.5 h-3.5 fill-current" />
-                      {isRunningCode ? "Executing..." : "Run Tests"}
+                      {isRunningCode ? "Executing..." : step.stage === "MASTERY" ? "Start Mastery Challenge →" : "Run Tests"}
                     </Button>
                   </div>
                 </div>
@@ -873,13 +1105,17 @@ export function Module01Studio({
                 disabled={!canContinue}
                 className={`gap-1.5 text-xs font-semibold px-5 ${
                   canContinue
-                    ? "bg-[var(--color-brand)] hover:bg-[var(--color-brand)]/90 text-white"
-                    : "opacity-50 cursor-not-allowed"
+                    ? "bg-[#0F766E] hover:bg-[#0F766E]/90 text-white shadow-xs cursor-pointer"
+                    : "opacity-50 cursor-not-allowed bg-[#84979D] text-white"
                 }`}
               >
                 {currentStepIdx === steps.length - 1 ? (
                   <>
-                    <Trophy className="w-4 h-4 text-amber-300" /> Finish Module
+                    <Trophy className="w-4 h-4 text-[#CCFBF1]" /> Finish Module & Continue →
+                  </>
+                ) : currentStepIdx === 4 ? (
+                  <>
+                    Next: Break It <ArrowRight className="w-3.5 h-3.5" />
                   </>
                 ) : (
                   <>
@@ -900,8 +1136,8 @@ export function Module01Studio({
                 onClick={() => setActiveSidebarTab("mentor")}
                 className={`flex-1 py-2.5 text-xs font-semibold flex items-center justify-center gap-1.5 border-b-2 transition-all ${
                   activeSidebarTab === "mentor"
-                    ? "border-[var(--color-brand)] text-[var(--color-brand)] bg-[var(--color-surface-elevated)]"
-                    : "border-transparent text-[var(--color-faint)] hover:text-[var(--color-foreground)]"
+                    ? "border-[#0F766E] text-[#0F766E] bg-[var(--color-surface-elevated)]"
+                    : "border-transparent text-[#84979D] hover:text-[#0B1F2A]"
                 }`}
               >
                 <Bot className="w-3.5 h-3.5" /> Mentor
@@ -910,8 +1146,8 @@ export function Module01Studio({
                 onClick={() => setActiveSidebarTab("skills")}
                 className={`flex-1 py-2.5 text-xs font-semibold flex items-center justify-center gap-1.5 border-b-2 transition-all ${
                   activeSidebarTab === "skills"
-                    ? "border-[var(--color-mint)] text-[var(--color-mint)] bg-[var(--color-surface-elevated)]"
-                    : "border-transparent text-[var(--color-faint)] hover:text-[var(--color-foreground)]"
+                    ? "border-[#0F766E] text-[#0F766E] bg-[var(--color-surface-elevated)]"
+                    : "border-transparent text-[#84979D] hover:text-[#0B1F2A]"
                 }`}
               >
                 <ShieldCheck className="w-3.5 h-3.5" /> Skills
@@ -920,8 +1156,8 @@ export function Module01Studio({
                 onClick={() => setActiveSidebarTab("terminal")}
                 className={`flex-1 py-2.5 text-xs font-semibold flex items-center justify-center gap-1.5 border-b-2 transition-all ${
                   activeSidebarTab === "terminal"
-                    ? "border-[var(--color-peach)] text-[var(--color-peach)] bg-[var(--color-surface-elevated)]"
-                    : "border-transparent text-[var(--color-faint)] hover:text-[var(--color-foreground)]"
+                    ? "border-[#0F766E] text-[#0F766E] bg-[var(--color-surface-elevated)]"
+                    : "border-transparent text-[#84979D] hover:text-[#0B1F2A]"
                 }`}
               >
                 <Terminal className="w-3.5 h-3.5" /> Console

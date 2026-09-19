@@ -1,0 +1,1 @@
+import{a as e}from"./CodepathApp-BhdMccMZ.js";var t=e;export{t as component};

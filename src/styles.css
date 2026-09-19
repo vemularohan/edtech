@@ -37,31 +37,30 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* New Design System Tokens */
+  --color-navy: #0B1F2A;
+  --color-navy-surface: #123542;
+  --color-teal: #0F766E;
+  --color-teal-bright: #14B8A6;
+  --color-mint: #CCFBF1;
+  --color-mint-dark: #0F766E;
+  --color-surface-sec: #F0F5F4;
+  --color-text-body: #334E57;
+
+  /* Aliases for backwards compatibility mapped to the new palette */
+  --color-brand: #0F766E;
+  --color-brand-soft: #CCFBF1;
+  --color-lilac: #0F766E;
+  --color-lilac-soft: #E6F7F5;
+  --color-peach: #D97706;
+  --color-peach-soft: #FEF3C7;
+
   --color-surface: var(--surface);
   --color-surface-elevated: var(--surface-elevated);
   --color-ink: var(--ink);
   --color-faint: var(--faint);
-  --color-brand: var(--brand);
-  --color-brand-soft: var(--brand-soft);
-  --color-lilac: var(--lilac);
-  --color-lilac-soft: var(--lilac-soft);
-  --color-peach: var(--peach);
-  --color-peach-soft: var(--peach-soft);
-  --color-mint: var(--mint);
-  --color-mint-soft: var(--mint-soft);
+
   --font-display: "Plus Jakarta Sans", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
@@ -70,75 +69,69 @@
 :root {
   --radius: 0.75rem;
 
-  /* Core surfaces — clean off-white, not pure white */
-  --background: oklch(0.982 0.006 250);
-  --foreground: oklch(0.14 0.035 255);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.14 0.035 255);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
+  /* Main background: #F7FAFA (Avoid pure white everywhere) */
+  --background: #F7FAFA;
+  --foreground: #102A33;
 
-  /* Primary — deep navy/ink */
-  --primary: oklch(0.18 0.04 265);
-  --primary-foreground: oklch(0.984 0.003 247.858);
+  /* Surfaces: Cards = #FFFFFF, Secondary Surface = #F0F5F4 */
+  --surface: #F0F5F4;
+  --surface-secondary: #F0F5F4;
+  --surface-elevated: #FFFFFF;
+  --card: #FFFFFF;
+  --card-foreground: #102A33;
+  --popover: #FFFFFF;
+  --popover-foreground: #102A33;
 
-  /* Secondary / Muted */
-  --secondary: oklch(0.96 0.009 248);
-  --secondary-foreground: oklch(0.18 0.04 265);
-  --muted: oklch(0.96 0.009 248);
-  --muted-foreground: oklch(0.46 0.032 255);
+  /* Primary: Deep Teal #0F766E for actions, links, active states */
+  --primary: #0F766E;
+  --primary-foreground: #FFFFFF;
 
-  /* Accent */
-  --accent: oklch(0.96 0.009 248);
-  --accent-foreground: oklch(0.18 0.04 265);
+  /* Secondary: #F0F5F4 */
+  --secondary: #F0F5F4;
+  --secondary-foreground: #0B1F2A;
 
-  /* Destructive */
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
+  /* Muted / Text */
+  --muted: #F0F5F4;
+  --muted-foreground: #587078;
+  --ink: #0B1F2A;
+  --faint: #84979D;
 
-  /* Borders */
-  --border: oklch(0.9 0.016 255);
-  --input: oklch(0.84 0.022 255);
-  --ring: oklch(0.58 0.16 174);
+  /* Accent: Mint #CCFBF1 */
+  --accent: #CCFBF1;
+  --accent-foreground: #0F766E;
 
-  /* Charts */
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  /* Status Colors */
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+  --success: #16A34A;
+  --success-bg: #DCFCE7;
+  --warning: #D97706;
+  --warning-bg: #FEF3C7;
+  --error: #DC2626;
+  --error-bg: #FEE2E2;
+  --info: #2563EB;
+  --info-bg: #DBEAFE;
 
-  /* Sidebar */
-  --sidebar: oklch(0.978 0.007 252);
-  --sidebar-foreground: oklch(0.16 0.033 255);
-  --sidebar-primary: oklch(0.18 0.04 265);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.965 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.18 0.04 265);
-  --sidebar-border: oklch(0.878 0.016 255);
-  --sidebar-ring: oklch(0.55 0.12 170);
+  /* Borders: #DCE7E5 */
+  --border: #DCE7E5;
+  --input: #DCE7E5;
+  --ring: #0F766E;
 
-  /* Extended palette */
-  --surface: oklch(0.974 0.01 252);
-  --surface-elevated: oklch(1 0 0);
-  --ink: oklch(0.13 0.038 256);
-  --faint: oklch(0.5 0.028 255);
+  /* Core Palette Direct Variables */
+  --navy: #0B1F2A;
+  --navy-surface: #123542;
+  --teal: #0F766E;
+  --teal-bright: #14B8A6;
+  --mint: #CCFBF1;
+  --mint-soft: #CCFBF1;
 
-  /* Brand teal/emerald — primary accent color */
-  --brand: oklch(0.54 0.165 174);
-  --brand-soft: oklch(0.94 0.048 174);
-
-  /* Lilac — secondary accent */
-  --lilac: oklch(0.56 0.155 285);
-  --lilac-soft: oklch(0.94 0.042 285);
-
-  /* Peach — warning/highlight */
-  --peach: oklch(0.68 0.14 55);
-  --peach-soft: oklch(0.95 0.042 55);
-
-  /* Mint — success/mastered */
-  --mint: oklch(0.56 0.148 155);
-  --mint-soft: oklch(0.94 0.042 155);
+  /* Legacy aliases strictly mapped to new palette */
+  --brand: #0F766E;
+  --brand-soft: #CCFBF1;
+  --lilac: #0F766E;
+  --lilac-soft: #E6F7F5;
+  --peach: #D97706;
+  --peach-soft: #FEF3C7;
 }
 
 @layer base {
@@ -157,7 +150,7 @@
 
   body {
     background-color: var(--color-background);
-    color: var(--color-foreground);
+    color: #334E57;
     font-family: var(--font-sans);
     font-size: 15px;
     line-height: 1.55;
@@ -183,10 +176,12 @@
     font-family: var(--font-mono);
   }
 
-  h1, h2, h3, h4 {
+  h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
+    color: #0B1F2A;
     letter-spacing: -0.022em;
     line-height: 1.2;
+    font-weight: 700;
   }
 }
 
@@ -219,8 +214,8 @@
   transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 .card-depth-subtle:hover {
-  box-shadow: 0 6px 20px -4px rgba(15, 23, 42, 0.07), 0 2px 6px -2px rgba(15, 23, 42, 0.04);
-  border-color: oklch(0.84 0.022 255);
+  box-shadow: 0 4px 16px -2px rgba(11, 31, 42, 0.05), 0 2px 6px -2px rgba(11, 31, 42, 0.03);
+  border-color: #14B8A6;
   transform: translateY(-1px);
 }
 
@@ -229,8 +224,8 @@
   background: var(--color-surface-elevated);
   border: 1px solid var(--color-border);
   box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.025),
-    0 4px 16px -4px rgba(15, 23, 42, 0.045);
+    0 1px 2px rgba(11, 31, 42, 0.02),
+    0 4px 16px -4px rgba(11, 31, 42, 0.04);
   border-radius: 1rem;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
     box-shadow 0.2s ease,
@@ -238,21 +233,17 @@
 }
 .spatial-panel:hover {
   box-shadow:
-    0 2px 4px rgba(15, 23, 42, 0.03),
-    0 10px 28px -6px rgba(15, 23, 42, 0.07);
+    0 2px 4px rgba(11, 31, 42, 0.03),
+    0 8px 24px -6px rgba(11, 31, 42, 0.06);
 }
 
 /* Gradient deck surface */
 .spatial-deck {
-  background: linear-gradient(
-    155deg,
-    var(--color-surface-elevated) 0%,
-    oklch(0.975 0.012 255) 100%
-  );
+  background: var(--color-surface-elevated);
   border: 1px solid var(--color-border);
   box-shadow:
-    0 1px 3px rgba(15, 23, 42, 0.02),
-    0 8px 24px -6px rgba(15, 23, 42, 0.06);
+    0 1px 3px rgba(11, 31, 42, 0.02),
+    0 6px 20px -6px rgba(11, 31, 42, 0.05);
 }
 
 /* HUD/tag chip */
@@ -263,36 +254,38 @@
 
 /* ─── Tactile Buttons ─────────────────────────────────── */
 .btn-dimensional {
+  background: var(--color-teal);
+  color: #ffffff;
   box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.05),
-    0 2px 6px -1px rgba(15, 23, 42, 0.07),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    0 1px 2px rgba(11, 31, 42, 0.08),
+    0 2px 6px -1px rgba(15, 118, 110, 0.25);
   transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 .btn-dimensional:hover {
+  background: #0d655e;
   transform: translateY(-1px);
   box-shadow:
-    0 2px 4px rgba(15, 23, 42, 0.06),
-    0 6px 16px -2px rgba(15, 23, 42, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    0 2px 4px rgba(11, 31, 42, 0.08),
+    0 6px 16px -2px rgba(15, 118, 110, 0.35);
 }
 .btn-dimensional:active {
   transform: translateY(1px);
   box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.05),
-    inset 0 1px 2px rgba(0, 0, 0, 0.12);
+    0 1px 2px rgba(11, 31, 42, 0.08);
 }
 
 /* ─── Sidebar refinement ──────────────────────────────── */
 .app-sidebar {
+  background: #FFFFFF;
   border-right-color: var(--color-border);
 }
 
-/* Nav link active indicator */
+/* Nav link active indicator: teal accent + subtle mint background */
 .nav-link-active {
-  background: var(--color-surface-elevated);
-  color: var(--color-foreground);
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.07), 0 0 0 1px var(--color-border);
+  background: #CCFBF1;
+  color: #0F766E;
+  font-weight: 600;
+  box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.15);
 }
 
 /* ─── Interactive states ──────────────────────────────── */
@@ -305,8 +298,8 @@
 
 /* ─── Status dots ─────────────────────────────────────── */
 .status-dot-active {
-  background: var(--color-brand);
-  box-shadow: 0 0 0 3px var(--color-brand-soft);
+  background: var(--color-teal);
+  box-shadow: 0 0 0 3px var(--color-mint);
 }
 .status-dot-locked {
   background: var(--color-faint);
@@ -318,34 +311,36 @@
   height: 6px;
   overflow: hidden;
   border-radius: 9999px;
-  background: var(--color-muted);
+  background: var(--color-surface-sec);
 }
 .progress-fill {
   height: 100%;
   border-radius: 9999px;
+  background: var(--color-teal);
   transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ─── Code editor surface ─────────────────────────────── */
 .code-editor-surface {
-  background: oklch(0.14 0.02 255);
-  border: 1px solid oklch(0.22 0.025 255);
+  background: #0B1F2A;
+  border: 1px solid #123542;
   border-radius: 0.875rem;
   font-family: var(--font-mono);
+  color: #E6F7F5;
 }
 
 /* ─── Mission/Phase card states ───────────────────────── */
 .phase-card-active {
-  border-color: oklch(0.54 0.165 174 / 0.45);
-  background: oklch(0.98 0.025 174 / 0.6);
+  border-color: #0F766E;
+  background: #FFFFFF;
   box-shadow:
-    0 0 0 1px oklch(0.54 0.165 174 / 0.2),
-    0 4px 16px -4px oklch(0.54 0.165 174 / 0.15);
+    0 0 0 1px rgba(15, 118, 110, 0.2),
+    0 4px 16px -4px rgba(15, 118, 110, 0.1);
 }
 .phase-card-locked {
   border-color: var(--color-border);
   background: var(--color-surface);
-  opacity: 0.75;
+  opacity: 0.85;
 }
 
 /* ─── Animations ──────────────────────────────────────── */

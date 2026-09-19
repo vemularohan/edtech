@@ -1,1 +1,0 @@
-import{c as e}from"./link-DPT17Rzw.js";import{t}from"./coding-lab-BASic0va.js";import{r as n}from"./CodepathApp-D0XYqaoy.js";var r=e();function i(){let{module:e}=t.useSearch();return(0,r.jsx)(n,{view:`lab`,...e?{moduleId:e}:{}})}export{i as component};

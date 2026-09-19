@@ -1,1 +1,0 @@
-import{c as e}from"./link-DPT17Rzw.js";import{t}from"./verify._certificateId-Dqx4xLC6.js";import{n}from"./CodepathApp-D0XYqaoy.js";var r=e(),i=function(){let{certificateId:e}=t.useParams();return(0,r.jsx)(n,{certificateId:e})};export{i as component};
