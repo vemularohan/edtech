@@ -1,0 +1,1 @@
+import{c as e}from"./link-DIt654cv.js";import{r as t}from"./CodepathApp-wJQSU3OO.js";var n=e(),r=()=>(0,n.jsx)(t,{view:`map`});export{r as component};
