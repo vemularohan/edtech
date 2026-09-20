@@ -326,9 +326,11 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
     };
   }, [mobileOpen]);
 
+  const isLearningMode = active === "learning";
+
   return (
     <div className="app-shell min-h-screen w-full overflow-x-clip bg-background text-foreground relative">
-      {/* Subtle ambient background — much more restrained than before */}
+      {/* Subtle ambient background */}
       <div aria-hidden className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -left-60 -top-60 size-[500px] rounded-full blur-3xl opacity-30"
           style={{ background: "var(--color-brand-soft)" }} />
@@ -336,10 +338,10 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
           style={{ background: "var(--color-lilac-soft)" }} />
       </div>
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1540px]">
+      <div className={`relative z-10 mx-auto flex min-h-screen w-full ${isLearningMode ? "max-w-none" : "max-w-[1540px]"}`}>
 
-        {/* ── Desktop Sidebar ── */}
-        <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-border bg-surface/80 px-3 py-5 backdrop-blur-xl md:flex"
+        {/* ── Desktop Sidebar (Hidden during Mission Immersion) ── */}
+        <aside className={`sticky top-0 ${isLearningMode ? "hidden" : "hidden md:flex"} h-screen w-60 shrink-0 flex-col border-r border-border bg-surface/80 px-3 py-5 backdrop-blur-xl`}
           style={{ boxShadow: "1px 0 0 var(--color-border)" }}
         >
           {/* Brand mark */}
@@ -511,75 +513,79 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
         {/* ── Main Content ── */}
         <div className="min-w-0 flex-1 flex flex-col">
 
-          {/* Header */}
-          <header className="sticky top-0 z-30 w-full border-b border-border bg-background/92 backdrop-blur-xl">
-            <div className="flex min-h-14 sm:min-h-15 items-center justify-between gap-2 px-4 sm:gap-4 sm:px-6 lg:px-8 max-w-[1240px] mx-auto w-full">
+          {/* Header (Hidden in Learning Mode) */}
+          {!isLearningMode && (
+            <header className="sticky top-0 z-30 w-full border-b border-border bg-background/92 backdrop-blur-xl">
+              <div className="flex min-h-14 sm:min-h-15 items-center justify-between gap-2 px-4 sm:gap-4 sm:px-6 lg:px-8 max-w-[1240px] mx-auto w-full">
 
-              {/* Left: hamburger + page title */}
-              <div className="flex items-center gap-2.5 min-w-0">
-                <Button
-                  size="icon" variant="ghost"
-                  className="md:hidden min-h-[44px] min-w-[44px] rounded-xl text-foreground hover:bg-surface"
-                  aria-label="Open navigation menu"
-                  onClick={() => setMobileOpen(true)}
-                >
-                  <Menu className="size-5" />
-                </Button>
-                <div className="md:hidden grid size-7 place-items-center rounded-lg bg-ink text-background shrink-0">
-                  <GitBranch className="size-3.5" />
-                </div>
-                <p className="min-w-0 truncate font-display text-sm font-semibold text-foreground">
-                  {pageTitle}
-                </p>
-              </div>
-
-              {/* Center: Search */}
-              <div className="hidden flex-1 items-center gap-2 rounded-xl border border-[#DCE7E5] bg-white px-3.5 py-1.5 sm:flex sm:max-w-md mx-3 shadow-2xs">
-                <Search className="size-3.5 text-[#84979D] shrink-0" />
-                <input
-                  className="w-full bg-transparent text-xs outline-none placeholder:text-[#84979D] text-[#102A33]"
-                  placeholder="Search modules, topics, or ask AI..."
-                />
-              </div>
-
-              {/* Right: stats + profile */}
-              <div className="flex items-center gap-2 shrink-0">
-                <div className="flex items-center gap-1.5 rounded-full border border-[#D97706]/20 bg-[#FEF3C7] px-2.5 py-1 text-xs font-semibold text-[#D97706]">
-                  <Flame className="size-3.5 fill-current" />
-                  <span>6</span>
-                  <span className="text-[10px] text-[#92400E] font-normal hidden sm:inline">Day Streak</span>
-                </div>
-                <div className="flex items-center gap-1.5 rounded-full border border-[#0F766E]/20 bg-[#CCFBF1] px-2.5 py-1 text-xs font-bold text-[#0F766E]">
-                  <Zap className="size-3.5 fill-current" />
-                  <span>1,280</span>
-                </div>
-                <Button
-                  size="icon" variant="ghost"
-                  className="hidden sm:inline-flex rounded-xl h-8 w-8 text-[#587078] hover:text-[#0B1F2A]"
-                  aria-label="Notifications"
-                  onClick={() => toast("All academic systems operational")}
-                >
-                  <Bell className="size-4" />
-                </Button>
-                <button
-                  className="flex items-center gap-2 rounded-xl border border-[#DCE7E5] bg-white px-2 py-1 text-left transition hover:border-[#0F766E]/40 shadow-2xs"
-                  onClick={() => navigate({ to: "/profile" })}
-                  aria-label="User Profile"
-                >
-                  <span className="grid size-7 place-items-center rounded-lg text-xs font-bold text-white bg-[#0F766E]">
-                    AK
-                  </span>
-                  <div className="hidden sm:flex flex-col text-left leading-tight">
-                    <span className="text-xs font-bold text-[#0B1F2A]">Aarav Kulkarni</span>
-                    <span className="text-[10px] text-[#84979D]">B.Tech CSE · AI Track</span>
+                {/* Left: hamburger + page title */}
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Button
+                    size="icon" variant="ghost"
+                    className="md:hidden min-h-[44px] min-w-[44px] rounded-xl text-foreground hover:bg-surface"
+                    aria-label="Open navigation menu"
+                    onClick={() => setMobileOpen(true)}
+                  >
+                    <Menu className="size-5" />
+                  </Button>
+                  <div className="md:hidden grid size-7 place-items-center rounded-lg bg-ink text-background shrink-0">
+                    <GitBranch className="size-3.5" />
                   </div>
-                  <ChevronDown className="size-3 text-[#84979D] hidden sm:inline" />
-                </button>
-              </div>
-            </div>
-          </header>
+                  <p className="min-w-0 truncate font-display text-sm font-semibold text-foreground">
+                    {pageTitle}
+                  </p>
+                </div>
 
-          <main className="app-main w-full min-w-0 flex-1 px-4 sm:px-6 lg:px-8 py-6">
+                {/* Center: Search */}
+                <div className="hidden flex-1 items-center gap-2 rounded-xl border border-[#DCE7E5] bg-white px-3.5 py-1.5 sm:flex sm:max-w-md mx-3 shadow-2xs">
+                  <Search className="size-3.5 text-[#84979D] shrink-0" />
+                  <input
+                    className="w-full bg-transparent text-xs outline-none placeholder:text-[#84979D] text-[#102A33]"
+                    placeholder="Search modules, topics, or ask AI..."
+                  />
+                </div>
+
+                {/* Right: stats + profile */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1.5 rounded-full border border-[#D97706]/20 bg-[#FEF3C7] px-2.5 py-1 text-xs font-semibold text-[#D97706]">
+                    <Flame className="size-3.5 fill-current" />
+                    <span>6</span>
+                    <span className="text-[10px] text-[#92400E] font-normal hidden sm:inline">Day Streak</span>
+                  </div>
+                  <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-[#0F766E]/20 bg-[#CCFBF1] px-2.5 py-1 text-xs font-semibold text-[#0F766E]">
+                    <Trophy className="size-3.5" />
+                    <span>8,420</span>
+                    <span className="text-[10px] text-[#0F766E] font-normal">XP</span>
+                  </div>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="hidden sm:inline-flex rounded-xl h-8 w-8 text-[#587078] hover:text-[#0B1F2A]"
+                    aria-label="Notifications"
+                    onClick={() => toast("All academic systems operational")}
+                  >
+                    <Bell className="size-4" />
+                  </Button>
+                  <button
+                    className="flex items-center gap-2 rounded-xl border border-[#DCE7E5] bg-white px-2 py-1 text-left transition hover:border-[#0F766E]/40 shadow-2xs"
+                    onClick={() => navigate({ to: "/profile" })}
+                    aria-label="User Profile"
+                  >
+                    <span className="grid size-7 place-items-center rounded-lg text-xs font-bold text-white bg-[#0F766E]">
+                      AK
+                    </span>
+                    <div className="hidden sm:flex flex-col text-left leading-tight">
+                      <span className="text-xs font-bold text-[#0B1F2A]">Aarav Kulkarni</span>
+                      <span className="text-[10px] text-[#84979D]">B.Tech CSE · AI Track</span>
+                    </div>
+                    <ChevronDown className="size-3 text-[#84979D] hidden sm:inline" />
+                  </button>
+                </div>
+              </div>
+            </header>
+          )}
+
+          <main className={isLearningMode ? "w-full min-w-0 flex-1 p-0" : "app-main w-full min-w-0 flex-1 px-4 sm:px-6 lg:px-8 py-6"}>
             {children}
           </main>
         </div>
