@@ -97,6 +97,8 @@ export function Module01Studio({
   const [testResults, setTestResults] = useState<{ id: string; passed: boolean; label: string; details: string }[]>([]);
 
   const [learnConceptTab, setLearnConceptTab] = useState<string>("Variables");
+  const [mentorOpen, setMentorOpen] = useState<boolean>(true);
+  const [liveExperimentVal, setLiveExperimentVal] = useState<string>("Alice");
 
   const skills = useSkillMastery("3.2");
   const step = steps[currentStepIdx] || steps[0]!;
@@ -339,27 +341,30 @@ export function Module01Studio({
         </div>
       )}
 
-      {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-40 border-b border-[#DCE7E5] bg-white/95 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+      {/* Subheader / Breadcrumb bar aligned to global page-container */}
+      <div className="page-container mb-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#DCE7E5] pb-3.5">
           <div className="flex items-center gap-3 min-w-0">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => (onNavigateHome ? onNavigateHome() : navigate({ to: "/curriculum" }))}
-              className="gap-1.5 text-[#587078] hover:text-[#0B1F2A] px-2 h-8"
+              className="gap-1.5 text-[#587078] hover:text-[#0B1F2A] px-2.5 h-8 rounded-lg cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline text-xs font-medium">Curriculum</span>
+              <span className="text-xs font-semibold">Curriculum Catalog</span>
             </Button>
             <div className="h-4 w-px bg-[#DCE7E5]" />
             <div className="flex items-center gap-2 truncate">
+              <span className="text-[11px] font-bold text-[#0F766E] font-mono bg-[#CCFBF1] px-2 py-0.5 rounded">
+                Module 01
+              </span>
               <span className="text-xs font-bold text-[#0B1F2A] font-display">
                 Python Foundations for AI
               </span>
-              <span className="text-xs text-[#84979D]">·</span>
-              <span className="text-xs text-[#587078] truncate">
-                Module 01 · Variables and Types
+              <span className="text-xs text-[#84979D] hidden sm:inline">·</span>
+              <span className="text-xs text-[#587078] truncate hidden sm:inline">
+                Variables & Defensive Types
               </span>
             </div>
           </div>
@@ -376,41 +381,27 @@ export function Module01Studio({
               <Zap className="w-3.5 h-3.5 fill-current" />
               <span>{completedSteps.size * 35 + 50} XP</span>
             </div>
-
-            {/* Student Avatar */}
-            <div className="w-7 h-7 rounded-full bg-[#0B1F2A] text-white flex items-center justify-center text-xs font-bold font-mono">
-              RK
-            </div>
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* Main Studio Grid */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Navigation Rail (3 columns) */}
-        <aside className="lg:col-span-3 space-y-4">
-          <div className="bg-white border border-[#DCE7E5] rounded-2xl p-4 shadow-sm">
-            {/* Sidebar Top: Module Title & Progress */}
-            <div className="pb-3 border-b border-[#DCE7E5] mb-3 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[10px] font-bold text-[#0F766E] uppercase tracking-wider bg-[#CCFBF1] px-2 py-0.5 rounded">
-                  Module 01
-                </span>
-                <span className="text-[11px] font-mono font-bold text-[#0F766E]">
-                  {overallProgressPercent}%
-                </span>
+      {/* Main Studio Immersive 3-Column Layout */}
+      <div className="page-container flex flex-col lg:flex-row items-start gap-6 pb-16">
+        {/* Left Navigation Rail (Standardized 240px width) */}
+        <aside className="w-full lg:w-60 shrink-0 space-y-4">
+          <div className="bg-white border border-[#DCE7E5] rounded-2xl p-4 shadow-2xs">
+            {/* Minimal Module Progress */}
+            <div className="pb-3 border-b border-[#DCE7E5] mb-3">
+              <span className="font-mono text-[9px] font-bold text-[#0F766E] uppercase tracking-wider bg-[#CCFBF1] px-2 py-0.5 rounded">
+                MODULE 01
+              </span>
+              <h2 className="text-xs font-bold text-[#0B1F2A] font-display mt-1 leading-snug">
+                Python Foundations for AI
+              </h2>
+              <div className="flex items-center justify-between text-[11px] font-mono font-bold text-[#0F766E] mt-2 mb-1">
+                <span>PROGRESS</span>
+                <span>{overallProgressPercent}% COMPLETE</span>
               </div>
-              <div>
-                <h2 className="text-sm font-bold text-[#0B1F2A] font-display leading-tight">
-                  Python Foundations for AI
-                </h2>
-                <div className="flex items-center gap-2 mt-1 text-[11px] text-[#84979D]">
-                  <Clock className="w-3 h-3" />
-                  <span>Est. 8–12 hours · Step {currentStepIdx + 1} of {steps.length}</span>
-                </div>
-              </div>
-
-              {/* Progress bar */}
               <div className="w-full h-1.5 rounded-full bg-[#F0F5F4] overflow-hidden">
                 <div
                   className="h-full bg-[#0F766E] transition-all duration-300 rounded-full"
@@ -419,8 +410,8 @@ export function Module01Studio({
               </div>
             </div>
 
-            {/* Vertical Steps Rail: Exactly matching the reference style */}
-            <div className="space-y-1 max-h-[calc(100vh-320px)] overflow-y-auto pr-1 no-scrollbar">
+            {/* 10 Learning Steps: Standardized geometry, typography, and status */}
+            <div className="space-y-1">
               {steps.map((s, idx) => {
                 const isActive = idx === currentStepIdx;
                 const isDone = completedSteps.has(idx);
@@ -429,95 +420,35 @@ export function Module01Studio({
                   <button
                     key={s.id}
                     onClick={() => setCurrentStepIdx(idx)}
-                    className={`w-full text-left px-3 py-2 rounded-xl text-xs transition-all flex items-center gap-2.5 ${
+                    className={`w-full text-left px-3 py-2 rounded-xl text-xs transition-all flex items-center justify-between cursor-pointer ${
                       isActive
-                        ? "bg-[#0F766E] text-white font-semibold shadow-sm"
+                        ? "bg-[#0F766E] text-white font-semibold shadow-2xs"
                         : isDone
-                          ? "bg-[#CCFBF1]/50 text-[#0F766E] hover:bg-[#CCFBF1]"
+                          ? "text-[#0F766E] hover:bg-[#CCFBF1]/40 font-medium"
                           : "text-[#84979D] hover:bg-[#F0F5F4] hover:text-[#0B1F2A]"
                     }`}
                   >
-                    {/* Status icon: ✓ for completed, ● for current, ○ for upcoming */}
-                    <div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold ${
-                        isActive
-                          ? "bg-white text-[#0F766E]"
-                          : isDone
-                            ? "bg-[#0F766E] text-white"
-                            : "border border-[#DCE7E5] text-[#84979D]"
-                      }`}
-                    >
-                      {isDone ? (
-                        <Check className="w-3 h-3 stroke-[3]" />
-                      ) : isActive ? (
-                        <span className="w-2 h-2 rounded-full bg-[#0F766E]" />
-                      ) : (
-                        <span className="text-[9px]">{idx + 1}</span>
-                      )}
+                    <div className="flex items-center gap-2.5">
+                      <span className="font-mono text-[10px] opacity-70">
+                        {String(idx + 1).padStart(2, "0")}
+                      </span>
+                      <span className="font-semibold">{s.stage}</span>
                     </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-1">
-                        <span className="font-mono text-[11px] font-bold uppercase tracking-wide truncate">
-                          {s.stage}
-                        </span>
-                        {isDone && (
-                          <span className={`text-[9px] font-mono ${isActive ? "text-white/80" : "text-[#0F766E]"}`}>
-                            ✓
-                          </span>
-                        )}
-                      </div>
-                      <p className={`text-[11px] truncate ${isActive ? "text-white/90" : isDone ? "text-[#587078]" : "text-[#84979D]"}`}>
-                        {s.title}
-                      </p>
-                    </div>
+                    {isDone ? (
+                      <Check className="w-3.5 h-3.5 text-[#0F766E] stroke-[3]" />
+                    ) : isActive ? (
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                    ) : null}
                   </button>
                 );
               })}
             </div>
           </div>
-
-          {/* Quick Skill Mastery Progress */}
-          <div className="bg-[var(--color-surface-elevated)] border border-[var(--color-border)] rounded-2xl p-4 shadow-sm">
-            <div className="flex items-center gap-2 mb-3">
-              <ShieldCheck className="w-4 h-4 text-[var(--color-mint)]" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--color-faint)]">
-                Module Skills (8)
-              </h3>
-            </div>
-            <div className="space-y-2">
-              {skills.slice(0, 4).map((sk) => (
-                <div key={sk.id} className="text-xs">
-                  <div className="flex items-center justify-between text-[11px] mb-1">
-                    <span className="truncate font-medium">{sk.name}</span>
-                    <span className="font-mono text-[var(--color-brand)]">
-                      L{sk.level}/6
-                    </span>
-                  </div>
-                  <div className="w-full h-1.5 rounded-full bg-[var(--color-border)] overflow-hidden">
-                    <div
-                      className="h-full bg-[var(--color-mint)] transition-all duration-300"
-                      style={{ width: `${(sk.level / 6) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setActiveSidebarTab("skills")}
-              className="w-full mt-3 text-xs text-[var(--color-brand)] justify-center"
-            >
-              View Full Skill Matrix →
-            </Button>
-          </div>
         </aside>
 
-        {/* Center Canvas (6 columns) */}
-        <main className="lg:col-span-6 space-y-6">
-          {/* Active Step Card */}
-          <div className="bg-[var(--color-surface-elevated)] border border-[var(--color-border)] rounded-2xl p-6 shadow-sm space-y-6">
+        {/* Center Canvas (Dominant Flexible Learning Experience) */}
+        <main className="flex-1 min-w-0 space-y-6">
+          <div className="bg-white border border-[#DCE7E5] rounded-3xl p-6 sm:p-8 shadow-2xs space-y-6">
             {/* Step Hierarchy Header */}
             <div>
               <div className="flex items-center justify-between gap-2 mb-2">
@@ -539,78 +470,86 @@ export function Module01Studio({
               </h1>
             </div>
 
-            {/* Why It Matters Callout */}
-            {step.whyItMatters && (
-              <div className="bg-[var(--color-surface)] border-l-4 border-[var(--color-brand)] p-3.5 rounded-r-xl text-xs sm:text-sm text-[var(--color-faint)] space-y-1">
-                <span className="font-semibold text-[var(--color-brand)] uppercase tracking-wider text-[11px] block">
+            {/* Why It Matters Callout (for non-WHY steps) */}
+            {step.whyItMatters && step.stage !== "WHY" && (
+              <div className="bg-[#F0FDF4] border-l-4 border-[#0F766E] p-3.5 rounded-r-xl text-xs sm:text-sm text-[#334E57] space-y-1">
+                <span className="font-semibold text-[#0F766E] uppercase tracking-wider text-[11px] block">
                   Why This Matters in AI Engineering:
                 </span>
-                <p>{step.whyItMatters}</p>
+                <p className="leading-relaxed">{step.whyItMatters}</p>
               </div>
             )}
 
-            {/* Special HOOK Incident Report Scenario Block */}
+            {/* Special HOOK Incident Story Composition */}
             {step.stage === "HOOK" && (
-              <div className="bg-[#FEF2F2] border border-[#FCA5A5]/60 rounded-xl p-4 sm:p-5 space-y-4">
-                <div className="flex items-center justify-between border-b border-[#FCA5A5]/40 pb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444] animate-pulse" />
-                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#991B1B]">
-                      INCIDENT REPORT #101 · PRODUCTION SEVERITY 1
-                    </span>
-                  </div>
-                  <span className="text-[11px] font-mono text-[#991B1B]/80 font-semibold bg-[#FEE2E2] px-2 py-0.5 rounded">
-                    E-Commerce Discount Calculator
-                  </span>
-                </div>
-
-                <div className="text-sm font-semibold text-[#7F1D1D]">
-                  Customers are being charged the wrong amount.
-                </div>
-
-                {/* Expected vs Actual Comparison Cards */}
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                  <div className="bg-white border border-[#DCE7E5] rounded-xl p-3 sm:p-4 text-center shadow-xs">
-                    <div className="text-[11px] font-mono uppercase tracking-wider text-[#587078] font-semibold">
-                      Expected
-                    </div>
-                    <div className="text-2xl sm:text-3xl font-bold font-mono text-[#0F766E] mt-1">
-                      $84.00
-                    </div>
-                    <div className="text-[11px] text-[#84979D] mt-0.5">Correct Subtotal</div>
+              <div className="grid gap-6 md:grid-cols-12 items-center py-2">
+                {/* Left: Incident Story */}
+                <div className="md:col-span-7 space-y-4">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FEE2E2] text-[#991B1B] text-xs font-mono font-bold">
+                    <span className="w-2 h-2 rounded-full bg-[#EF4444] animate-pulse" />
+                    INCIDENT #01
                   </div>
 
-                  <div className="bg-[#FEE2E2]/60 border border-[#F87171]/40 rounded-xl p-3 sm:p-4 text-center shadow-xs">
-                    <div className="text-[11px] font-mono uppercase tracking-wider text-[#991B1B] font-semibold">
-                      Actual Charged
-                    </div>
-                    <div className="text-2xl sm:text-3xl font-bold font-mono text-[#DC2626] mt-1">
-                      $79.00
-                    </div>
-                    <div className="text-[11px] text-[#DC2626]/80 mt-0.5">Silent Bug Detected</div>
+                  <h2 className="text-xl sm:text-2xl font-black font-display text-[#0B1F2A] uppercase tracking-tight">
+                    The Discount Calculator Is Lying.
+                  </h2>
+
+                  <p className="text-sm text-[#587078] leading-relaxed">
+                    A production AI system is charging customers the wrong amount. A promotional coupon for $5.00 was applied to an order, but instead of deducting from the total, customers experienced an unhandled pricing discrepancy.
+                  </p>
+
+                  <div className="rounded-2xl bg-[#F7FAFA] border border-[#DCE7E5] p-4 text-xs space-y-1.5">
+                    <p className="font-bold text-[#0B1F2A]">“Something is wrong in memory.”</p>
+                    <p className="text-[#587078]">What would you investigate first to uncover why this arithmetic failed?</p>
                   </div>
                 </div>
 
-                <p className="text-xs text-[#991B1B] leading-relaxed">
-                  In production AI services, untyped discount API payloads silently inject string values into arithmetic logic, causing catastrophic financial errors or unhandled system crashes.
-                </p>
+                {/* Right: Bold Visual Metaphor */}
+                <div className="md:col-span-5 flex flex-col gap-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-2xl bg-[#F0FDF4] border border-[#16A34A]/30 p-5 text-center shadow-xs">
+                      <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#16A34A]">
+                        Expected
+                      </span>
+                      <div className="text-3xl font-extrabold font-mono text-[#16A34A] mt-1.5">
+                        $84
+                      </div>
+                      <span className="text-[10px] text-[#587078] mt-1 block">Correct Total</span>
+                    </div>
+
+                    <div className="rounded-2xl bg-[#FEF2F2] border border-[#DC2626]/30 p-5 text-center shadow-xs">
+                      <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#DC2626]">
+                        Actual
+                      </span>
+                      <div className="text-3xl font-extrabold font-mono text-[#DC2626] mt-1.5">
+                        $79
+                      </div>
+                      <span className="text-[10px] text-[#DC2626]/80 mt-1 block">Production Bug</span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl bg-[#0B1F2A] text-[#CCFBF1] p-3 font-mono text-[11px] text-center border border-[#123542]">
+                    Subtotal = total - discount_code
+                  </div>
+                </div>
               </div>
             )}
 
-            {/* Special LEARN Interactive Concept Cards & Tabs */}
+            {/* Special LEARN Interactive Concept Explorer */}
             {step.stage === "LEARN" && (
-              <div className="space-y-4">
-                <div className="flex flex-wrap gap-2 border-b border-[#DCE7E5] pb-2">
+              <div className="space-y-6">
+                {/* Visual Concept Navigation Tabs */}
+                <div className="flex flex-wrap gap-2 border-b border-[#DCE7E5] pb-3">
                   {[
-                    { id: "Variables", label: "Variables & Memory" },
-                    { id: "Types", label: "Data Types & Immutability" },
-                    { id: "Operators", label: "Operators & Precedence" },
-                    { id: "Conversion", label: "Type Conversion" },
+                    { id: "Variables", label: "VARIABLES" },
+                    { id: "Types", label: "DATA TYPES" },
+                    { id: "Operators", label: "OPERATORS" },
+                    { id: "Conversion", label: "TYPE CONVERSION" },
                   ].map((tab) => (
                     <button
                       key={tab.id}
                       onClick={() => setLearnConceptTab(tab.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                         learnConceptTab === tab.id
                           ? "bg-[#0F766E] text-white shadow-xs"
                           : "bg-[#F0F5F4] text-[#587078] hover:text-[#0B1F2A] hover:bg-[#DCE7E5]"
@@ -621,48 +560,212 @@ export function Module01Studio({
                   ))}
                 </div>
 
-                {/* Concept tab card content */}
-                <div className="bg-[#F7FAFA] border border-[#DCE7E5] rounded-xl p-4 text-xs space-y-2">
-                  {learnConceptTab === "Variables" && (
-                    <div>
-                      <h4 className="font-bold text-[#0B1F2A] text-sm mb-1">Name Tags, Not Storage Boxes</h4>
-                      <p className="text-[#587078] leading-relaxed">
-                        In Python, a variable does not contain the object directly. Instead, it is an immutable reference pointing to an object residing on the private heap. Assigning <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">b = a</code> merely attaches a second name tag to the identical object!
-                      </p>
+                {/* Concept Interactive Explorer Grid */}
+                <div className="grid gap-5 md:grid-cols-12 items-start">
+                  {/* Left: Concept Explanation Card */}
+                  <div className="md:col-span-6 space-y-3">
+                    {learnConceptTab === "Variables" && (
+                      <div className="rounded-2xl border border-[#DCE7E5] bg-[#F7FAFA] p-5 space-y-2">
+                        <h4 className="font-bold text-[#0B1F2A] text-sm">Dynamic Memory Pointers</h4>
+                        <p className="text-xs text-[#587078] leading-relaxed">
+                          A variable stores data that can change. Python is dynamically typed — variable names are pointers on the stack referencing allocated objects on the heap.
+                        </p>
+                        <div className="mt-3 p-3 rounded-xl bg-white border border-[#DCE7E5] text-xs font-mono text-[#0F766E]">
+                          name = &quot;{liveExperimentVal}&quot; → str (heap ref: 0x7f4a)
+                        </div>
+                      </div>
+                    )}
+                    {learnConceptTab === "Types" && (
+                      <div className="rounded-2xl border border-[#DCE7E5] bg-[#F7FAFA] p-5 space-y-2">
+                        <h4 className="font-bold text-[#0B1F2A] text-sm">Strongly Typed Primitives</h4>
+                        <p className="text-xs text-[#587078] leading-relaxed">
+                          Every value has an immutable type tag: <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">int</code>, <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">float</code>, <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">str</code>, <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">bool</code>. Strings are immutable and cannot be modified in-place.
+                        </p>
+                      </div>
+                    )}
+                    {learnConceptTab === "Operators" && (
+                      <div className="rounded-2xl border border-[#DCE7E5] bg-[#F7FAFA] p-5 space-y-2">
+                        <h4 className="font-bold text-[#0B1F2A] text-sm">Logical Precedence</h4>
+                        <p className="text-xs text-[#587078] leading-relaxed">
+                          <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">not</code> binds highest, followed by <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">and</code>, and finally <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">or</code>. Always use parentheses for deterministic evaluation.
+                        </p>
+                      </div>
+                    )}
+                    {learnConceptTab === "Conversion" && (
+                      <div className="rounded-2xl border border-[#DCE7E5] bg-[#F7FAFA] p-5 space-y-2">
+                        <h4 className="font-bold text-[#0B1F2A] text-sm">Explicit Type Casts</h4>
+                        <p className="text-xs text-[#587078] leading-relaxed">
+                          AI outputs arrive as strings. Cast defensively using <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">int()</code> or <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">float()</code> with error handling.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right: Live Interactive "Try it live" Sandbox */}
+                  <div className="md:col-span-6 rounded-2xl border border-[#DCE7E5] bg-white p-5 space-y-3 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#0F766E]">
+                        Try it live
+                      </span>
+                      <span className="text-[10px] text-[#84979D]">Type below to experiment</span>
                     </div>
-                  )}
-                  {learnConceptTab === "Types" && (
-                    <div>
-                      <h4 className="font-bold text-[#0B1F2A] text-sm mb-1">Strong, Dynamic Typing</h4>
-                      <p className="text-[#587078] leading-relaxed">
-                        Every value in Python has an immutable type tag (<code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">int</code>, <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">float</code>, <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">str</code>, <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">bool</code>). String methods like <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">replace()</code> never alter strings in-place — they allocate and return brand new strings.
-                      </p>
+
+                    <div className="rounded-xl bg-[#0B1F2A] p-4 font-mono text-xs text-slate-200 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#14B8A6]">name =</span>
+                        <input
+                          type="text"
+                          value={liveExperimentVal}
+                          onChange={(e) => setLiveExperimentVal(e.target.value)}
+                          className="bg-[#123542] border border-[#14B8A6]/40 rounded px-2 py-0.5 text-white font-mono text-xs outline-none focus:ring-1 focus:ring-[#14B8A6]"
+                          placeholder="Type any value"
+                        />
+                      </div>
+                      <p className="text-slate-400">age = 25</p>
+                      <p className="text-slate-400">price = 19.5</p>
+                      <p className="text-slate-400">is_active = True</p>
                     </div>
-                  )}
-                  {learnConceptTab === "Operators" && (
-                    <div>
-                      <h4 className="font-bold text-[#0B1F2A] text-sm mb-1">Strict Operator Hierarchy</h4>
-                      <p className="text-[#587078] leading-relaxed">
-                        In Python boolean logic, <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">not</code> evaluates first, then <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">and</code>, and finally <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">or</code>. Always group security and authorization expressions in explicit parentheses.
-                      </p>
+
+                    <div className="rounded-xl bg-[#F0F5F4] p-3 text-xs border border-[#DCE7E5]">
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-[#84979D] block font-bold">
+                        Live Output
+                      </span>
+                      <div className="font-mono text-xs font-bold text-[#0B1F2A] mt-1">
+                        &quot;{liveExperimentVal || "None"}&quot; (type: &lt;class &apos;str&apos;&gt;)
+                      </div>
                     </div>
-                  )}
-                  {learnConceptTab === "Conversion" && (
-                    <div>
-                      <h4 className="font-bold text-[#0B1F2A] text-sm mb-1">Defensive Parsing</h4>
-                      <p className="text-[#587078] leading-relaxed">
-                        Incoming LLM generations, JSON payloads, and CLI arguments are string buffers. You must wrap type casts (<code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">int()</code>, <code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">float()</code>) in defensive exception blocks (<code className="bg-[#E6F0EE] px-1 py-0.5 rounded text-[#0F766E]">try/except ValueError</code>).
-                      </p>
-                    </div>
-                  )}
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Step Explanation */}
-            <div className="text-sm text-[var(--color-foreground)]/90 leading-relaxed whitespace-pre-line">
-              {step.explanation}
-            </div>
+            {/* Special WHY Discovery Screen */}
+            {step.stage === "WHY" && (
+              <div className="space-y-6 py-2">
+                <div className="space-y-3">
+                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#0F766E] bg-[#CCFBF1] px-2.5 py-1 rounded-md">
+                    DISCOVERY
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-bold font-display text-[#0B1F2A]">
+                    WHY DOES THIS MATTER?
+                  </h2>
+                  <p className="text-sm text-[#587078] leading-relaxed max-w-3xl">
+                    {step.explanation}
+                  </p>
+                </div>
+
+                {/* Small focused code example */}
+                {step.example && (
+                  <div className="space-y-2 max-w-3xl">
+                    <div className="flex items-center justify-between text-xs text-[#84979D]">
+                      <span className="font-mono flex items-center gap-1.5 text-[#587078]">
+                        <Code2 className="w-3.5 h-3.5 text-[#0F766E]" /> Demoware vs Production Code
+                      </span>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(step.example);
+                          toast.success("Code copied to clipboard");
+                        }}
+                        className="flex items-center gap-1 text-[#587078] hover:text-[#0B1F2A] transition-colors"
+                      >
+                        <Copy className="w-3 h-3" /> Copy
+                      </button>
+                    </div>
+                    <div className="bg-[#0B1F2A] text-slate-100 rounded-2xl p-4 font-mono text-xs overflow-x-auto border border-[#123542] shadow-sm">
+                      <pre>{step.example}</pre>
+                    </div>
+                  </div>
+                )}
+
+                {/* Prediction Choices Focus */}
+                {step.options && step.options.length > 0 && (
+                  <div className="space-y-3 max-w-3xl pt-2">
+                    <div className="flex items-center gap-2">
+                      <HelpCircle className="w-4 h-4 text-[#0F766E]" />
+                      <p className="text-sm font-bold text-[#0B1F2A]">
+                        What do you think will happen?
+                      </p>
+                    </div>
+                    <p className="text-xs text-[#587078]">{step.prompt}</p>
+
+                    <div className="space-y-2">
+                      {step.options.map((opt, i) => {
+                        const isSelected = selectedOption === opt;
+                        const isCorrect = isRevealed && opt === step.answer;
+                        const isWrong = isRevealed && isSelected && opt !== step.answer;
+
+                        return (
+                          <button
+                            key={i}
+                            disabled={isRevealed}
+                            onClick={() => setSelectedOption(opt)}
+                            className={`w-full text-left p-3.5 rounded-xl border text-xs sm:text-sm transition-all flex items-start gap-3 ${
+                              isCorrect
+                                ? "bg-[#DCFCE7] border-[#16A34A] text-[#166534] font-medium"
+                                : isWrong
+                                  ? "bg-[#FEE2E2] border-[#DC2626] text-[#991B1B] font-medium"
+                                  : isSelected
+                                    ? "bg-[#CCFBF1] border-[#0F766E] text-[#0F766E] font-medium"
+                                    : "bg-[#F7FAFA] border-[#DCE7E5] hover:border-[#0F766E]/40 text-[#334E57]"
+                            }`}
+                          >
+                            <div
+                              className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 mt-0.5 ${
+                                isSelected ? "border-[#0F766E] bg-[#0F766E] text-white" : "border-[#DCE7E5]"
+                              }`}
+                            >
+                              {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                            </div>
+                            <span className="flex-1">{opt}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {!isRevealed ? (
+                      <Button
+                        disabled={!selectedOption}
+                        onClick={() => {
+                          setIsRevealed(true);
+                          if (selectedOption === step.answer) {
+                            triggerXp(30, "Correct Prediction!");
+                          } else {
+                            triggerXp(10, "Great hypothesis! Review the reasoning.");
+                          }
+                        }}
+                        className="w-full sm:w-auto px-6 bg-[#0F766E] hover:bg-[#0F766E]/90 text-white text-xs py-2.5 font-semibold mt-2 shadow-xs"
+                      >
+                        Confirm Hypothesis & Reveal →
+                      </Button>
+                    ) : (
+                      <div className="bg-[#F0FDF4] border border-[#86EFAC] p-4 rounded-2xl text-xs sm:text-sm space-y-2 animate-in fade-in duration-200">
+                        <div className="flex items-center gap-2 font-semibold">
+                          {selectedOption === step.answer ? (
+                            <span className="text-[#16A34A] flex items-center gap-1">
+                              <CheckCircle2 className="w-4 h-4" /> Accurate Insight
+                            </span>
+                          ) : (
+                            <span className="text-[#D97706] flex items-center gap-1">
+                              <AlertTriangle className="w-4 h-4" /> Key Architectural Takeaway
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[#166534] leading-relaxed">
+                          {step.misconceptionExpl || step.explanation}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Step Explanation for non-special stages */}
+            {step.stage !== "HOOK" && step.stage !== "WHY" && step.stage !== "LEARN" && step.stage !== "TRY IT" && step.stage !== "NEXT" && (
+              <div className="text-sm text-[#334E57] leading-relaxed whitespace-pre-line">
+                {step.explanation}
+              </div>
+            )}
 
             {/* Special NEXT Stage: Module Complete & Progression Showcase */}
             {step.stage === "NEXT" && (
@@ -725,8 +828,127 @@ export function Module01Studio({
               </div>
             )}
 
-            {/* Code / Visual Demonstration */}
-            {step.example && step.stage !== "NEXT" && (
+            {/* Special TRY IT Prediction Game */}
+            {step.stage === "TRY IT" && (
+              <div className="space-y-6 py-2 max-w-3xl">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#0F766E] bg-[#CCFBF1] px-2.5 py-1 rounded-md">
+                      PREDICTION LAB
+                    </span>
+                    <span className="text-xs text-[#84979D]">· 4 Answer Choices</span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-bold font-display text-[#0B1F2A]">
+                    What do you think this code will return?
+                  </h2>
+                  <p className="text-xs text-[#587078]">
+                    Test your mental model against Python's immutability rules before running it.
+                  </p>
+                </div>
+
+                {/* Large Prominent Code Block */}
+                {step.example && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs text-[#84979D]">
+                      <span className="font-mono flex items-center gap-1.5 text-[#587078]">
+                        <Terminal className="w-3.5 h-3.5 text-[#14B8A6]" /> Code Block
+                      </span>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(step.example);
+                          toast.success("Code copied to clipboard");
+                        }}
+                        className="flex items-center gap-1 text-[#587078] hover:text-[#0B1F2A] transition-colors"
+                      >
+                        <Copy className="w-3 h-3" /> Copy
+                      </button>
+                    </div>
+                    <div className="bg-[#0B1F2A] text-slate-100 rounded-2xl p-5 font-mono text-sm leading-relaxed overflow-x-auto border border-[#123542] shadow-sm">
+                      <pre>{step.example}</pre>
+                    </div>
+                  </div>
+                )}
+
+                {/* 4 Prediction Choices */}
+                {step.options && step.options.length > 0 && (
+                  <div className="space-y-3 pt-2">
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#84979D] font-mono">
+                      Select Your Prediction:
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {step.options.map((opt, i) => {
+                        const isSelected = selectedOption === opt;
+                        const isCorrect = isRevealed && opt === step.answer;
+                        const isWrong = isRevealed && isSelected && opt !== step.answer;
+
+                        return (
+                          <button
+                            key={i}
+                            disabled={isRevealed}
+                            onClick={() => setSelectedOption(opt)}
+                            className={`text-left p-4 rounded-2xl border text-xs sm:text-sm transition-all flex items-start gap-3 shadow-2xs ${
+                              isCorrect
+                                ? "bg-[#DCFCE7] border-[#16A34A] text-[#166534] font-medium scale-[1.01]"
+                                : isWrong
+                                  ? "bg-[#FEE2E2] border-[#DC2626] text-[#991B1B] font-medium"
+                                  : isSelected
+                                    ? "bg-[#CCFBF1] border-[#0F766E] text-[#0F766E] font-medium ring-2 ring-[#0F766E]/20"
+                                    : "bg-[#F7FAFA] border-[#DCE7E5] hover:border-[#0F766E]/40 text-[#334E57] hover:bg-white"
+                            }`}
+                          >
+                            <div
+                              className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 mt-0.5 ${
+                                isSelected ? "border-[#0F766E] bg-[#0F766E] text-white" : "border-[#DCE7E5]"
+                              }`}
+                            >
+                              {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                            </div>
+                            <span className="flex-1 leading-snug">{opt}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {!isRevealed ? (
+                      <Button
+                        disabled={!selectedOption}
+                        onClick={() => {
+                          setIsRevealed(true);
+                          if (selectedOption === step.answer) {
+                            triggerXp(30, "Correct Prediction!");
+                          } else {
+                            triggerXp(10, "Nice guess! Study the explanation below.");
+                          }
+                        }}
+                        className="w-full sm:w-auto px-7 bg-[#0F766E] hover:bg-[#0F766E]/90 text-white text-xs py-2.5 font-semibold mt-2 shadow-xs"
+                      >
+                        Submit Prediction →
+                      </Button>
+                    ) : (
+                      <div className="bg-[#F0FDF4] border border-[#86EFAC] p-5 rounded-2xl text-xs sm:text-sm space-y-2 animate-in fade-in duration-300">
+                        <div className="flex items-center gap-2 font-semibold">
+                          {selectedOption === step.answer ? (
+                            <span className="text-[#16A34A] flex items-center gap-1.5">
+                              <CheckCircle2 className="w-4 h-4" /> Correct Prediction!
+                            </span>
+                          ) : (
+                            <span className="text-[#DC2626] flex items-center gap-1.5">
+                              <AlertTriangle className="w-4 h-4" /> Not Quite — Here is Why:
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[#166534] leading-relaxed font-sans">
+                          {step.misconceptionExpl || step.explanation}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Code / Visual Demonstration for other steps */}
+            {step.example && step.stage !== "NEXT" && step.stage !== "WHY" && step.stage !== "TRY IT" && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs text-[var(--color-faint)]">
                   <span className="font-mono flex items-center gap-1.5">
@@ -875,7 +1097,6 @@ export function Module01Studio({
 
             {/* Standard Interaction: MCQ / Predict */}
             {(step.stage === "HOOK" ||
-              step.stage === "TRY IT" ||
               step.stage === "PRACTICE" ||
               step.stage === "LEARN" ||
               step.stage === "KNOWLEDGE CHECK") &&
@@ -898,17 +1119,17 @@ export function Module01Studio({
                           onClick={() => setSelectedOption(opt)}
                           className={`w-full text-left p-3.5 rounded-xl border text-xs sm:text-sm transition-all flex items-start gap-3 ${
                             isCorrect
-                              ? "bg-emerald-500/15 border-emerald-500 text-emerald-300 font-medium"
+                              ? "bg-[#DCFCE7] border-[#16A34A] text-[#166534] font-medium"
                               : isWrong
-                                ? "bg-red-500/15 border-red-500 text-red-300 font-medium"
+                                ? "bg-[#FEE2E2] border-[#DC2626] text-[#991B1B] font-medium"
                                 : isSelected
-                                  ? "bg-[var(--color-brand)]/15 border-[var(--color-brand)] text-[var(--color-foreground)] font-medium"
-                                  : "bg-[var(--color-surface)] border-[var(--color-border)] hover:border-[var(--color-brand)]/40"
+                                  ? "bg-[#CCFBF1] border-[#0F766E] text-[#0F766E] font-medium"
+                                  : "bg-[#F7FAFA] border-[#DCE7E5] hover:border-[#0F766E]/40 text-[#334E57]"
                           }`}
                         >
                           <div
                             className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 mt-0.5 ${
-                              isSelected ? "border-[var(--color-brand)] bg-[var(--color-brand)] text-white" : "border-[var(--color-border)]"
+                              isSelected ? "border-[#0F766E] bg-[#0F766E] text-white" : "border-[#DCE7E5]"
                             }`}
                           >
                             {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
@@ -934,28 +1155,24 @@ export function Module01Studio({
                     >
                       {step.stage === "HOOK"
                         ? "Investigate →"
-                        : step.stage === "WHY"
-                          ? "Run & See →"
-                          : step.stage === "TRY IT"
-                            ? "Submit Answer →"
-                            : step.stage === "KNOWLEDGE CHECK"
-                              ? "Verify Answer →"
-                              : "Confirm Hypothesis & Reveal Explanation"}
+                        : step.stage === "KNOWLEDGE CHECK"
+                          ? "Verify Answer →"
+                          : "Confirm Hypothesis & Reveal Explanation"}
                     </Button>
                   ) : (
-                    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] p-4 rounded-xl text-xs sm:text-sm space-y-2 animate-in fade-in duration-200">
+                    <div className="bg-[#F0FDF4] border border-[#86EFAC] p-4 rounded-xl text-xs sm:text-sm space-y-2 animate-in fade-in duration-200">
                       <div className="flex items-center gap-2 font-semibold">
                         {selectedOption === step.answer ? (
-                          <span className="text-emerald-400 flex items-center gap-1">
+                          <span className="text-[#16A34A] flex items-center gap-1">
                             <CheckCircle2 className="w-4 h-4" /> Correct Insight
                           </span>
                         ) : (
-                          <span className="text-amber-400 flex items-center gap-1">
+                          <span className="text-[#D97706] flex items-center gap-1">
                             <AlertTriangle className="w-4 h-4" /> Key Learning Point
                           </span>
                         )}
                       </div>
-                      <p className="text-[var(--color-faint)] leading-relaxed">
+                      <p className="text-[#166534] leading-relaxed">
                         {step.misconceptionExpl || step.explanation}
                       </p>
                     </div>
@@ -1004,10 +1221,10 @@ export function Module01Studio({
             {(step.stage === "YOUR TURN" ||
               step.stage === "MASTERY" ||
               step.activityType === "final-mission") && (
-              <div className="space-y-4 pt-2 border-t border-[var(--color-border)]">
+              <div className="space-y-4 pt-2 border-t border-[#DCE7E5]">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-[var(--color-foreground)] flex items-center gap-1.5">
-                    <Code2 className="w-4 h-4 text-[var(--color-brand)]" />
+                  <span className="text-xs font-semibold text-[#0B1F2A] flex items-center gap-1.5">
+                    <Code2 className="w-4 h-4 text-[#0F766E]" />
                     {step.stage === "MASTERY" ? "Mastery Challenge Editor" : "Interactive Implementation Editor"}
                   </span>
                   <div className="flex items-center gap-2">
@@ -1015,7 +1232,7 @@ export function Module01Studio({
                       variant="ghost"
                       size="sm"
                       onClick={() => setShowSolutionDiff(!showSolutionDiff)}
-                      className="text-xs text-[var(--color-brand)]"
+                      className="text-xs text-[#0F766E] hover:bg-[#CCFBF1]/40"
                     >
                       {showSolutionDiff ? "Hide Solution" : "Inspect Solution Diff"}
                     </Button>
@@ -1023,7 +1240,7 @@ export function Module01Studio({
                       size="sm"
                       onClick={() => handleRunSimulatedCode(studentCode)}
                       disabled={isRunningCode}
-                      className="bg-[#0F766E] hover:bg-[#0F766E]/90 text-white text-xs gap-1.5"
+                      className="bg-[#0F766E] hover:bg-[#0F766E]/90 text-white text-xs gap-1.5 shadow-xs"
                     >
                       <Play className="w-3.5 h-3.5 fill-current" />
                       {isRunningCode ? "Executing..." : step.stage === "MASTERY" ? "Start Mastery Challenge →" : "Run Tests"}
@@ -1035,18 +1252,18 @@ export function Module01Studio({
                   value={studentCode}
                   onChange={(e) => setStudentCode(e.target.value)}
                   rows={10}
-                  className="w-full bg-[#0f172a] text-slate-100 font-mono text-xs p-4 rounded-xl border border-slate-800 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                  className="w-full bg-[#0B1F2A] text-slate-100 font-mono text-xs p-4 rounded-2xl border border-[#123542] focus:outline-none focus:ring-2 focus:ring-[#14B8A6]"
                 />
 
                 {/* Rubric Evaluation Checklist */}
                 {step.rubricItems && step.rubricItems.length > 0 && (
-                  <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4 space-y-3">
+                  <div className="bg-[#F7FAFA] border border-[#DCE7E5] rounded-2xl p-4 space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-faint)] flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[var(--color-brand)]" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-[#587078] flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#0F766E]" />
                         Self-Evaluation Rubric Checklist
                       </span>
-                      <span className="text-xs font-mono text-[var(--color-brand)]">
+                      <span className="text-xs font-mono font-bold text-[#0F766E]">
                         {Object.values(rubricChecks).filter(Boolean).length}/
                         {step.rubricItems.length} Verified
                       </span>
@@ -1056,7 +1273,7 @@ export function Module01Studio({
                       {step.rubricItems.map((r) => (
                         <label
                           key={r.id}
-                          className="flex items-start gap-2.5 text-xs text-[var(--color-foreground)]/90 cursor-pointer hover:text-[var(--color-foreground)]"
+                          className="flex items-start gap-2.5 text-xs text-[#334E57] cursor-pointer hover:text-[#0B1F2A]"
                         >
                           <input
                             type="checkbox"
@@ -1064,11 +1281,11 @@ export function Module01Studio({
                             onChange={(e) =>
                               setRubricChecks((prev) => ({ ...prev, [r.id]: e.target.checked }))
                             }
-                            className="mt-0.5 rounded border-[var(--color-border)] text-[var(--color-brand)] focus:ring-[var(--color-brand)]"
+                            className="mt-0.5 rounded border-[#DCE7E5] text-[#0F766E] focus:ring-[#0F766E]"
                           />
                           <div>
                             <p className="font-medium">{r.criterion}</p>
-                            {r.tip && <p className="text-[11px] text-[var(--color-faint)]">{r.tip}</p>}
+                            {r.tip && <p className="text-[11px] text-[#84979D]">{r.tip}</p>}
                           </div>
                         </label>
                       ))}
@@ -1089,7 +1306,7 @@ export function Module01Studio({
             )}
 
             {/* Navigation Bottom Controls */}
-            <div className="pt-4 border-t border-[var(--color-border)] flex items-center justify-between">
+            <div className="pt-4 border-t border-[#DCE7E5] flex items-center justify-between">
               <Button
                 variant="outline"
                 size="sm"
@@ -1127,51 +1344,51 @@ export function Module01Studio({
           </div>
         </main>
 
-        {/* Right Drawer: AI Mentor, Skills & Terminal (3 columns) */}
-        <aside className="lg:col-span-3 space-y-4">
-          <div className="bg-[var(--color-surface-elevated)] border border-[var(--color-border)] rounded-2xl shadow-sm overflow-hidden flex flex-col h-full min-h-[500px]">
-            {/* Tab Header */}
-            <div className="flex border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-              <button
-                onClick={() => setActiveSidebarTab("mentor")}
-                className={`flex-1 py-2.5 text-xs font-semibold flex items-center justify-center gap-1.5 border-b-2 transition-all ${
-                  activeSidebarTab === "mentor"
-                    ? "border-[#0F766E] text-[#0F766E] bg-[var(--color-surface-elevated)]"
-                    : "border-transparent text-[#84979D] hover:text-[#0B1F2A]"
-                }`}
-              >
-                <Bot className="w-3.5 h-3.5" /> Mentor
-              </button>
-              <button
-                onClick={() => setActiveSidebarTab("skills")}
-                className={`flex-1 py-2.5 text-xs font-semibold flex items-center justify-center gap-1.5 border-b-2 transition-all ${
-                  activeSidebarTab === "skills"
-                    ? "border-[#0F766E] text-[#0F766E] bg-[var(--color-surface-elevated)]"
-                    : "border-transparent text-[#84979D] hover:text-[#0B1F2A]"
-                }`}
-              >
-                <ShieldCheck className="w-3.5 h-3.5" /> Skills
-              </button>
-              <button
-                onClick={() => setActiveSidebarTab("terminal")}
-                className={`flex-1 py-2.5 text-xs font-semibold flex items-center justify-center gap-1.5 border-b-2 transition-all ${
-                  activeSidebarTab === "terminal"
-                    ? "border-[#0F766E] text-[#0F766E] bg-[var(--color-surface-elevated)]"
-                    : "border-transparent text-[#84979D] hover:text-[#0B1F2A]"
-                }`}
-              >
-                <Terminal className="w-3.5 h-3.5" /> Console
-              </button>
-            </div>
+        {/* Right Drawer: Contextual AI Mentor (approx 290px, Collapsible) */}
+        {mentorOpen ? (
+          <aside className="w-full lg:w-72 shrink-0 space-y-4">
+            <div className="bg-white border border-[#DCE7E5] rounded-2xl shadow-2xs overflow-hidden flex flex-col h-full min-h-[480px]">
+              {/* Tab Header with Close Button */}
+              <div className="flex items-center justify-between border-b border-[#DCE7E5] bg-[#F7FAFA] px-2">
+                <div className="flex flex-1">
+                  <button
+                    onClick={() => setActiveSidebarTab("mentor")}
+                    className={`py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 border-b-2 transition-all ${
+                      activeSidebarTab === "mentor"
+                        ? "border-[#0F766E] text-[#0F766E] bg-white"
+                        : "border-transparent text-[#84979D] hover:text-[#0B1F2A]"
+                    }`}
+                  >
+                    <Bot className="w-3.5 h-3.5" /> AI Mentor
+                  </button>
+                  <button
+                    onClick={() => setActiveSidebarTab("terminal")}
+                    className={`py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 border-b-2 transition-all ${
+                      activeSidebarTab === "terminal"
+                        ? "border-[#0F766E] text-[#0F766E] bg-white"
+                        : "border-transparent text-[#84979D] hover:text-[#0B1F2A]"
+                    }`}
+                  >
+                    <Terminal className="w-3.5 h-3.5" /> Console
+                  </button>
+                </div>
+                <button
+                  onClick={() => setMentorOpen(false)}
+                  title="Hide AI Mentor"
+                  className="p-1 rounded-md text-[#84979D] hover:text-[#0B1F2A] hover:bg-[#F0F5F4] transition"
+                >
+                  <XCircle className="w-4 h-4" />
+                </button>
+              </div>
 
             {/* Tab Content: AI Mentor */}
             {activeSidebarTab === "mentor" && (
               <div className="p-4 flex-1 flex flex-col justify-between space-y-4">
                 <div className="space-y-3">
                   {/* Mentor level selector */}
-                  <div className="flex items-center justify-between text-xs pb-2 border-b border-[var(--color-border)]">
-                    <span className="font-semibold flex items-center gap-1">
-                      <Sparkles className="w-3.5 h-3.5 text-[var(--color-brand)]" /> Hint Tier:
+                  <div className="flex items-center justify-between text-xs pb-2 border-b border-[#DCE7E5]">
+                    <span className="font-semibold flex items-center gap-1 text-[#0B1F2A]">
+                      <Sparkles className="w-3.5 h-3.5 text-[#0F766E]" /> Hint Tier:
                     </span>
                     <div className="flex gap-1">
                       {[1, 2, 3, 4, 5].map((lvl) => (
@@ -1180,8 +1397,8 @@ export function Module01Studio({
                           onClick={() => setMentorLevel(lvl)}
                           className={`w-6 h-6 rounded-md text-[11px] font-mono font-bold transition-all ${
                             mentorLevel === lvl
-                              ? "bg-[var(--color-brand)] text-white"
-                              : "bg-[var(--color-surface)] text-[var(--color-faint)] hover:text-[var(--color-foreground)]"
+                              ? "bg-[#0F766E] text-white"
+                              : "bg-[#F7FAFA] text-[#84979D] hover:text-[#0B1F2A]"
                           }`}
                         >
                           {lvl}
@@ -1191,8 +1408,8 @@ export function Module01Studio({
                   </div>
 
                   {/* Active Hint Box */}
-                  <div className="bg-[var(--color-surface)] border border-[var(--color-brand)]/30 rounded-xl p-3 text-xs space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-[var(--color-brand)]">
+                  <div className="bg-[#F7FAFA] border border-[#0F766E]/20 rounded-xl p-3 text-xs space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-[#0F766E]">
                       <span>Level {mentorLevel}: {
                         mentorLevel === 1
                           ? "Socratic Question"
@@ -1205,7 +1422,7 @@ export function Module01Studio({
                                 : "Full Robust Solution"
                       }</span>
                     </div>
-                    <p className="text-[var(--color-foreground)]/90 leading-relaxed">
+                    <p className="text-[#334E57] leading-relaxed">
                       {step.mentorHints && step.mentorHints[mentorLevel - 1]
                         ? step.mentorHints[mentorLevel - 1]
                         : "Focus on whether values can be mutated in place or if methods return new objects."}
@@ -1219,11 +1436,11 @@ export function Module01Studio({
                         key={i}
                         className={`text-xs p-2.5 rounded-xl ${
                           msg.role === "user"
-                            ? "bg-[var(--color-brand)]/15 text-[var(--color-foreground)] ml-4"
-                            : "bg-[var(--color-surface)] text-[var(--color-faint)] mr-4 border border-[var(--color-border)]"
+                            ? "bg-[#CCFBF1] text-[#0B1F2A] ml-4"
+                            : "bg-[#F7FAFA] text-[#334E57] mr-4 border border-[#DCE7E5]"
                         }`}
                       >
-                        <p className="font-semibold text-[10px] uppercase text-[var(--color-brand)] mb-0.5">
+                        <p className="font-semibold text-[10px] uppercase text-[#0F766E] mb-0.5">
                           {msg.role === "user" ? "You" : "AI Mentor"}
                         </p>
                         <p>{msg.text}</p>
@@ -1233,15 +1450,15 @@ export function Module01Studio({
                 </div>
 
                 {/* Socratic input box */}
-                <form onSubmit={handleAskMentor} className="flex gap-2 pt-2 border-t border-[var(--color-border)]">
+                <form onSubmit={handleAskMentor} className="flex gap-2 pt-2 border-t border-[#DCE7E5]">
                   <input
                     type="text"
                     value={userQuery}
                     onChange={(e) => setUserQuery(e.target.value)}
                     placeholder="Ask about this step..."
-                    className="flex-1 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-[var(--color-brand)]"
+                    className="flex-1 bg-[#F7FAFA] border border-[#DCE7E5] rounded-lg px-3 py-1.5 text-xs text-[#0B1F2A] placeholder-[#84979D] focus:outline-none focus:border-[#0F766E]"
                   />
-                  <Button type="submit" size="sm" className="bg-[var(--color-brand)] text-white px-3">
+                  <Button type="submit" size="sm" className="bg-[#0F766E] hover:bg-[#0F766E]/90 text-white px-3">
                     <Send className="w-3.5 h-3.5" />
                   </Button>
                 </form>
@@ -1305,7 +1522,16 @@ export function Module01Studio({
               </div>
             )}
           </div>
-        </aside>
+          </aside>
+        ) : (
+          <button
+            onClick={() => setMentorOpen(true)}
+            className="fixed bottom-6 right-6 z-30 flex items-center gap-2 rounded-full bg-[#0F766E] text-white px-4 py-2.5 text-xs font-bold shadow-lg hover:bg-[#0B1F2A] transition-all group"
+          >
+            <Bot className="w-4 h-4 text-[#CCFBF1] group-hover:scale-110 transition-transform" />
+            <span>Ask AI Mentor</span>
+          </button>
+        )}
       </div>
     </div>
   );

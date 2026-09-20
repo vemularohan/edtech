@@ -7,6 +7,8 @@
 /*
  * KLH AI Platform — Premium Design System
  * Clean, modern, AI-native EdTech aesthetic.
+ * Strictly aligned to 1200-1280px grid, standard spacing tokens,
+ * unified typography, buttons, and card system.
  */
 
 @theme inline {
@@ -38,7 +40,7 @@
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
 
-  /* New Design System Tokens */
+  /* Core Design System Tokens */
   --color-navy: #0B1F2A;
   --color-navy-surface: #123542;
   --color-teal: #0F766E;
@@ -69,11 +71,37 @@
 :root {
   --radius: 0.75rem;
 
-  /* Main background: #F7FAFA (Avoid pure white everywhere) */
+  /* ── Standardized Spacing Scale ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ── Standardized Border Radius ── */
+  --radius-s: 8px;
+  --radius-m: 12px;
+  --radius-l: 16px;
+  --radius-xl: 20px;
+
+  /* ── Layout ── */
+  --content-max-width: 1240px;
+  --page-padding-x: 32px;
+  --page-padding-x-mobile: 16px;
+  --section-gap: 36px;
+  --card-gap: 20px;
+  --card-padding: 24px;
+
+  /* Main background */
   --background: #F7FAFA;
   --foreground: #102A33;
 
-  /* Surfaces: Cards = #FFFFFF, Secondary Surface = #F0F5F4 */
+  /* Surfaces */
   --surface: #F0F5F4;
   --surface-secondary: #F0F5F4;
   --surface-elevated: #FFFFFF;
@@ -82,11 +110,11 @@
   --popover: #FFFFFF;
   --popover-foreground: #102A33;
 
-  /* Primary: Deep Teal #0F766E for actions, links, active states */
+  /* Primary */
   --primary: #0F766E;
   --primary-foreground: #FFFFFF;
 
-  /* Secondary: #F0F5F4 */
+  /* Secondary */
   --secondary: #F0F5F4;
   --secondary-foreground: #0B1F2A;
 
@@ -96,7 +124,7 @@
   --ink: #0B1F2A;
   --faint: #84979D;
 
-  /* Accent: Mint #CCFBF1 */
+  /* Accent */
   --accent: #CCFBF1;
   --accent-foreground: #0F766E;
 
@@ -112,12 +140,12 @@
   --info: #2563EB;
   --info-bg: #DBEAFE;
 
-  /* Borders: #DCE7E5 */
+  /* Borders */
   --border: #DCE7E5;
   --input: #DCE7E5;
   --ring: #0F766E;
 
-  /* Core Palette Direct Variables */
+  /* Core Palette Direct */
   --navy: #0B1F2A;
   --navy-surface: #123542;
   --teal: #0F766E;
@@ -125,7 +153,7 @@
   --mint: #CCFBF1;
   --mint-soft: #CCFBF1;
 
-  /* Legacy aliases strictly mapped to new palette */
+  /* Legacy aliases */
   --brand: #0F766E;
   --brand-soft: #CCFBF1;
   --lilac: #0F766E;
@@ -133,6 +161,10 @@
   --peach: #D97706;
   --peach-soft: #FEF3C7;
 }
+
+/* ═══════════════════════════════════════════════════════
+   BASE LAYER
+   ═══════════════════════════════════════════════════════ */
 
 @layer base {
   *,
@@ -176,16 +208,143 @@
     font-family: var(--font-mono);
   }
 
+  /* ── Typography Hierarchy ── */
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
     color: #0B1F2A;
     letter-spacing: -0.022em;
-    line-height: 1.2;
+    line-height: 1.25;
     font-weight: 700;
   }
+
+  h1 { font-size: 2rem; }       /* 32px */
+  h2 { font-size: 1.375rem; }   /* 22px */
+  h3 { font-size: 1.125rem; }   /* 18px */
+  h4 { font-size: 1rem; }       /* 16px */
 }
 
-/* ─── Scrollbar utilities ─────────────────────────────── */
+/* ═══════════════════════════════════════════════════════
+   GLOBAL LAYOUT UTILITIES
+   ═══════════════════════════════════════════════════════ */
+
+/* Standard page content container — all pages use this */
+.page-container {
+  max-width: var(--content-max-width);
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+/* Standard section spacing */
+.page-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+  padding-bottom: var(--space-16);
+}
+
+/* ═══════════════════════════════════════════════════════
+   CARD SYSTEM — ONE consistent card design
+   ═══════════════════════════════════════════════════════ */
+
+/* Default card */
+.ui-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-l);
+  padding: var(--card-padding);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.ui-card:hover {
+  border-color: rgba(15, 118, 110, 0.35);
+}
+
+/* Card variants */
+.ui-card--active {
+  border-color: #0F766E;
+  box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.18);
+}
+.ui-card--muted {
+  background: var(--surface);
+  border-color: var(--border);
+}
+.ui-card--hero {
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+.ui-card--interactive {
+  cursor: pointer;
+}
+.ui-card--interactive:hover {
+  border-color: rgba(15, 118, 110, 0.45);
+  box-shadow: 0 2px 8px rgba(11, 31, 42, 0.04);
+}
+
+/* ═══════════════════════════════════════════════════════
+   BUTTONS — standardized tactile system
+   ═══════════════════════════════════════════════════════ */
+
+.btn-primary {
+  height: 44px;
+  padding-left: 20px;
+  padding-right: 20px;
+  border-radius: var(--radius-m);
+  background-color: #0F766E;
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+.btn-primary:hover {
+  background-color: #0d655e;
+  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.25);
+}
+.btn-primary:active {
+  transform: translateY(1px);
+}
+
+.btn-secondary {
+  height: 44px;
+  padding-left: 18px;
+  padding-right: 18px;
+  border-radius: var(--radius-m);
+  background-color: #FFFFFF;
+  color: #0B1F2A;
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  transition: all 0.15s ease;
+}
+.btn-secondary:hover {
+  background-color: var(--surface);
+  border-color: rgba(15, 118, 110, 0.3);
+}
+
+.btn-dimensional {
+  background: var(--color-teal);
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgba(11, 31, 42, 0.06);
+  border-radius: var(--radius-m);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-dimensional:hover {
+  background: #0d655e;
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.2);
+}
+
+/* ═══════════════════════════════════════════════════════
+   SCROLLBAR & TOUCH
+   ═══════════════════════════════════════════════════════ */
+
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar {
   -ms-overflow-style: none;
@@ -196,7 +355,6 @@
   overscroll-behavior: contain;
 }
 
-/* ─── Touch targets ───────────────────────────────────── */
 @media (max-width: 640px) {
   .touch-target-min {
     min-height: 44px;
@@ -204,83 +362,49 @@
   }
 }
 
-/* ─── Elevation System ────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════
+   ELEVATION SYSTEM — very subtle, used sparingly
+   ═══════════════════════════════════════════════════════ */
 
-/* Subtle card with on-hover lift */
 .card-depth-subtle {
   background: var(--color-surface-elevated);
   border: 1px solid var(--color-border);
-  border-radius: 1rem;
-  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  border-radius: var(--radius-l);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 .card-depth-subtle:hover {
-  box-shadow: 0 4px 16px -2px rgba(11, 31, 42, 0.05), 0 2px 6px -2px rgba(11, 31, 42, 0.03);
-  border-color: #14B8A6;
-  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(11, 31, 42, 0.04);
+  border-color: rgba(20, 184, 166, 0.4);
 }
 
-/* Primary spatial panel */
 .spatial-panel {
   background: var(--color-surface-elevated);
   border: 1px solid var(--color-border);
-  box-shadow:
-    0 1px 2px rgba(11, 31, 42, 0.02),
-    0 4px 16px -4px rgba(11, 31, 42, 0.04);
-  border-radius: 1rem;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
-}
-.spatial-panel:hover {
-  box-shadow:
-    0 2px 4px rgba(11, 31, 42, 0.03),
-    0 8px 24px -6px rgba(11, 31, 42, 0.06);
+  box-shadow: 0 1px 2px rgba(11, 31, 42, 0.02);
+  border-radius: var(--radius-l);
+  transition: border-color 0.15s ease;
 }
 
-/* Gradient deck surface */
 .spatial-deck {
   background: var(--color-surface-elevated);
   border: 1px solid var(--color-border);
-  box-shadow:
-    0 1px 3px rgba(11, 31, 42, 0.02),
-    0 6px 20px -6px rgba(11, 31, 42, 0.05);
+  box-shadow: 0 1px 2px rgba(11, 31, 42, 0.02);
 }
 
-/* HUD/tag chip */
 .hud-tag {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
 }
 
-/* ─── Tactile Buttons ─────────────────────────────────── */
-.btn-dimensional {
-  background: var(--color-teal);
-  color: #ffffff;
-  box-shadow:
-    0 1px 2px rgba(11, 31, 42, 0.08),
-    0 2px 6px -1px rgba(15, 118, 110, 0.25);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
-}
-.btn-dimensional:hover {
-  background: #0d655e;
-  transform: translateY(-1px);
-  box-shadow:
-    0 2px 4px rgba(11, 31, 42, 0.08),
-    0 6px 16px -2px rgba(15, 118, 110, 0.35);
-}
-.btn-dimensional:active {
-  transform: translateY(1px);
-  box-shadow:
-    0 1px 2px rgba(11, 31, 42, 0.08);
-}
+/* ═══════════════════════════════════════════════════════
+   SIDEBAR
+   ═══════════════════════════════════════════════════════ */
 
-/* ─── Sidebar refinement ──────────────────────────────── */
 .app-sidebar {
   background: #FFFFFF;
   border-right-color: var(--color-border);
 }
 
-/* Nav link active indicator: teal accent + subtle mint background */
 .nav-link-active {
   background: #CCFBF1;
   color: #0F766E;
@@ -288,7 +412,10 @@
   box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.15);
 }
 
-/* ─── Interactive states ──────────────────────────────── */
+/* ═══════════════════════════════════════════════════════
+   INTERACTIVE STATES
+   ═══════════════════════════════════════════════════════ */
+
 .interactive-row {
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
@@ -296,7 +423,7 @@
   background-color: var(--color-surface);
 }
 
-/* ─── Status dots ─────────────────────────────────────── */
+/* Status dots */
 .status-dot-active {
   background: var(--color-teal);
   box-shadow: 0 0 0 3px var(--color-mint);
@@ -306,7 +433,7 @@
   opacity: 0.5;
 }
 
-/* ─── Progress bar pill ───────────────────────────────── */
+/* Progress bar */
 .progress-track {
   height: 6px;
   overflow: hidden;
@@ -320,22 +447,20 @@
   transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ─── Code editor surface ─────────────────────────────── */
+/* Code editor */
 .code-editor-surface {
   background: #0B1F2A;
   border: 1px solid #123542;
-  border-radius: 0.875rem;
+  border-radius: var(--radius-l);
   font-family: var(--font-mono);
   color: #E6F7F5;
 }
 
-/* ─── Mission/Phase card states ───────────────────────── */
+/* Phase card states */
 .phase-card-active {
   border-color: #0F766E;
   background: #FFFFFF;
-  box-shadow:
-    0 0 0 1px rgba(15, 118, 110, 0.2),
-    0 4px 16px -4px rgba(15, 118, 110, 0.1);
+  box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.15);
 }
 .phase-card-locked {
   border-color: var(--color-border);
@@ -343,7 +468,10 @@
   opacity: 0.85;
 }
 
-/* ─── Animations ──────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════════════════ */
+
 @utility cp-pulse {
   animation: cpPulse 2.8s ease-in-out infinite;
 }
@@ -377,14 +505,87 @@
   50% { transform: translateY(-10px); }
 }
 
-/* ─── Focus ring ──────────────────────────────────────── */
+@keyframes xpFloatUp {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.9);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1.05);
+  }
+  75% {
+    opacity: 1;
+    transform: translateY(-16px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-28px) scale(0.95);
+  }
+}
+
+@keyframes stageGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 1px #0F766E, 0 0 12px -2px rgba(15, 118, 110, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 2px #14B8A6, 0 0 20px 0px rgba(20, 184, 166, 0.45);
+  }
+}
+
+@keyframes nodePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.5);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 8px rgba(20, 184, 166, 0);
+  }
+}
+
+@keyframes pipelineAlert {
+  0%, 100% {
+    border-color: #EF4444;
+    box-shadow: 0 0 0 1px #EF4444, 0 0 12px rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    border-color: #F87171;
+    box-shadow: 0 0 0 3px #F87171, 0 0 20px rgba(239, 68, 68, 0.6);
+  }
+}
+
+@keyframes comboGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(217, 119, 6, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(217, 119, 6, 0.6);
+  }
+}
+
+@utility node-pulse {
+  animation: nodePulse 2s ease-in-out infinite;
+}
+
+@utility pipeline-alert {
+  animation: pipelineAlert 1.5s ease-in-out infinite;
+}
+
+@utility combo-glow {
+  animation: comboGlow 1.8s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════
+   FOCUS & ACCESSIBILITY
+   ═══════════════════════════════════════════════════════ */
+
 :focus-visible {
   outline: 2px solid var(--color-brand);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
-/* ─── Reduced motion ──────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -396,3 +597,4 @@
     transform: none !important;
   }
 }
+

@@ -109,6 +109,7 @@ import type { CurriculumChallenge } from "@/lib/codepath-data";
 import { curriculumModules } from "@/lib/curriculum-data";
 import { getLearningExperience } from "@/lib/learning-experiences";
 import { Module01Studio } from "./Module01Studio";
+import { GamifiedLearningStudio } from "./GamifiedLearningStudio";
 import { LockedModulePreview } from "./LockedModulePreview";
 import { DashboardView } from "./DashboardView";
 import { CurriculumView } from "./CurriculumView";
@@ -512,7 +513,7 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
 
           {/* Header */}
           <header className="sticky top-0 z-30 w-full border-b border-border bg-background/92 backdrop-blur-xl">
-            <div className="flex min-h-14 sm:min-h-15 items-center justify-between gap-2 px-3 sm:gap-4 sm:px-5">
+            <div className="flex min-h-14 sm:min-h-15 items-center justify-between gap-2 px-4 sm:gap-4 sm:px-6 lg:px-8 max-w-[1240px] mx-auto w-full">
 
               {/* Left: hamburger + page title */}
               <div className="flex items-center gap-2.5 min-w-0">
@@ -578,7 +579,7 @@ function Shell({ active, children }: { active: View; children: React.ReactNode }
             </div>
           </header>
 
-          <main className="app-main w-full min-w-0 flex-1 px-3.5 pb-20 pt-5 sm:px-6 sm:pt-6 lg:px-8">
+          <main className="app-main w-full min-w-0 flex-1 px-4 sm:px-6 lg:px-8 py-6">
             {children}
           </main>
         </div>
@@ -1304,14 +1305,14 @@ function InteractiveCurriculumMap() {
   const [lens, setLens] = useState<"journey" | "skills" | "projects" | "list">("journey");
   const [filter, setFilter] = useState("All");
   const [query, setQuery] = useState("");
-  const [selectedCode, setSelectedCode] = useState<ModuleId>("3.1");
+  const [selectedCode, setSelectedCode] = useState<ModuleId>("3.2");
   const [concept, setConcept] = useState<string | null>(null);
   const phases = [
-    ["FOUNDATION", 0, 6],
-    ["MACHINE LEARNING", 7, 12],
-    ["DEEP LEARNING & APPLIED AI", 13, 19],
-    ["ADVANCED AI ENGINEERING", 20, 27],
-    ["CAREER & CAPSTONE", 28, 29],
+    ["FOUNDATION & PYTHON", 0, 3],
+    ["AI & LLM INTEGRATION", 4, 7],
+    ["RETRIEVAL & RAG", 8, 11],
+    ["AGENTS & WORKFLOWS", 12, 15],
+    ["PRODUCTION & CAREER", 16, 19],
   ] as const;
   const mastered = summary.completedCount;
   const statusFor = (index: number) =>
@@ -1950,16 +1951,9 @@ function LearningMode({
     );
   }
 
-  // Preview locked modules with syllabus, outcomes, and clear prerequisite lock gates
-  // Modules 3.1 (Bridge) and 3.2 (Module 01: Python Foundations for AI) are unlocked
-  const isLocked = targetModule.code !== "3.1" && targetModule.code !== "3.2";
-  if (isLocked) {
-    return <LockedModulePreview module={targetModule} />;
-  }
-
   return (
-    <LearningModeContent
-      moduleId={moduleId}
+    <GamifiedLearningStudio
+      moduleId={moduleId as `3.${number}`}
       {...(concept !== undefined ? { concept } : {})}
       {...(stepIndex !== undefined ? { stepIndex } : {})}
     />

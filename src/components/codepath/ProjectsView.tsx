@@ -39,14 +39,14 @@ export function ProjectsView() {
   ];
 
   const [progressItems, setProgressItems] = useState([
-    { id: 1, text: "Read requirements", checked: true },
-    { id: 2, text: "Set up project environment", checked: true },
-    { id: 3, text: "Implement solution", checked: false },
-    { id: 4, text: "Run tests", checked: false },
-    { id: 5, text: "Submit to GitHub", checked: false },
-    { id: 6, text: "AI evaluation (pending)", checked: false },
-    { id: 7, text: "Get feedback", checked: false },
-    { id: 8, text: "Complete and verify!", checked: false },
+    { id: 1, text: "Read requirements & data schema", checked: true },
+    { id: 2, text: "Set up isolated Python environment", checked: true },
+    { id: 3, text: "Implement defensive CSV ingestion", checked: false },
+    { id: 4, text: "Run automated unit test suite", checked: false },
+    { id: 5, text: "Generate terminal analytics report", checked: false },
+    { id: 6, text: "Submit repository to GitHub", checked: false },
+    { id: 7, text: "Undergo automated AI evaluation", checked: false },
+    { id: 8, text: "Earn Capstone Verification Credential", checked: false },
   ]);
 
   const toggleCheck = (id: number) => {
@@ -61,38 +61,48 @@ export function ProjectsView() {
   const handleOpenWorkspace = () => {
     toast.success("Opening Project Workspace in Cloud IDE...");
     recordLearningEvidence({
-      moduleId: "3.2",
-      stage: "MASTERY",
-      artifactType: "project_milestone",
-      verified: false,
-      score: 40,
+      sectionsCompleted: 1,
     });
     navigate({ to: "/coding-lab" });
   };
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 pb-16">
-      {/* ── Top Header ── */}
-      <div className="text-center sm:text-left">
-        <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#0B1F2A] tracking-tight">
-          AI Project Challenge
-        </h1>
-        <p className="mt-1 text-xs sm:text-sm text-[#587078]">
-          Build. Test. Submit. Get Verified.
-        </p>
+    <div className="page-container page-sections">
+      {/* ── Top Header (Aligned to Global Grid) ── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-[#DCE7E5] pb-4">
+        <div>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#0F766E]">
+            ACADEMIC CAPSTONE
+          </p>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#0B1F2A] tracking-tight">
+            AI Project Challenge
+          </h1>
+          <p className="mt-0.5 text-xs sm:text-sm text-[#587078]">
+            Build. Test. Submit. Get Verified.
+          </p>
+        </div>
+
+        <Button
+          size="sm"
+          className="bg-[#0F766E] hover:bg-[#0d655e] text-white text-xs font-semibold h-10 px-5 rounded-xl shadow-sm self-start sm:self-auto cursor-pointer"
+          onClick={handleOpenWorkspace}
+        >
+          <Terminal className="size-3.5 mr-1.5" />
+          Open Project Workspace
+        </Button>
       </div>
 
       {/* ── Horizontal Project Lifecycle Stepper ── */}
-      <div className="rounded-2xl border border-[#DCE7E5] bg-white p-5 shadow-2xs">
+      <div className="ui-card p-5">
         <div className="flex items-center justify-between overflow-x-auto no-scrollbar py-2">
           {stages.map((stage, idx) => {
             const isCompleted = stage.status === "completed";
             const isCurrent = stage.status === "current";
             return (
               <div key={stage.label} className="flex items-center min-w-fit">
-                <div className="flex flex-col items-center gap-1.5">
+                <div className="flex flex-col items-center gap-2">
                   <div
-                    className={`grid size-7 place-items-center rounded-full text-xs font-bold transition-all ${
+                    className={`grid size-8 place-items-center rounded-full text-xs font-bold transition-all ${
                       isCurrent
                         ? "bg-[#0F766E] text-white ring-4 ring-[#CCFBF1]"
                         : isCompleted
@@ -101,18 +111,18 @@ export function ProjectsView() {
                     }`}
                   >
                     {isCompleted ? (
-                      <Check className="size-3.5 stroke-[3]" />
+                      <Check className="size-4 stroke-[3]" />
                     ) : (
                       <span>{idx + 1}</span>
                     )}
                   </div>
                   <span
-                    className={`text-[11px] font-semibold whitespace-nowrap ${
+                    className={`text-xs whitespace-nowrap ${
                       isCurrent
                         ? "text-[#0F766E] font-bold"
                         : isCompleted
-                        ? "text-[#0B1F2A]"
-                        : "text-[#84979D]"
+                        ? "text-[#0B1F2A] font-semibold"
+                        : "text-[#84979D] font-medium"
                     }`}
                   >
                     {stage.label}
@@ -121,7 +131,7 @@ export function ProjectsView() {
 
                 {idx < stages.length - 1 && (
                   <div
-                    className={`mx-2 sm:mx-4 h-0.5 w-6 sm:w-12 rounded-full ${
+                    className={`mx-3 sm:mx-6 h-0.5 w-8 sm:w-16 rounded-full ${
                       isCompleted ? "bg-[#14B8A6]" : "bg-[#DCE7E5]"
                     }`}
                   />
@@ -132,65 +142,68 @@ export function ProjectsView() {
         </div>
       </div>
 
-      {/* ── Two-Column Main Content: Brief/Reqs/Resources vs Your Progress ── */}
-      <div className="grid gap-6 md:grid-cols-12 items-start">
+      {/* ── Two-Column Main Content Grid ── */}
+      <div className="grid gap-6 lg:grid-cols-12 items-start">
         {/* Left Column: Project Brief, Requirements & Resources (col-span-7) */}
-        <div className="md:col-span-7 space-y-4">
+        <div className="lg:col-span-7 space-y-5">
           {/* Project Brief */}
-          <div className="rounded-2xl border border-[#DCE7E5] bg-white p-5 space-y-2 shadow-2xs">
-            <h2 className="font-display text-sm font-bold text-[#0B1F2A] uppercase tracking-wider">
-              Project Brief
+          <div className="ui-card p-6 space-y-2.5">
+            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#0F766E]">
+              PROJECT SPECIFICATION
+            </span>
+            <h2 className="text-base font-bold text-[#0B1F2A]">
+              Production CSV Analytics & Visual Pipeline
             </h2>
-            <p className="text-xs text-[#587078] leading-relaxed">
-              Build a Python program that analyzes a CSV file and visualizes key insights. Connect the data pipeline to an automated summary generator.
+            <p className="text-xs sm:text-sm text-[#587078] leading-relaxed">
+              Design and implement a robust Python pipeline that ingests heterogeneous CSV datasets, validates records with defensive exception handling, calculates statistical distributions, and renders terminal metrics for downstream agentic tools.
             </p>
           </div>
 
           {/* Requirements Checklist */}
-          <div className="rounded-2xl border border-[#DCE7E5] bg-white p-5 space-y-3 shadow-2xs">
-            <h2 className="font-display text-sm font-bold text-[#0B1F2A] uppercase tracking-wider">
-              Requirements
-            </h2>
-            <ul className="space-y-2 text-xs text-[#587078]">
-              <li className="flex items-center gap-2.5">
-                <span className="size-2 rounded-full bg-[#0F766E] shrink-0" />
-                <span>Read CSV dataset cleanly</span>
+          <div className="ui-card p-6 space-y-3.5">
+            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#84979D]">
+              CORE REQUIREMENTS
+            </span>
+            <ul className="space-y-2.5 text-xs text-[#587078]">
+              <li className="flex items-start gap-2.5">
+                <span className="size-2 rounded-full bg-[#0F766E] mt-1.5 shrink-0" />
+                <span>Parse CSV records with typing validation and missing value fallbacks</span>
               </li>
-              <li className="flex items-center gap-2.5">
-                <span className="size-2 rounded-full bg-[#0F766E] shrink-0" />
-                <span>Analyze data & calculate summary stats</span>
+              <li className="flex items-start gap-2.5">
+                <span className="size-2 rounded-full bg-[#0F766E] mt-1.5 shrink-0" />
+                <span>Compute standard deviation, mean, median, and quantile percentiles</span>
               </li>
-              <li className="flex items-center gap-2.5">
-                <span className="size-2 rounded-full bg-[#0F766E] shrink-0" />
-                <span>Generate terminal visualization</span>
+              <li className="flex items-start gap-2.5">
+                <span className="size-2 rounded-full bg-[#0F766E] mt-1.5 shrink-0" />
+                <span>Render formatted Unicode bar charts and histograms directly to stdout</span>
               </li>
-              <li className="flex items-center gap-2.5">
-                <span className="size-2 rounded-full bg-[#0F766E] shrink-0" />
-                <span>Handle edge cases & missing data cleanly</span>
+              <li className="flex items-start gap-2.5">
+                <span className="size-2 rounded-full bg-[#0F766E] mt-1.5 shrink-0" />
+                <span>Trap FileNotFoundError, EmptyDataError, and UnicodeDecodeError cleanly</span>
               </li>
-              <li className="flex items-center gap-2.5">
-                <span className="size-2 rounded-full bg-[#0F766E] shrink-0" />
-                <span>Push solution to GitHub repository</span>
+              <li className="flex items-start gap-2.5">
+                <span className="size-2 rounded-full bg-[#0F766E] mt-1.5 shrink-0" />
+                <span>Export structured execution JSON payload to ./data/output_report.json</span>
               </li>
             </ul>
           </div>
 
           {/* Resources */}
-          <div className="rounded-2xl border border-[#DCE7E5] bg-white p-5 space-y-3 shadow-2xs">
-            <h2 className="font-display text-sm font-bold text-[#0B1F2A] uppercase tracking-wider">
-              Resources
-            </h2>
-            <div className="space-y-2 text-xs">
+          <div className="ui-card p-6 space-y-3.5">
+            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#84979D]">
+              STARTER ASSETS & DOCUMENTATION
+            </span>
+            <div className="grid sm:grid-cols-3 gap-3">
               <a
                 href="#starter"
                 onClick={(e) => {
                   e.preventDefault();
                   toast.info("Downloading Project starter code (.zip)...");
                 }}
-                className="flex items-center gap-2 text-[#0F766E] hover:underline font-semibold"
+                className="flex items-center gap-2 p-3 rounded-xl border border-[#DCE7E5] bg-[#F7FAFA] text-[#0F766E] hover:border-[#0F766E] hover:bg-[#CCFBF1]/30 transition text-xs font-semibold cursor-pointer"
               >
                 <FileCode className="size-4" />
-                <span>Project starter code</span>
+                <span>Starter Code</span>
               </a>
               <a
                 href="#dataset"
@@ -198,10 +211,10 @@ export function ProjectsView() {
                   e.preventDefault();
                   toast.info("Downloading Sample dataset (students.csv)...");
                 }}
-                className="flex items-center gap-2 text-[#0F766E] hover:underline font-semibold"
+                className="flex items-center gap-2 p-3 rounded-xl border border-[#DCE7E5] bg-[#F7FAFA] text-[#0F766E] hover:border-[#0F766E] hover:bg-[#CCFBF1]/30 transition text-xs font-semibold cursor-pointer"
               >
                 <FileText className="size-4" />
-                <span>Sample dataset</span>
+                <span>Sample Data</span>
               </a>
               <a
                 href="#guide"
@@ -209,29 +222,29 @@ export function ProjectsView() {
                   e.preventDefault();
                   toast.info("Opening Project guide documentation...");
                 }}
-                className="flex items-center gap-2 text-[#0F766E] hover:underline font-semibold"
+                className="flex items-center gap-2 p-3 rounded-xl border border-[#DCE7E5] bg-[#F7FAFA] text-[#0F766E] hover:border-[#0F766E] hover:bg-[#CCFBF1]/30 transition text-xs font-semibold cursor-pointer"
               >
                 <ExternalLink className="size-4" />
-                <span>Project guide</span>
+                <span>Project Guide</span>
               </a>
             </div>
           </div>
         </div>
 
         {/* Right Column: Your Progress Checklist & CTA (col-span-5) */}
-        <div className="md:col-span-5 space-y-4">
-          <div className="rounded-2xl border border-[#DCE7E5] bg-white p-5 space-y-4 shadow-2xs">
+        <div className="lg:col-span-5 space-y-5">
+          <div className="ui-card p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-sm font-bold text-[#0B1F2A] uppercase tracking-wider">
-                Your Progress
-              </h2>
+              <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#0F766E]">
+                MILESTONE PROGRESS
+              </span>
               <span className="font-mono text-xs font-bold text-[#0F766E]">
-                {completedCount} of {progressItems.length}
+                {completedCount} of {progressItems.length} ({progressPercent}%)
               </span>
             </div>
 
             {/* Progress bar */}
-            <div className="h-1.5 overflow-hidden rounded-full bg-[#E6F7F5]">
+            <div className="h-2 overflow-hidden rounded-full bg-[#F0F5F4]">
               <div
                 className="h-full rounded-full bg-[#0F766E] transition-all duration-300"
                 style={{ width: `${progressPercent}%` }}
@@ -239,28 +252,26 @@ export function ProjectsView() {
             </div>
 
             {/* Checklist Items */}
-            <div className="space-y-2.5">
+            <div className="space-y-2.5 pt-2">
               {progressItems.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => toggleCheck(item.id)}
-                  className="flex w-full items-center gap-3 text-left text-xs transition hover:text-[#0B1F2A]"
+                  className="flex w-full items-center gap-3 text-left text-xs transition hover:text-[#0B1F2A] cursor-pointer group"
                 >
                   <div
-                    className={`grid size-4 place-items-center rounded-full shrink-0 transition-colors ${
+                    className={`grid size-4.5 place-items-center rounded-md shrink-0 transition-colors ${
                       item.checked
                         ? "bg-[#0F766E] text-white"
-                        : "border border-[#DCE7E5] bg-[#F7FAFA]"
+                        : "border border-[#DCE7E5] bg-[#F7FAFA] group-hover:border-[#0F766E]"
                     }`}
                   >
-                    {item.checked && <Check className="size-2.5 stroke-[3]" />}
+                    {item.checked && <Check className="size-3 stroke-[3]" />}
                   </div>
                   <span
-                    className={
-                      item.checked
-                        ? "text-[#0B1F2A] font-medium"
-                        : "text-[#84979D]"
-                    }
+                    className={`leading-tight ${
+                      item.checked ? "text-[#84979D] line-through" : "text-[#334E57] font-medium"
+                    }`}
                   >
                     {item.text}
                   </span>
@@ -268,13 +279,28 @@ export function ProjectsView() {
               ))}
             </div>
 
-            {/* CTA Button */}
-            <Button
-              className="w-full bg-[#0F766E] hover:bg-[#0B1F2A] text-white text-xs font-bold h-10 shadow-2xs mt-2"
-              onClick={handleOpenWorkspace}
-            >
-              Open Project Workspace →
-            </Button>
+            {/* Launch Workspace CTA */}
+            <div className="pt-3 border-t border-[#DCE7E5]">
+              <Button
+                className="w-full h-11 rounded-xl bg-[#0F766E] hover:bg-[#0d655e] text-white font-bold text-xs shadow-sm transition cursor-pointer"
+                onClick={handleOpenWorkspace}
+              >
+                Open Project Workspace <ArrowRight className="size-3.5 ml-1.5" />
+              </Button>
+            </div>
+          </div>
+
+          {/* AI Evaluation & Verification Card */}
+          <div className="rounded-2xl border border-[#0F766E]/20 bg-[#CCFBF1]/30 p-5 space-y-2.5">
+            <div className="flex items-center gap-2 text-[#0F766E]">
+              <ShieldCheck className="size-5" />
+              <h3 className="font-bold text-xs uppercase tracking-wider">
+                Automated AI Evaluation
+              </h3>
+            </div>
+            <p className="text-xs text-[#334E57] leading-relaxed">
+              Once you submit your GitHub repo, the evaluator tests test suites, edge case handling, and code linting automatically.
+            </p>
           </div>
         </div>
       </div>

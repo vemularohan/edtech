@@ -281,6 +281,7 @@ print(system_prompt)`,
           options: [
             "\"You are a helpful assistant.\" (Strings are immutable, replace() returns a new string!)",
             "\"You are a strict assistant.\"",
+            "None",
             "SyntaxError: strings cannot be modified"
           ],
           answer: "\"You are a helpful assistant.\" (Strings are immutable, replace() returns a new string!)",

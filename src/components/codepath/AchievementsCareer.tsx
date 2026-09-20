@@ -60,25 +60,28 @@ export function AchievementsCareer() {
   ];
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 pb-16">
-      {/* ── Top Header ── */}
+    <div className="page-container page-sections">
+      {/* ── Top Header (Aligned to Global Grid) ── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-[#DCE7E5] pb-4">
         <div>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#0F766E]">
+            ACADEMIC PROGRESSION
+          </p>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#0B1F2A] tracking-tight">
-            Your Achievement Journey
+            Achievement Journey & Career Roadmap
           </h1>
           <p className="mt-0.5 text-xs sm:text-sm text-[#587078]">
-            Keep learning. Keep building. Unlock your future.
+            Evidence-backed milestones, verified certificates, and career readiness.
           </p>
         </div>
 
         <Button
           size="sm"
           variant="outline"
-          className="border-[#DCE7E5] text-[#0F766E] hover:bg-[#CCFBF1]/40 text-xs font-semibold self-start sm:self-auto h-8"
-          onClick={() => toast.info("Viewing all achievements catalog...")}
+          className="border-[#DCE7E5] text-[#0F766E] hover:bg-[#CCFBF1]/40 text-xs font-semibold self-start sm:self-auto h-10 px-4 rounded-xl cursor-pointer"
+          onClick={() => toast.info("Viewing all academic credentials...")}
         >
-          View All Achievements →
+          View All Credentials <ArrowRight className="size-3.5 ml-1.5" />
         </Button>
       </div>
 

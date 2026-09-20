@@ -1,1 +1,0 @@
-import{c as e}from"./link-DIt654cv.js";import{r as t}from"./CodepathApp-BhdMccMZ.js";var n=e(),r=()=>(0,n.jsx)(t,{view:`profile`});export{r as component};

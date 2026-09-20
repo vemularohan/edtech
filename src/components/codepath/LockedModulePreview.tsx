@@ -25,21 +25,21 @@ export function LockedModulePreview({ module }: LockedModulePreviewProps) {
   const navigate = useNavigate();
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 pb-12">
+    <div className="page-container page-sections">
       {/* Top Breadcrumb / Return */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between border-b border-[#DCE7E5] pb-3.5">
         <button
           onClick={() => navigate({ to: "/curriculum" })}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#587078] hover:text-[#0B1F2A] transition cursor-pointer"
         >
           <ArrowLeft className="size-4" />
           Back to Curriculum Catalog
         </button>
         <div className="flex items-center gap-2">
-          <span className="rounded-full border border-border/80 bg-surface px-2.5 py-1 font-mono text-[11px] font-semibold text-muted-foreground">
+          <span className="rounded-md border border-[#DCE7E5] bg-[#F0F5F4] px-2.5 py-1 font-mono text-[11px] font-bold text-[#587078]">
             Module {module.code}
           </span>
-          <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+          <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-700">
             <Lock className="size-3" />
             Locked Preview
           </span>
@@ -47,40 +47,46 @@ export function LockedModulePreview({ module }: LockedModulePreviewProps) {
       </div>
 
       {/* Lock Warning Hero Banner */}
-      <div className="relative overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/5 via-surface-elevated to-surface p-6 sm:p-8 shadow-sm">
+      <div className="relative overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-white to-white p-6 sm:p-8 shadow-xs">
         <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
+          <div className="space-y-2.5 max-w-2xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/25 bg-amber-50 px-3 py-0.5 text-xs font-semibold text-amber-700">
               <ShieldAlert className="size-3.5" />
               PREREQUISITES REQUIRED
             </div>
-            <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl text-foreground">
+            <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl text-[#0B1F2A]">
               {module.title}
             </h1>
-            <p className="text-sm leading-relaxed text-muted-foreground">
+            <p className="text-xs sm:text-sm leading-relaxed text-[#587078]">
               {module.description}
             </p>
-            <p className="text-xs font-medium text-amber-700 dark:text-amber-300">
-              Complete <strong className="font-semibold">Module 01: Python Foundations for AI</strong> and its prerequisite chain to unlock the interactive lessons, coding labs, and project submissions for this module.
+            <p className="text-xs font-medium text-amber-800">
+              {module.prerequisites && module.prerequisites.length > 0 ? (
+                <>
+                  Prerequisite path required: <strong className="font-semibold">{module.prerequisites.join(" & ")}</strong>. Complete prior modules to unlock interactive code execution, assessments, and capstone submissions.
+                </>
+              ) : (
+                <>
+                  Complete prior curriculum modules to unlock interactive labs and assessments for this module.
+                </>
+              )}
             </p>
           </div>
 
           <div className="flex flex-col gap-2.5 shrink-0 sm:min-w-[220px]">
             <Button
-              size="lg"
-              className="w-full bg-[var(--color-brand)] text-white shadow-md hover:bg-[var(--color-brand)]/90 font-semibold"
+              className="w-full h-11 bg-[#0F766E] text-white shadow-xs hover:bg-[#0d655e] font-bold text-xs rounded-xl cursor-pointer"
               onClick={() => navigate({ to: "/learning-mode", search: { module: "3.2" } })}
             >
-              <Play className="size-4 mr-2 fill-current" />
-              Resume Module 01
+              <Play className="size-3.5 mr-2 fill-current" />
+              Resume Active Module 01
             </Button>
             <Button
               variant="outline"
-              size="sm"
-              className="w-full text-xs font-medium"
+              className="w-full h-10 text-xs font-semibold rounded-xl border-[#DCE7E5] text-[#587078] hover:bg-[#F0F5F4] hover:text-[#0B1F2A] cursor-pointer"
               onClick={() => navigate({ to: "/curriculum" })}
             >
-              View Full Learning Path
+              Back to 20-Module Roadmap
             </Button>
           </div>
         </div>

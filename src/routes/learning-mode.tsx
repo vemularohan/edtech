@@ -4,16 +4,15 @@ import { CodepathApp } from "@/components/codepath/CodepathApp";
 
 function normalizeModuleCode(val: unknown): `3.${number}` | undefined {
   if (!val) return undefined;
-  const str = String(val).replace(/^"|"$/g, "").trim();
+  const str = String(val).replace(/^["']|["']$/g, "").trim();
   if (/^3\.\d+$/.test(str)) return str as `3.${number}`;
-  const num = parseInt(str, 10);
-  if (!Number.isNaN(num)) {
-    // Module 1 in curriculum is 3.2 (Python Foundations for AI)
-    if (num === 1) return "3.2";
+  const match = str.match(/^(?:module-?|mod-?)?(\d+)$/i);
+  if (match && match[1]) {
+    const num = parseInt(match[1], 10);
+    if (num >= 1 && num <= 20) {
+      return `3.${num + 1}` as `3.${number}`;
+    }
     if (num === 0) return "3.1";
-    // Otherwise module N maps to 3.(N+1)
-    const code = `3.${num + 1}` as `3.${number}`;
-    return code;
   }
   return undefined;
 }

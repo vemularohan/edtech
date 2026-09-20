@@ -946,19 +946,37 @@ def process_ai_data_pipeline(raw_json_str, min_score=80.0):
   },
 ];
 
-export const allCurriculumChallenges: CurriculumChallenge[] = moduleSpecificChallenges.map(
-  (challenge) => ({
+export const allCurriculumChallenges: CurriculumChallenge[] = moduleSpecificChallenges
+  .filter((challenge) => curriculumModules.some((m) => m.code === challenge.moduleId))
+  .map((challenge) => ({
     ...challenge,
     id: `challenge-${challenge.moduleId.replace(".", "-")}-${challenge.title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "")}`,
-  }),
-);
+  }));
 
 export function getChallengeForModule(moduleId: `3.${number}`): CurriculumChallenge {
   const challenge = allCurriculumChallenges.find((item) => item.moduleId === moduleId);
-  if (!challenge) throw new Error(`No challenge configured for curriculum module: ${moduleId}`);
+  if (!challenge) {
+    // Return fallback for any module without custom challenge
+    const targetModule = curriculumModules.find((m) => m.code === moduleId) ?? curriculumModules[0]!;
+    return {
+      id: `challenge-${targetModule.code.replace(".", "-")}-practice`,
+      moduleId: targetModule.code,
+      topic: targetModule.topics[0] || "AI Systems",
+      title: `${targetModule.title} Lab Challenge`,
+      description: `Hands-on coding exercise for ${targetModule.title}.`,
+      type: "BUILD",
+      difficulty: targetModule.difficulty,
+      problem: `Implement core logic for ${targetModule.topics[0] || targetModule.title}.`,
+      starterCode: `# Module ${targetModule.code}: ${targetModule.title}\ndef solve():\n    return True\n`,
+      tests: [{ id: "test-01", input: "()", expected: "True" }],
+      hints: [`Review the syllabus and core concepts for ${targetModule.title}.`],
+      solution: `def solve():\n    return True`,
+      explanation: `Solution for ${targetModule.title} exercise.`,
+    };
+  }
   return challenge;
 }
 
